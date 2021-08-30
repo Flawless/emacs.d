@@ -30,6 +30,7 @@
 
 (customize-set-variable 'package-enable-at-startup nil)
 (package-initialize)
+(setq mac-command-modifier 'meta)
 
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)
@@ -96,12 +97,12 @@
 (defvar flawless-mode-leader-secondary-key "M-SPC m")
 
 (general-create-definer flawless-def
-    :states '(normal)
+    :states '(normal visual)
     :prefix flawless-leader-key
     :non-normal-prefix flawless-leader-secondary-key)
 
 (general-create-definer flawless-mode-def
-    :states '(normal)
+    :states '(normal visual)
     :prefix flawless-mode-leader-key
     :non-normal-prefix flawless-mode-leader-secondary-key)
 
@@ -118,7 +119,9 @@
   :infix "b"
   "b" 'counsel-switch-buffer
   "r" 'revert-buffer
-  "d" 'kill-current-buffer)
+  "d" 'kill-current-buffer
+  "s" 'save-buffer
+  "S" 'save-some-buffers)
 
 (flawless-def
   :infix "h"
@@ -138,7 +141,10 @@
 
 (flawless-def
   :infix "t"
-  "F" 'toggle-frame-fullscreen)
+  "F" 'toggle-frame-fullscreen
+  "t" 'toggle-truncate-lines
+  "+" 'text-scale-increase
+  "-" 'text-scale-decrease)
 
 (flawless-def
  :infix "q"
@@ -155,15 +161,18 @@
 (use-package smex :ensure t)
 
 (use-package prog-mode
+  :custom
+  (display-line-numbers-type 'relative)
+  (evil-commentary-mode t)
   :config
-  (setq display-line-numbers-type 'relative))
+(rainbow-delimiters-mode)
+  (rainbow-identifiers-mode))
 
 (use-package lisp-mode
   :defer 1
   :config
-  (rainbow-delimiters-mode)
-  (rainbow-identifiers-mode)
-  (paredit-mode)
+  (evil-lispy-mode)
+  (lispyville-mode)
   :general
   (flawless-mode-def
    :keymaps 'emacs-lisp-mode-map
@@ -213,21 +222,45 @@
   (rainbow-identifiers-choose-face-function
    #'rainbow-identifiers-cie-l*a*b*-choose-face)
   :hook
-  (emacs-lisp-mode . rainbow-identifiers-mode) ; actually, turn it off
   (prog-mode . rainbow-identifiers-mode))
 
 (use-package rainbow-mode
   :ensure t
   :hook '(prog-mode help-mode))
 
+(use-package display-line-numbers-mode
+  :hook prog-mode)
+
 (use-package magit
   :ensure t
-  :init (evil-collection-init 'magit))
+  :init (evil-collection-init 'magit)
+  :general
+  (flawless-def
+    :infix "g"
+    "g" 'magit-status))
 
 (use-package evil-collection
   :ensure t
   :init
   (evil-collection-init))
+
+(defun tyrell-styles ()
+  (put-clojure-indent 're-frame.core/reg-event-fx 1)
+  (put-clojure-indent 're-frame.core/reg-fx 1)
+  (put-clojure-indent 'rf/reg-event-fx 1)
+  (put-clojure-indent 'rf/reg-fx 1)
+  (put-clojure-indent 're-frame.core/reg-event-db 1)
+  (put-clojure-indent 're-frame.core/reg-db 1)
+  (put-clojure-indent 'rf/reg-event-db 1)
+  (put-clojure-indent 'rf/reg-db 1)
+  (put-clojure-indent 're-frame.core/reg-sub 1)
+  (put-clojure-indent 'rf/reg-sub 1)
+  (put-clojure-indent 'component-style-def 1)
+  (put-clojure-indent 'reg-view 1)
+  (put-clojure-indent 'reg-modal 1)
+
+  (put-clojure-indent 'attempt-all 1)
+  (put-clojure-indent 'try-all 1))
 
 (use-package clojure-mode
   :ensure t
@@ -235,16 +268,14 @@
 	 ("\\.cljc\\'" . clojurec-mode)
 	 ("\\.cljs\\'" . clojurescript-mode)
          ("\\.edn\\'" . clojure-mode))
-  :init
-  (add-hook 'clojure-mode-hook #'display-line-numbers-mode)
-  (add-hook 'clojure-mode-hook #'programming-defaults)
-  (add-hook 'clojure-mode-hook #'yas-minor-mode)         
-  (add-hook 'clojure-mode-hook #'linum-mode)             
-  (add-hook 'clojure-mode-hook #'subword-mode)           
-  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'clojure-mode-hook #'rainbow-identifiers-mode)
-  (add-hook 'clojure-mode-hook #'eldoc-mode)             
-  (add-hook 'clojure-mode-hook #'idle-highlight-mode)
+  :config
+  (require 'flycheck-clj-kondo)
+  (tyrell-styles)
+  :hook
+  (clojure-mode . yas-minor-mode)         
+  (clojure-mode . subword-mode)           
+  (clojure-mode . eldoc-mode)             
+  (clojure-mode . idle-highlight-mode)
   :general
   (flawless-mode-def
     :infix "i"
@@ -254,16 +285,28 @@
     "B" 'cider-format-buffer))
 
 (use-package lispy :ensure t)
-(use-package lispyville :ensure t)
+
+(use-package evil-lispy
+  :ensure t
+  :hook
+  (lisp-mode . evil-lispy-mode)
+  (elisp-mode . evil-lispy-mode)
+  (clojure-mode . evil-lispy-mode))
+
+(use-package lispyville
+  :ensure t
+  :hook
+  (lisp-mode . lispyville-mode)
+  (elisp-mode . lispyville-mode)
+  (clojure-mode . lispyville-mode))
+
 (use-package clj-refactor :ensure t)
 (use-package idle-highlight-mode :ensure t)
 
 (use-package anakondo
   :ensure t
   :hook
-  (clojure-mode . anakondo-minor-mode)
-  (clojurescript-mode . anakondo-minor-mode)
-  (clojurec-mode . anakondo-minor-mode))
+  (clojure-mode . anakondo-minor-mode))
 
 (use-package cider
   :ensure t
@@ -272,8 +315,6 @@
   (evil-collection-init 'cider)
   (add-hook 'cider-mode-hook #'clj-refactor-mode)
   :diminish subword-mode
-  :hook
-  (repl-mode . paredit-mode)
   :config
   (setq nrepl-log-messages t                  
         cider-repl-display-in-current-window t
@@ -284,6 +325,8 @@
         cider-overlays-use-font-lock t         
 	cider-repl-use-pretty-printing t)
   :general
+  (flawless-mode-def
+    "q" 'cider-quit)
   (flawless-mode-def
     :infix "r"
     :keymaps 'clojure-mode-map
@@ -313,6 +356,17 @@
     "t" 'cider-test-run-test
     "n" 'cider-test-run-ns-tests))
 
+(use-package centered-cursor-mode
+  :ensure t
+  :hook prog-mode
+  :custom
+  (ccm-vps-init (round (* 21 (window-text-height)) 34))
+  ;; :general
+  ;; ("zj" 'ccm-vpos-up)
+  ;; ("zh" 'ccm-vpos-down)
+  ;; ("zz" 'ccm-vpos-recenter)
+  )
+
 (use-package undo-tree
   :ensure t
   :init
@@ -327,17 +381,35 @@
   :pin melpa-stable
   :init (global-company-mode))
 
-(use-package flycheck :ensure t)
+(use-package flycheck
+  :ensure t
+  :hook
+  (prog-mode . flycheck-mode))
+
 (use-package flycheck-clj-kondo :ensure t)
-;; (use-package highlight-sexp :ensure t)
+
+(use-package highlight-sexp
+  :quelpa
+  (highlight-sexp :repo "daimrod/highlight-sexp" :fetcher github :version original)
+  :hook
+  (lisp-mode . highlight-sexp-mode)
+  (elisp-mode . highlight-sexp-mode)
+  (clojure-mode . highlight-sexp-mode))
+
 (use-package projectile
   :ensure t
+  :init
+  (projectile-mode t)
+  :custom
+  (projectile-project-search-path '("~/projects/"))
   :general
   (flawless-def
     :infix "p"
+    "g" 'projectile-grep
     "p" 'counsel-projectile-switch-project
     "b" 'counsel-projectile-switch-to-buffer
     "f" 'counsel-projectile-find-file))
+ 
 (use-package counsel-projectile
   :ensure t
   :after (counsel projectile))
@@ -369,17 +441,27 @@
 
 (my-mode-line-visual-bell)
 
+(use-package beancount
+  :ensure t
+  :quelpa (beancount :fetcher github :repo "beancount/beancount-mode" :files ("beancount.el" "COPYING"))
+  :hook (beancount-mode . outline-minor-mode)
+  :mode ("\\.bean\\'" . beancount-mode))
+
 (provide 'init)
 ;;; init.el ends here
 (custom-set-variables
- ;; custom-set-variables was added by custom.
- ;; if you edit it by hand, you could mess it up, so be careful.
- ;; your init file should contain only one such instance.
- ;; if there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(line-number-mode nil)
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
      ("melpa" . "https://melpa.org/packages/")
+     ("melpa-stable" . "https://stable-melpa.org/packages/")
+     ("org" . "https://orgmode.org/elpa/")
+     ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")
+     ("melpa" . "d7jhttps://melpa.org/packages/")
      ("melpa-stable" . "https://stable-melpa.org/packages/")
      ("org" . "https://orgmode.org/elpa/")
      ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")
@@ -393,10 +475,10 @@
      ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")))
  '(package-enable-at-startup nil)
  '(package-selected-packages
-   '(highlight-sexp flycheck-clj-kondo clojure-snippets lispyville lispy anakondo counsel-projectile smex quelpa-use-package flycheck lsp-mode projectile company idle-highlight-mode clj-refactor clojure-mode evil-collection magit rainbow-mode rainbow-identifiers rainbow-delimiters evil-commentary darktooth-theme which-key counsel general use-package-ensure-system-package quelpa gcmh evil)))
+   '(centered-cursor-mode clj-kondo evil-lispy highlight-sexp flycheck-clj-kondo clojure-snippets lispyville lispy anakondo counsel-projectile smex quelpa-use-package flycheck lsp-mode projectile company idle-highlight-mode clj-refactor clojure-mode evil-collection magit rainbow-mode rainbow-identifiers rainbow-delimiters evil-commentary darktooth-theme which-key counsel general use-package-ensure-system-package quelpa gcmh evil)))
 (custom-set-faces
- ;; custom-set-faces was added by custom.
- ;; if you edit it by hand, you could mess it up, so be careful.
- ;; your init file should contain only one such instance.
- ;; if there is more than one, they won't work right.
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  )
