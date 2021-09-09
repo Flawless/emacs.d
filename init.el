@@ -20,13 +20,19 @@
 ;;; Code:
 
 (require 'package)
-(customize-set-variable 'package-archives
-                        `(,@package-archives
-                          ("melpa" . "https://melpa.org/packages/")
-                          ("melpa-stable" . "https://stable-melpa.org/packages/")
 
-                          ("org" . "https://orgmode.org/elpa/")
-                          ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")))
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(load custom-file)
+
+(customize-set-variable 'package-archives
+			`(,@package-archives
+			  ("melpa" . "https://melpa.org/packages/")
+			  ("melpa-stable" . "https://stable-melpa.org/packages/")
+
+			  ("org" . "https://orgmode.org/elpa/")
+			  ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")))
+
+(add-hook 'before-save-hook 'whitespace-cleanup)
 
 (customize-set-variable 'package-enable-at-startup nil)
 (package-initialize)
@@ -34,7 +40,7 @@
 
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)
-(tool-bar-mode -1) 
+(tool-bar-mode -1)
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -50,6 +56,13 @@
   ;; (use-package-verbose t)
   ;; (use-package-minimum-reported-time 0.005)
   (use-package-enable-imenu-support t))
+
+(use-package auto-package-update
+  :ensure t
+  :config
+  (setq auto-package-update-delete-old-versions t)
+  (setq auto-package-update-hide-results t)
+  (auto-package-update-maybe))
 
 (use-package gcmh
   :ensure t
@@ -108,12 +121,14 @@
 
 (flawless-def
   :infix "s"
+  "S" 'swiper-all
   "s" 'swiper)
 
 (flawless-def
   :infix "f"
   "f" 'find-file
-  "s" 'save-buffer)
+  "s" 'save-buffer
+  "S" 'write-file)
 
 (flawless-def
   :infix "b"
@@ -170,9 +185,6 @@
 
 (use-package lisp-mode
   :defer 1
-  :config
-  (evil-lispy-mode)
-  (lispyville-mode)
   :general
   (flawless-mode-def
    :keymaps 'emacs-lisp-mode-map
@@ -198,7 +210,7 @@
   (which-key-allow-evil-operators t "Show evil keybindings")
   (which-key-sort-order 'which-key-key-order-alpha  "Sort things properly alphabetical"))
 
-(use-package darktooth-theme 
+(use-package darktooth-theme
   :ensure t
   :load-path "themes"
   :init
@@ -229,7 +241,7 @@
   :hook '(prog-mode help-mode))
 
 (use-package display-line-numbers-mode
-  :hook prog-mode)
+  :hook (prog-mode org-mode beancount-mode))
 
 (use-package magit
   :ensure t
@@ -267,22 +279,30 @@
   :mode (("\\.clj\\'" . clojure-mode)
 	 ("\\.cljc\\'" . clojurec-mode)
 	 ("\\.cljs\\'" . clojurescript-mode)
-         ("\\.edn\\'" . clojure-mode))
+	 ("\\.edn\\'" . clojure-mode))
   :config
   (require 'flycheck-clj-kondo)
   (tyrell-styles)
   :hook
-  (clojure-mode . yas-minor-mode)         
-  (clojure-mode . subword-mode)           
-  (clojure-mode . eldoc-mode)             
+  (clojure-mode . yas-minor-mode)
+  (clojure-mode . subword-mode)
+  (clojure-mode . eldoc-mode)
   (clojure-mode . idle-highlight-mode)
   :general
   (flawless-mode-def
     :infix "i"
     :keymaps 'clojure-mode-map
+    "t" 'transpose-sexps
     "s" 'indent-sexp
     "r" 'indent-region
     "B" 'cider-format-buffer))
+
+(use-package flycheck-projectile
+  :ensure t
+  :general
+  (flawless-mode-def
+    :infix "f"
+    "p" 'flycheck-projectile-list-errors))
 
 (use-package lispy :ensure t)
 
@@ -290,14 +310,14 @@
   :ensure t
   :hook
   (lisp-mode . evil-lispy-mode)
-  (elisp-mode . evil-lispy-mode)
+  (emacs-lisp-mode . evil-lispy-mode)
   (clojure-mode . evil-lispy-mode))
 
 (use-package lispyville
   :ensure t
   :hook
   (lisp-mode . lispyville-mode)
-  (elisp-mode . lispyville-mode)
+  (emacs-lisp-mode . lispyville-mode)
   (clojure-mode . lispyville-mode))
 
 (use-package clj-refactor :ensure t)
@@ -311,18 +331,20 @@
 (use-package cider
   :ensure t
   :defer t
+  :custom
+  (cider-save-file-on-load nil)
   :init
   (evil-collection-init 'cider)
   (add-hook 'cider-mode-hook #'clj-refactor-mode)
   :diminish subword-mode
   :config
-  (setq nrepl-log-messages t                  
-        cider-repl-display-in-current-window t
-        cider-repl-use-clojure-font-lock t    
-        cider-prompt-save-file-on-load 'always-save
-        cider-font-lock-dynamically '(macro core function var)
-        nrepl-hide-special-buffers t            
-        cider-overlays-use-font-lock t         
+  (setq nrepl-log-messages t
+	cider-repl-display-in-current-window t
+	cider-repl-use-clojure-font-lock t
+	cider-prompt-save-file-on-load 'always-save
+	cider-font-lock-dynamically '(macro core function var)
+	nrepl-hide-special-buffers t
+	cider-overlays-use-font-lock t
 	cider-repl-use-pretty-printing t)
   :general
   (flawless-mode-def
@@ -354,7 +376,14 @@
     :keymaps 'clojure-mode-map
     "P" 'cider-test-run-project-tests
     "t" 'cider-test-run-test
-    "n" 'cider-test-run-ns-tests))
+    "n" 'cider-test-run-ns-tests)
+  (flawless-mode-def
+    :infix "P"
+    :keymaps 'clojure-mode-map
+    "t" 'cider-profile-toggle
+    "T" 'cider-profile-ns-toggle
+    "v" 'cider-profile-var-summary
+    "C" 'cider-profile-clear))
 
 (use-package centered-cursor-mode
   :ensure t
@@ -393,7 +422,7 @@
   (highlight-sexp :repo "daimrod/highlight-sexp" :fetcher github :version original)
   :hook
   (lisp-mode . highlight-sexp-mode)
-  (elisp-mode . highlight-sexp-mode)
+  (emacs-lisp-mode . highlight-sexp-mode)
   (clojure-mode . highlight-sexp-mode))
 
 (use-package projectile
@@ -405,11 +434,11 @@
   :general
   (flawless-def
     :infix "p"
-    "g" 'projectile-grep
+    "g" 'counsel-git-grep
     "p" 'counsel-projectile-switch-project
     "b" 'counsel-projectile-switch-to-buffer
     "f" 'counsel-projectile-find-file))
- 
+
 (use-package counsel-projectile
   :ensure t
   :after (counsel projectile))
@@ -425,15 +454,15 @@
     (run-with-timer
      0.1 nil
      #'(lambda (frame)
-         (let ((inhibit-quit)
-               (inhibit-redisplay t))
-           (invert-face 'header-line frame)
-           (invert-face 'header-line-highlight frame)
-           (invert-face 'mode-line frame)
-           (invert-face 'mode-line-inactive frame)))
+	 (let ((inhibit-quit)
+	       (inhibit-redisplay t))
+	   (invert-face 'header-line frame)
+	   (invert-face 'header-line-highlight frame)
+	   (invert-face 'mode-line frame)
+	   (invert-face 'mode-line-inactive frame)))
      frame)
     (let ((inhibit-quit)
-          (inhibit-redisplay t))
+	  (inhibit-redisplay t))
       (invert-face 'header-line frame)
       (invert-face 'header-line-highlight frame)
       (invert-face 'mode-line frame)
@@ -447,38 +476,30 @@
   :hook (beancount-mode . outline-minor-mode)
   :mode ("\\.bean\\'" . beancount-mode))
 
+(use-package org
+  :general
+  (flawless-mode-def
+    :keymaps 'org-mode-map
+    :infix "c"
+    "i" 'org-clock-clock-in)
+  (flawless-mode-def
+    :infix "n"
+    "c" 'org-clock-cl))
+
+(use-package evil-org
+  :ensure t
+  :after org
+  :hook (org-mode . evil-org-mode)
+  :config
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
+
+(use-package mood-line
+  :ensure t
+  ;; :custom-face
+  ;; (mode-line ((t (:inherit default (:box (:line-width -1 :style released-button))))))
+  :hook
+  (after-init . mood-line-mode))
+
 (provide 'init)
 ;;; init.el ends here
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(line-number-mode nil)
- '(package-archives
-   '(("gnu" . "https://elpa.gnu.org/packages/")
-     ("melpa" . "https://melpa.org/packages/")
-     ("melpa-stable" . "https://stable-melpa.org/packages/")
-     ("org" . "https://orgmode.org/elpa/")
-     ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")
-     ("melpa" . "d7jhttps://melpa.org/packages/")
-     ("melpa-stable" . "https://stable-melpa.org/packages/")
-     ("org" . "https://orgmode.org/elpa/")
-     ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")
-     ("melpa" . "https://melpa.org/packages/")
-     ("melpa-stable" . "https://stable-melpa.org/packages/")
-     ("org" . "https://orgmode.org/elpa/")
-     ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")
-     ("melpa" . "https://melpa.org/packages/")
-     ("melpa-stable" . "https://stable-melpa.org/packages/")
-     ("org" . "https://orgmode.org/elpa/")
-     ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")))
- '(package-enable-at-startup nil)
- '(package-selected-packages
-   '(centered-cursor-mode clj-kondo evil-lispy highlight-sexp flycheck-clj-kondo clojure-snippets lispyville lispy anakondo counsel-projectile smex quelpa-use-package flycheck lsp-mode projectile company idle-highlight-mode clj-refactor clojure-mode evil-collection magit rainbow-mode rainbow-identifiers rainbow-delimiters evil-commentary darktooth-theme which-key counsel general use-package-ensure-system-package quelpa gcmh evil)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
