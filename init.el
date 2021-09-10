@@ -481,10 +481,10 @@
   (flawless-mode-def
     :keymaps 'org-mode-map
     :infix "c"
-    "i" 'org-clock-clock-in)
+    "i" 'org-clock-in)
   (flawless-mode-def
     :infix "n"
-    "c" 'org-clock-cl))
+    "c" 'org-clock-cancel))
 
 (use-package evil-org
   :ensure t
