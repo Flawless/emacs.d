@@ -125,7 +125,12 @@
   "s" 'swiper)
 
 (flawless-def
+  :config
+  (defun find-config-file ()
+    (interactive)
+    (find-file user-init-file))
   :infix "f"
+  "C" 'find-config-file
   "f" 'find-file
   "s" 'save-buffer
   "S" 'write-file)
@@ -171,7 +176,11 @@
   (gcmh-mode 1))
 
 (use-package ace-window :ensure t)
-(use-package ivy :ensure t)
+(use-package ivy
+  :ensure t
+  :custom
+  (ivy-initial-inputs-alist nil))
+
 (use-package paredit :ensure t)
 (use-package smex :ensure t)
 
@@ -256,33 +265,32 @@
   :init
   (evil-collection-init))
 
-(defun tyrell-styles ()
-  (put-clojure-indent 're-frame.core/reg-event-fx 1)
-  (put-clojure-indent 're-frame.core/reg-fx 1)
-  (put-clojure-indent 'rf/reg-event-fx 1)
-  (put-clojure-indent 'rf/reg-fx 1)
-  (put-clojure-indent 're-frame.core/reg-event-db 1)
-  (put-clojure-indent 're-frame.core/reg-db 1)
-  (put-clojure-indent 'rf/reg-event-db 1)
-  (put-clojure-indent 'rf/reg-db 1)
-  (put-clojure-indent 're-frame.core/reg-sub 1)
-  (put-clojure-indent 'rf/reg-sub 1)
-  (put-clojure-indent 'component-style-def 1)
-  (put-clojure-indent 'reg-view 1)
-  (put-clojure-indent 'reg-modal 1)
-
-  (put-clojure-indent 'attempt-all 1)
-  (put-clojure-indent 'try-all 1))
-
 (use-package clojure-mode
   :ensure t
+  :requires
+  (evil-lispy-mode lispyville-mode cider-mode clj-refactor anakondo)
   :mode (("\\.clj\\'" . clojure-mode)
 	 ("\\.cljc\\'" . clojurec-mode)
 	 ("\\.cljs\\'" . clojurescript-mode)
 	 ("\\.edn\\'" . clojure-mode))
   :config
   (require 'flycheck-clj-kondo)
-  (tyrell-styles)
+  (define-clojure-indent
+    (re-frame.core/reg-event-fx 1)
+    (re-frame.core/reg-fx 1)
+    (rf/reg-event-fx 1)
+    (rf/reg-fx 1)
+    (re-frame.core/reg-event-db 1)
+    (re-frame.core/reg-db 1)
+    (rf/reg-event-db 1)
+    (rf/reg-db 1)
+    (re-frame.core/reg-sub 1)
+    (rf/reg-sub 1)
+    (component-style-def 1)
+    (reg-view 1)
+    (reg-modal 1)
+    (attempt-all 1)
+    (try-all 1))
   :hook
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
@@ -318,7 +326,9 @@
   :hook
   (lisp-mode . lispyville-mode)
   (emacs-lisp-mode . lispyville-mode)
-  (clojure-mode . lispyville-mode))
+  (clojure-mode . lispyville-mode)
+  (clojurec-mode . lispyville-mode)
+  (clojurescript-mode . lispyville-mode))
 
 (use-package clj-refactor :ensure t)
 (use-package idle-highlight-mode :ensure t)
@@ -434,6 +444,7 @@
   :general
   (flawless-def
     :infix "p"
+    "s" 'projectile-save-project-buffers
     "g" 'counsel-git-grep
     "p" 'counsel-projectile-switch-project
     "b" 'counsel-projectile-switch-to-buffer
@@ -482,7 +493,7 @@
     :keymaps 'org-mode-map
     :infix "c"
     "i" 'org-clock-in)
-  (flawless-mode-def
+  (flawless-def
     :infix "n"
     "c" 'org-clock-cancel))
 
