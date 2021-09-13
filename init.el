@@ -154,8 +154,8 @@
 
 (flawless-def
     :infix "w"
-  "s" 'split-window-right
-  "v" 'split-window-vertically
+  "v" 'split-window-right
+  "s" 'split-window-vertically
   "d" 'delete-window
   "w" 'ace-window)
 
@@ -291,6 +291,22 @@
     (reg-modal 1)
     (attempt-all 1)
     (try-all 1))
+
+  (defun +/insert-random-uuid ()
+    "Insert a random UUID.
+Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
+
+WARNING: this is a simple implementation. The chance of generating the same UUID is much higher than a robust algorithm.."
+    (interactive)
+    (insert
+     (format "#uuid \"%04x%04x-%04x-%04x-%04x-%06x%06x\""
+	     (random (expt 16 4))
+	     (random (expt 16 4))
+	     (random (expt 16 4))
+	     (random (expt 16 4))
+	     (random (expt 16 4))
+	     (random (expt 16 6))
+	     (random (expt 16 6)))))
   :hook
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
@@ -303,7 +319,8 @@
     "t" 'transpose-sexps
     "s" 'indent-sexp
     "r" 'indent-region
-    "B" 'cider-format-buffer))
+    "B" 'cider-format-buffer
+    "u" '+/insert-random-uid))
 
 (use-package flycheck-projectile
   :ensure t
@@ -358,7 +375,8 @@
 	cider-repl-use-pretty-printing t)
   :general
   (flawless-mode-def
-    "q" 'cider-quit)
+    "q" 'cider-quit
+    "c" 'cider-repl-clear-buffer)
   (flawless-mode-def
     :infix "r"
     :keymaps 'clojure-mode-map
@@ -408,8 +426,8 @@
 
 (use-package undo-tree
   :ensure t
-  :init
-  (global-undo-tree-mode))
+  :custom (evil-undo-system 'undo-tree)
+  :init (global-undo-tree-mode))
 
 (use-package lsp-mode :ensure t)
 (use-package clojure-snippets
@@ -437,10 +455,11 @@
 
 (use-package projectile
   :ensure t
-  :init
-  (projectile-mode t)
+  :init (projectile-mode t)
   :custom
   (projectile-project-search-path '("~/projects/"))
+  (projectile-sort-order 'recently-active)
+  (projectile-enable-caching t)
   :general
   (flawless-def
     :infix "p"
@@ -452,6 +471,7 @@
 
 (use-package counsel-projectile
   :ensure t
+  :init (counsel-projectile-mode t)
   :after (counsel projectile))
 
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -488,19 +508,32 @@
   :mode ("\\.bean\\'" . beancount-mode))
 
 (use-package org
+  :after (evil-org org-pomodoro)
+  :hook evil-org-mode
+  :config
+  (defun counsel-projectile-swith-to-org ()
+    (interactive)
+    (counsel-projectile-switch-project "~/org/"))
   :general
   (flawless-mode-def
     :keymaps 'org-mode-map
     :infix "c"
-    "i" 'org-clock-in)
+    "i" 'org-clock-in
+    "p" 'org-pomodoro
+    "t" 'org-clock-resolve-clock)
   (flawless-def
     :infix "n"
-    "c" 'org-clock-cancel))
+    "n" 'counsel-projectile-switch-to-org
+    "p" 'org-pomodoro
+    "i" 'org-clock-in-last
+    "o" 'org-clock-goto
+    "C" 'org-clock-cancel
+    "c" 'org-clock-out))
+
+(use-package org-pomodoro :ensure t)
 
 (use-package evil-org
   :ensure t
-  :after org
-  :hook (org-mode . evil-org-mode)
   :config
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
@@ -511,6 +544,17 @@
   ;; (mode-line ((t (:inherit default (:box (:line-width -1 :style released-button))))))
   :hook
   (after-init . mood-line-mode))
+
+(use-package shackle
+  :ensure t
+  :custom
+  ;; (shackle-default-rule (:popup t))
+  (shackle-rules
+   '(("*cider-repl.*\\*"
+      :regexp t
+      :other t
+      :size 0.25
+      :align bottom))))
 
 (provide 'init)
 ;;; init.el ends here
