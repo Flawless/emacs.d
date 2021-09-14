@@ -250,7 +250,7 @@
   :hook '(prog-mode help-mode))
 
 (use-package display-line-numbers-mode
-  :hook (prog-mode org-mode beancount-mode))
+  :hook (prog-mode org-mode beancount-mode yaml-mode))
 
 (use-package magit
   :ensure t
@@ -264,6 +264,11 @@
   :ensure t
   :init
   (evil-collection-init))
+
+(use-package yaml-mode
+  :ensure t
+  :mode "\\.ya?ml\\'"
+  :hook )
 
 (use-package clojure-mode
   :ensure t
