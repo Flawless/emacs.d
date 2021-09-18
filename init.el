@@ -783,14 +783,13 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (counsel-projectile-switch-project "~/org/")))
 
 (use-package org-duration
-  :custom
-  (org-duration-units `(("min" . 1)
-			("h" . 60)
-			("d" . ,(* 60 8))
-			("w" . ,(* 60 8 5))
-			("m" . ,(* 60 8 5 4))
-			("y" . ,(* 60 8 5 4 11))))
   :config
+  (setq org-duration-units `(("min" . 1)
+			     ("h" . 60)
+			     ("d" . ,(* 60 8))
+			     ("w" . ,(* 60 8 5))
+			     ("m" . ,(* 60 8 5 4))
+			     ("y" . ,(* 60 8 5 4 11))))
   (org-duration-set-regexps))
 
 (use-package org-pomodoro :ensure t)
