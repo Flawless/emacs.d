@@ -301,6 +301,8 @@
 (use-package magit
   :ensure t
   :init (evil-collection-init 'magit)
+  :custom
+  (magit-diff-paint-whitespace-lines 'all)
   :general
   (flawless-def
     :infix "g"
@@ -314,63 +316,6 @@
 (use-package yaml-mode
   :ensure t
   :mode "\\.ya?ml\\'")
-
-(use-package clojure-mode
-  :ensure t
-  :requires
-  (evil-lispy-mode lispyville-mode cider-mode clj-refactor anakondo)
-  :mode (("\\.clj\\'" . clojure-mode)
-	 ("\\.cljc\\'" . clojurec-mode)
-	 ("\\.cljs\\'" . clojurescript-mode)
-	 ("\\.edn\\'" . clojure-mode))
-  :config
-  (require 'flycheck-clj-kondo)
-  (define-clojure-indent
-    (re-frame.core/reg-event-fx 1)
-    (re-frame.core/reg-fx 1)
-    (rf/reg-event-fx 1)
-    (rf/reg-fx 1)
-    (re-frame.core/reg-event-db 1)
-    (re-frame.core/reg-db 1)
-    (rf/reg-event-db 1)
-    (rf/reg-db 1)
-    (re-frame.core/reg-sub 1)
-    (rf/reg-sub 1)
-    (component-style-def 1)
-    (reg-view 1)
-    (reg-modal 1)
-    (attempt-all 1)
-    (try-all 1))
-
-  (defun +/insert-random-uuid ()
-    "Insert a random UUID.
-Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
-
-WARNING: this is a simple implementation. The chance of generating the same UUID is much higher than a robust algorithm.."
-    (interactive)
-    (insert
-     (format "#uuid \"%04x%04x-%04x-%04x-%04x-%06x%06x\""
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 6))
-	     (random (expt 16 6)))))
-  :hook
-  (clojure-mode . yas-minor-mode)
-  (clojure-mode . subword-mode)
-  (clojure-mode . eldoc-mode)
-  (clojure-mode . idle-highlight-mode)
-  :general
-  (flawless-mode-def
-    :infix "i"
-    :keymaps 'clojure-mode-map
-    "t" 'transpose-sexps
-    "s" 'indent-sexp
-    "r" 'indent-region
-    "B" 'cider-format-buffer
-    "u" '+/insert-random-uid))
 
 (use-package flycheck-projectile
   :ensure t
@@ -396,84 +341,6 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (clojure-mode . lispyville-mode)
   (clojurec-mode . lispyville-mode)
   (clojurescript-mode . lispyville-mode))
-
-(use-package clj-refactor :ensure t)
-(use-package idle-highlight-mode :ensure t)
-
-(use-package anakondo
-  :ensure t
-  :hook
-  (clojure-mode . anakondo-minor-mode))
-
-(use-package cider
-  :ensure t
-  :defer t
-  :custom
-  (cider-save-file-on-load nil)
-  :init
-  (evil-collection-init 'cider)
-  (add-hook 'cider-mode-hook #'clj-refactor-mode)
-  :diminish subword-mode
-  :config
-  (setq nrepl-log-messages t
-	cider-repl-display-in-current-window t
-	cider-repl-use-clojure-font-lock t
-	cider-prompt-save-file-on-load 'always-save
-	cider-font-lock-dynamically '(macro core function var)
-	nrepl-hide-special-buffers t
-	cider-overlays-use-font-lock t
-	cider-repl-use-pretty-printing t)
-  :general
-  (flawless-mode-def
-    :infix "j"
-    :keymaps 'clojure-mode-map
-    "uw" 'cljr-unwind
-    "uW" 'cljr-unwind-all
-    "tf" 'cljr-thread-first-all
-    "tl" 'cljr-thread-last-all)
-  (flawless-mode-def
-    "q" 'cider-quit
-    "c" 'cider-repl-clear-buffer)
-  (flawless-mode-def
-    :infix "r"
-    :keymaps 'clojure-mode-map
-    "b" 'cider-switch-to-repl-buffer
-    "B" 'cider-switch-to-repl-on-insert)
-  (flawless-mode-def
-    :infix "c"
-    :keymaps 'clojure-mode-map
-    "c" 'cider-connect-clj
-    "s" 'cider-connect-cljs
-    "C" 'cider-connect-clj&cljs
-    "S" 'cider-connect-sibling-cljs)
-  (flawless-mode-def
-    :infix "h"
-    :keymaps 'clojure-mode-map
-    "d" 'cider-doc)
-  (flawless-mode-def
-    :infix "e"
-    :keymaps 'clojure-mode-map
-    "e" 'cider-eval-last-sexp
-    "d" 'cider-eval-defun-at-point
-    "b" 'cider-eval-buffer)
-  (flawless-mode-def
-    :infix "t"
-    :keymaps 'clojure-mode-map
-    "P" 'cider-test-run-project-tests
-    "t" 'cider-test-run-test
-    "n" 'cider-test-run-ns-tests)
-  (flawless-mode-def
-    :infix "P"
-    :keymaps 'clojure-mode-map
-    "t" 'cider-profile-toggle
-    "T" 'cider-profile-ns-toggle
-    "v" 'cider-profile-var-summary
-    "C" 'cider-profile-clear)
-  (flawless-mode-def
-    :infix "m"
-    :keymaps 'clojure-mode-map
-    "m" 'cider-macroexpand-1
-    "M" 'cider-macroexpand-all))
 
 (use-package centered-cursor-mode
   :ensure t
@@ -825,6 +692,148 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (gac-automatically-push-p t)
   (gac-automatically-add-new-files-p t)
   :ensure t)
+
+;; Programming languages
+;;; Clojure
+(use-package clojure-mode
+  :ensure t
+  :requires
+  (evil-lispy-mode lispyville-mode cider-mode clj-refactor anakondo)
+  :mode (("\\.clj\\'" . clojure-mode)
+	 ("\\.cljc\\'" . clojurec-mode)
+	 ("\\.cljs\\'" . clojurescript-mode)
+	 ("\\.edn\\'" . clojure-mode))
+  :config
+  (require 'flycheck-clj-kondo)
+  (define-clojure-indent
+    (re-frame.core/reg-event-fx 1)
+    (re-frame.core/reg-fx 1)
+    (rf/reg-event-fx 1)
+    (rf/reg-fx 1)
+    (re-frame.core/reg-event-db 1)
+    (re-frame.core/reg-db 1)
+    (rf/reg-event-db 1)
+    (rf/reg-db 1)
+    (re-frame.core/reg-sub 1)
+    (rf/reg-sub 1)
+    (component-style-def 1)
+    (reg-view 1)
+    (reg-modal 1)
+    (attempt-all 1)
+    (try-all 1))
+
+  (defun +/insert-random-uuid ()
+    "Insert a random UUID.
+Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
+
+WARNING: this is a simple implementation. The chance of generating the same UUID is much higher than a robust algorithm.."
+    (interactive)
+    (insert
+     (format "#uuid \"%04x%04x-%04x-%04x-%04x-%06x%06x\""
+	     (random (expt 16 4))
+	     (random (expt 16 4))
+	     (random (expt 16 4))
+	     (random (expt 16 4))
+	     (random (expt 16 4))
+	     (random (expt 16 6))
+	     (random (expt 16 6)))))
+  :hook
+  (clojure-mode . yas-minor-mode)
+  (clojure-mode . subword-mode)
+  (clojure-mode . eldoc-mode)
+  (clojure-mode . idle-highlight-mode)
+  :general
+  (flawless-mode-def
+    :infix "i"
+    :keymaps 'clojure-mode-map
+    "t" 'transpose-sexps
+    "s" 'indent-sexp
+    "r" 'indent-region
+    "B" 'cider-format-buffer
+    "u" '+/insert-random-uid))
+
+(use-package clj-refactor :ensure t)
+(use-package idle-highlight-mode :ensure t)
+
+(use-package anakondo
+  :ensure t
+  :hook
+  (clojure-mode . anakondo-minor-mode))
+
+(use-package cider
+  :ensure t
+  :defer t
+  :custom
+  (cider-save-file-on-load nil)
+  :init
+  (evil-collection-init 'cider)
+  (add-hook 'cider-mode-hook #'clj-refactor-mode)
+  :diminish subword-mode
+  :config
+  (setq nrepl-log-messages t
+	cider-repl-display-in-current-window t
+	cider-repl-use-clojure-font-lock t
+	cider-prompt-save-file-on-load 'always-save
+	cider-font-lock-dynamically '(macro core function var)
+	nrepl-hide-special-buffers t
+	cider-overlays-use-font-lock t
+	cider-repl-use-pretty-printing t)
+  :general
+  (flawless-mode-def
+    :infix "j"
+    :keymaps 'clojure-mode-map
+    "uw" 'cljr-unwind
+    "uW" 'cljr-unwind-all
+    "tf" 'cljr-thread-first-all
+    "tl" 'cljr-thread-last-all)
+  (flawless-mode-def
+    "q" 'cider-quit
+    "c" 'cider-repl-clear-buffer)
+  (flawless-mode-def
+    :infix "r"
+    :keymaps 'clojure-mode-map
+    "b" 'cider-switch-to-repl-buffer
+    "B" 'cider-switch-to-repl-on-insert)
+  (flawless-mode-def
+    :infix "c"
+    :keymaps 'clojure-mode-map
+    "c" 'cider-connect-clj
+    "s" 'cider-connect-cljs
+    "C" 'cider-connect-clj&cljs
+    "S" 'cider-connect-sibling-cljs)
+  (flawless-mode-def
+    :infix "h"
+    :keymaps 'clojure-mode-map
+    "d" 'cider-doc)
+  (flawless-mode-def
+    :infix "e"
+    :keymaps 'clojure-mode-map
+    "e" 'cider-eval-last-sexp
+    "d" 'cider-eval-defun-at-point
+    "b" 'cider-eval-buffer)
+  (flawless-mode-def
+    :infix "t"
+    :keymaps 'clojure-mode-map
+    "P" 'cider-test-run-project-tests
+    "t" 'cider-test-run-test
+    "n" 'cider-test-run-ns-tests)
+  (flawless-mode-def
+    :infix "P"
+    :keymaps 'clojure-mode-map
+    "t" 'cider-profile-toggle
+    "T" 'cider-profile-ns-toggle
+    "v" 'cider-profile-var-summary
+    "C" 'cider-profile-clear)
+  (flawless-mode-def
+    :infix "m"
+    :keymaps 'clojure-mode-map
+    "m" 'cider-macroexpand-1
+    "M" 'cider-macroexpand-all))
+
+;;; Elixir
+(use-package elixir-mode
+  :ensure t
+  :mode ("\\.ex?s\\"))
 
 (provide 'init)
 ;;; init.el ends here
