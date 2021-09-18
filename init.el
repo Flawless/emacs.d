@@ -215,8 +215,26 @@
   (display-line-numbers-type 'relative)
   (evil-commentary-mode t)
   :config
-(rainbow-delimiters-mode)
+  (rainbow-delimiters-mode)
   (rainbow-identifiers-mode))
+
+(use-package yasnippet
+  :ensure t
+  :custom
+  (yas-verbosity 1)
+  (yas-wrap-around-region t)
+  :config
+  (with-eval-after-load 'yasnippet
+    (validate-setq yas-snippet-dirs '(yasnippet-snippets-dir)))
+
+  (yas-reload-all)
+  (yas-global-mode))
+
+(use-package yasnippet-snippets
+  :ensure t)
+
+(use-package clojure-snippets
+  :ensure t)
 
 (use-package lisp-mode
   :defer 1
