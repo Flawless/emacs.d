@@ -34,6 +34,27 @@
 
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
+;; Put backup files neatly away
+(let ((backup-dir "~/tmp/emacs/backups")
+      (auto-saves-dir "~/tmp/emacs/auto-saves/"))
+  (dolist (dir (list backup-dir auto-saves-dir))
+    (when (not (file-directory-p dir))
+      (make-directory dir t)))
+  (setq backup-directory-alist `(("." . ,backup-dir))
+	auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
+	auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
+	tramp-backup-directory-alist `((".*" . ,backup-dir))
+	tramp-auto-save-directory auto-saves-dir))
+
+(setq backup-by-copying t    ; Don't delink hardlinks
+      delete-old-versions t  ; Clean up the backups
+      version-control t      ; Use version numbers on backups,
+      kept-new-versions 50   ; keep some new versions
+      kept-old-versions 20)  ; and some old ones, too
+
+;; disable lockfiles
+(setq create-lockfiles nil)
+
 (customize-set-variable 'package-enable-at-startup nil)
 (package-initialize)
 (setq mac-command-modifier 'meta)
@@ -58,10 +79,11 @@
   (use-package-enable-imenu-support t))
 
 (use-package auto-package-update
-  :ensure t
+  :ensure quelpa
+  :custom
+  (auto-package-update-delete-old-versions t)
+  (auto-package-update-hide-results t)
   :config
-  (setq auto-package-update-delete-old-versions t)
-  (setq auto-package-update-hide-results t)
   (auto-package-update-maybe))
 
 (use-package gcmh
@@ -88,9 +110,11 @@
   (setq quelpa-use-package-inhibit-loading-quelpa t))
 
 (use-package evil
-  :init
-  (setq evil-want-keybinding nil)
-  (evil-mode))
+  :ensure t
+  :custom
+  (evil-want-C-u-scroll t)
+  (evil-want-keybinding nil)
+  :config (evil-mode t))
 
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t)) ;; Prevent flickering issues
 
@@ -138,6 +162,7 @@
 (flawless-def
   :infix "b"
   "b" 'counsel-switch-buffer
+  "i" 'ibuffer
   "r" 'revert-buffer
   "d" 'kill-current-buffer
   "s" 'save-buffer
@@ -206,6 +231,8 @@
 
 (use-package counsel
   :ensure t
+  :custom
+  (ivy-on-del-error-function #'ignore)
   :general
   (flawless-def
     "SPC" 'counsel-M-x))
@@ -267,8 +294,7 @@
 
 (use-package yaml-mode
   :ensure t
-  :mode "\\.ya?ml\\'"
-  :hook )
+  :mode "\\.ya?ml\\'")
 
 (use-package clojure-mode
   :ensure t
@@ -380,6 +406,11 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 	cider-repl-use-pretty-printing t)
   :general
   (flawless-mode-def
+    :infix "j"
+    :keymaps 'clojure-mode-map
+    "tf" 'cljr-thread-first-all
+    "tl" 'cljr-thread-last-all)
+  (flawless-mode-def
     "q" 'cider-quit
     "c" 'cider-repl-clear-buffer)
   (flawless-mode-def
@@ -416,7 +447,12 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "t" 'cider-profile-toggle
     "T" 'cider-profile-ns-toggle
     "v" 'cider-profile-var-summary
-    "C" 'cider-profile-clear))
+    "C" 'cider-profile-clear)
+  (flawless-mode-def
+    :infix "m"
+    :keymaps 'clojure-mode-map
+    "m" 'cider-macroexpand-1
+    "M" 'cider-macroexpand-all))
 
 (use-package centered-cursor-mode
   :ensure t
@@ -513,16 +549,22 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :mode ("\\.bean\\'" . beancount-mode))
 
 (use-package org
-  :after (evil-org org-pomodoro)
-  :hook evil-org-mode
-  :config
-  (defun counsel-projectile-swith-to-org ()
-    (interactive)
-    (counsel-projectile-switch-project "~/org/"))
   :general
   (flawless-mode-def
     :keymaps 'org-mode-map
+    :infix "d"
+    "r" 'org-evaluate-time-range
+    "d" 'org-deadline
+    "s" 'org-schedule)
+  (flawless-mode-def
+    :keymaps 'org-mode-map
+    :infix "t"
+    "t" 'org-todo)
+  (flawless-mode-def
+    :keymaps 'org-mode-map
     :infix "c"
+    "o" 'org-open-at-point
+    "r" 'org-clock-report
     "i" 'org-clock-in
     "p" 'org-pomodoro
     "t" 'org-clock-resolve-clock)
@@ -533,7 +575,205 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "i" 'org-clock-in-last
     "o" 'org-clock-goto
     "C" 'org-clock-cancel
-    "c" 'org-clock-out))
+    "c" 'org-clock-out)
+  (flawless-mode-def
+    :infix "l"
+    "l" 'org-insert-link
+    "C" ''counsel-org-link)
+  :custom
+  (org-directory "~/org/")
+  (org-agenda-files (directory-files-recursively org-directory "\\.org$"))
+  (org-superstar-headline-bullets-list '("⁖" "◉" "○" "✸" "✿"))
+  (org-todo-keywords
+   '((sequence "TODO(t)" "WAIT(w)" "STRT(s)" "CTRL(c)" "HOLD(h)" "|" "DONE(d)" "KILL(k)")))
+  (org-tag-alist '(("important" . ?i)
+		   ("urgent" . ?u)
+		   ("arvl" . ?a)))
+  (org-agenda-custom-commands '(("1" "Q1" tags-todo "+important+urgent")
+				("2" "Q2" tags-todo "+important-urgent")
+				("3" "Q3" tags-todo "-important+urgent")
+				("4" "Q4" tags-todo "-important-urgent")))
+  (org-capture-templates
+   '(("b" "Book" entry (file org-books-file)
+      "* %^{TITLE}\n:PROPERTIES:\n:ADDED: %<[%Y-%02m-%02d]>\n:END:%^{AUTHOR}p\n%?" :empty-lines 1)
+     ("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
+      "* TODO %?\n %i\n %a")))
+  (org-clock-persist 'history)
+  (org-clock-idle-time 15)
+
+  :after (evil-org org-pomodoro)
+
+  :hook
+  ((evil-org-mode . org)
+   (auto-fill-mode . org)
+   (org-clock-in . save-buffer)
+   (org-clock-out . save-buffer)
+   (org-clock-cancel . save-buffer))
+
+  :config
+  (org-clock-persistence-insinuate)
+  (defun lt:yank-org-link (text)
+    (if (derived-mode-p 'org-mode)
+	(insert text)
+      (string-match org-link-bracket-re text)
+      (insert (substring text (match-beginning 1) (match-end 1)))))
+
+  (defun lt:org-retrieve-url-from-point ()
+    (let* ((link-info (assoc :link (org-context)))
+	   (text (when link-info
+		   ;; org-context seems to return nil if the current element
+		   ;; starts at buffer-start or ends at buffer-end
+		   (buffer-substring-no-properties (or (cadr link-info) (point-min))
+						   (or (caddr link-info) (point-max))))))
+      (if (not text)
+	  (error "Not in org link")
+	(add-text-properties 0 (length text) '(yank-handler (my-yank-org-link)) text)
+	(kill-new text))))
+
+  (defun lt:smarter-kill-ring-save ()
+    (interactive)
+    (if (region-active-p)
+	(call-interactively #'kill-ring-save)
+      (when (eq major-mode 'org-mode)
+	(call-interactively #'lt:org-retrieve-url-from-point))))
+
+  (defun lt:sum-direct-children-org (level children)
+    "Update the time LEVEL nodes recursively to be the sum of the times of its children.
+Used in `my-org-clocktable-formatter' to go from net times back to tatal times."
+    (let ((subtrees (-partition-before-pred (lambda (it) (= level (car it))) children)))
+      (-flatten-n 1
+		  (--map (let ((it-children (lt:sum-direct-children-org (1+ level)
+									(cdr it))))
+			   (cons (--update-at
+				  4 (+ it
+				       (-sum
+					(--map (nth 4 it)
+					       (--filter (= (1+ level)
+							    (car it))
+							 it-children))))
+				  (car it))
+				 it-children))
+			 subtrees))))
+  (defun lt:org-clocktable-formatter (ipos tables params)
+    "Custom formatter for org-mode clocktables which groups by category rather than file.
+It uses `org-clock-clocktable-formatter' for the insertion of the
+table after sorting the items into tables based on an items
+category property. Thus all parameters supported by
+`org-clock-clocktable-formatter' are supported. To use this to
+sort a clocktable add `:properties (\"CATEGORY\") :formatter
+my-org-clocktable-formatter' to that clocktable's arguments."
+    (let* ((tt (-flatten-n 1 (-map #'-last-item tables)))
+	   (formatter (or org-clock-clocktable-formatter
+			  'org-clocktable-write-default))
+	   (newprops (remove "CATEGORY" (plist-get params :properties)))
+	   (newparams (plist-put (plist-put params :multifile t) :properties newprops))
+	   newtables)
+
+      ;; Compute net clocked time for each item
+      (setq tt
+	    (--map-indexed
+	     (let* ((it-level (car it))
+		    (it-time (nth 4 it))
+		    (it-subtree (--take-while (< it-level (car it))
+					      (-drop (1+ it-index) tt)))
+		    (it-children (--filter (= (1+ it-level) (car it))
+					   it-subtree)))
+	       (-replace-at 4 (- it-time (-sum (--map (nth 4 it) it-children)))
+			    it))
+	     tt))
+
+      ;; Add index (ie id) and indexes of parents (these are needed in the
+      ;; sorting step). This can probably be written more functionally using --reduce?
+      ;; At least without having to modify hist.
+      (setq tt
+	    (let (hist)
+	      (--map-indexed (let* ((it-level (car it))
+				    (it-hist (-drop (- (length hist)
+						       it-level -1)
+						    hist)))
+			       (setq hist (cons it-index it-hist))
+			       (cons it-index (cons it-hist it)))
+			     tt)))
+
+      ;; Now comes the important phase: sorting, where we copy items with >0 net time
+      ;; into newtables based on their category, and we copy their parents when
+      ;; appropriate.
+      (--each tt (let* ((it-hist (nth 1 it))
+			(it-time (nth 6 it))
+			(it-prop (-last-item it))
+			(it-cat (alist-get "CATEGORY" it-prop nil nil #'string=))
+			;; Find the index of the table for category: it-cat or if
+			;; it doesn't yet exist add it to the start of newtables.
+			(cat-pos (or
+				  (--find-index (string= (car it) it-cat) newtables)
+				  (progn (push (list it-cat nil) newtables) 0)))
+			(cat-members (-map #'car (-last-item (nth cat-pos newtables))))
+			(it-parent
+			 (or (--find-index (member it
+						   cat-members)
+					   it-hist)
+			     (length it-hist)))
+			(hist-to-add
+			 ;; replace the time of copied parents with 0 since if a
+			 ;; parents is being copied and has time >0 then it has
+			 ;; already been placed in the table for a different
+			 ;; category. ie. We don't want time double counted.
+			 (--map (-replace-at 6 0 (nth it tt))
+				(-take it-parent it-hist))))
+
+		   (when (not (= 0 it-time))
+		     (setf (-last-item (nth cat-pos newtables))
+			   (append (cons it hist-to-add)
+				   (-last-item (nth cat-pos newtables)))))))
+
+      (--each newtables (setf (-last-item it) (reverse (-last-item it))))
+      ;; Cleanup, remove ids and list of parents, as they are no longer needed.
+      (setq newtables
+	    (--map (list (car it) 0 (--map (-drop 2 it) (-last-item it))) newtables))
+
+      ;; Recompute the total times for each node.
+      ;; (replace this with --each and setf?)
+      (setq newtables
+	    (--map (let* ((it-children (lt:sum-direct-children-org 1 (-last-item it)))
+			  (it-total-time (-sum
+					  (--map (nth 4 it)
+						 (--filter (= 1 (car it))
+							   it-children)))))
+		     (list (car it) it-total-time it-children))
+		   newtables))
+      ;; Actually insert the clocktable now.
+      (funcall formatter ipos newtables newparams)
+      ;; Replace "File" with "Category" in the "file" column and "*File time*" with "*
+      ;; Category time*" in the table.
+      (org-table-goto-line 1)
+      (org-table-blank-field)
+      (insert "Category")
+      (org-table-align)
+      (let ((n 2))
+	(while (org-table-goto-line n)
+	  (org-table-next-field)
+	  ;; This won't work if there are addition columns eg. Property column.
+	  ;; Instead look forward along each line to see if that regexp is matched?
+	  (when (looking-at "\\*File time\\* .*\| *\\*.*[0-9]:[0-9][0-9]\\*")
+	    (org-table-blank-field)
+	    (insert "*Category time*")
+	    (org-table-align))
+	  (cl-incf n)))))
+  (defun counsel-projectile-swith-to-org ()
+    (interactive)
+    (counsel-projectile-switch-project "~/org/")))
+
+(use-package org-duration
+  :ensure t
+  :custom
+  (org-duration-units `(("min" . 1)
+			("h" . 60)
+			("d" . ,(* 60 8))
+			("w" . ,(* 60 8 5))
+			("m" . ,(* 60 8 5 4))
+			("y" . ,(* 60 8 5 4 11))))
+  :config
+  (org-duration-set-regexps))
 
 (use-package org-pomodoro :ensure t)
 
@@ -560,6 +800,12 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
       :other t
       :size 0.25
       :align bottom))))
+
+(use-package git-auto-commit-mode
+  :custom
+  (gac-automatically-push-p t)
+  (gac-automatically-add-new-files-p t)
+  :ensure t)
 
 (provide 'init)
 ;;; init.el ends here
