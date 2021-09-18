@@ -225,7 +225,7 @@
   (yas-wrap-around-region t)
   :config
   (with-eval-after-load 'yasnippet
-    (validate-setq yas-snippet-dirs '(yasnippet-snippets-dir)))
+    (setq yas-snippet-dirs '(yasnippet-snippets-dir)))
 
   (yas-reload-all)
   (yas-global-mode))
