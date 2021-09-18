@@ -765,7 +765,6 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (counsel-projectile-switch-project "~/org/")))
 
 (use-package org-duration
-  :ensure t
   :custom
   (org-duration-units `(("min" . 1)
 			("h" . 60)
