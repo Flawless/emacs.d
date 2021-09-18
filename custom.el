@@ -42,10 +42,14 @@
      ("melpa" . "https://melpa.org/packages/")
      ("melpa-stable" . "https://stable-melpa.org/packages/")
      ("org" . "https://orgmode.org/elpa/")
+     ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")
+     ("melpa" . "https://melpa.org/packages/")
+     ("melpa-stable" . "https://stable-melpa.org/packages/")
+     ("org" . "https://orgmode.org/elpa/")
      ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")))
  '(package-enable-at-startup nil)
  '(package-selected-packages
-   '(git-auto-commit-mode yaml-mode org-pomodoro shackle flycheck-projectile which-key use-package-ensure-system-package undo-tree smex rainbow-mode rainbow-identifiers rainbow-delimiters quelpa-use-package mood-line magit lsp-mode lispyville idle-highlight-mode highlight-sexp general gcmh flycheck-clj-kondo evil-org evil-lispy evil-commentary evil-collection darktooth-theme counsel-projectile company clojure-snippets clj-refactor centered-cursor-mode beancount auto-package-update anakondo))
+   '(org-duration git-auto-commit-mode yaml-mode org-pomodoro shackle flycheck-projectile which-key use-package-ensure-system-package undo-tree smex rainbow-mode rainbow-identifiers rainbow-delimiters quelpa-use-package mood-line magit lsp-mode lispyville idle-highlight-mode highlight-sexp general gcmh flycheck-clj-kondo evil-org evil-lispy evil-commentary evil-collection darktooth-theme counsel-projectile company clojure-snippets clj-refactor centered-cursor-mode beancount auto-package-update anakondo))
  '(safe-local-variable-values
    '((org-todo-keywords quote
 			((sequence "TODO(t)" "WAIT(w)" "RVIW(r)" "STRT(s)" "CTRL(c)" "HOLD(h)" "TEST(q)" "|" "DONE(d)" "KILL(k)")))
