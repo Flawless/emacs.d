@@ -6,10 +6,15 @@
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
      ("melpa" . "https://melpa.org/packages/")
+     ("melpa-stable" . "https://stable-melpa.org/packages/")
+     ("melpa" . "https://melpa.org/packages/")
      ("melpa-stable" . "https://stable-melpa.org/packages/")))
  '(package-enable-at-startup nil)
  '(package-selected-packages
-   '(org-duration yaml-mode which-key use-package-ensure-system-package undo-tree smex shackle rainbow-mode rainbow-identifiers rainbow-delimiters quelpa-use-package org-pomodoro mood-line magit lsp-mode lispyville idle-highlight-mode highlight-sexp git-auto-commit-mode general gcmh flycheck-projectile flycheck-clj-kondo evil-org evil-lispy evil-commentary evil-collection darktooth-theme counsel-projectile company clojure-snippets clj-refactor centered-cursor-mode beancount auto-package-update anakondo)))
+   '(org-duration yaml-mode which-key use-package-ensure-system-package undo-tree smex shackle rainbow-mode rainbow-identifiers rainbow-delimiters quelpa-use-package org-pomodoro mood-line magit lsp-mode lispyville idle-highlight-mode highlight-sexp git-auto-commit-mode general gcmh flycheck-projectile flycheck-clj-kondo evil-org evil-lispy evil-commentary evil-collection darktooth-theme counsel-projectile company clojure-snippets clj-refactor centered-cursor-mode beancount auto-package-update anakondo))
+ '(safe-local-variable-values
+   '((org-todo-keywords quote
+			((sequence "TODO(t)" "WAIT(w)" "RVIW(r)" "STRT(s)" "CTRL(c)" "HOLD(h)" "TEST(q)" "|" "DONE(d)" "KILL(k)"))))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
