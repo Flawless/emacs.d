@@ -29,8 +29,9 @@
 			  ("melpa" . "https://melpa.org/packages/")
 			  ("melpa-stable" . "https://stable-melpa.org/packages/")
 
-			  ("org" . "https://orgmode.org/elpa/")
-			  ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")))
+			  ;; ("org" . "https://orgmode.org/elpa/")
+			  ;; ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")
+			  ))
 
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
