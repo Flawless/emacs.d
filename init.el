@@ -832,8 +832,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 
 ;;; Elixir
 (use-package elixir-mode
-  :ensure t
-  :mode ("\\.exs?\\"))
+  :ensure t)
 
 (provide 'init)
 ;;; init.el ends here
