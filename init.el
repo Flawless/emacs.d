@@ -85,7 +85,7 @@
   (auto-package-update-delete-old-versions t)
   (auto-package-update-hide-results t)
   :config
-  (auto-package-update-maybe))
+  (auto-package-update-at-time "03:00"))
 
 (use-package gcmh
   :ensure t
