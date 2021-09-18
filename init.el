@@ -835,4 +835,5 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :ensure t)
 
 (provide 'init)
+
 ;;; init.el ends here
