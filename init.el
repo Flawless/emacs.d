@@ -427,6 +427,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (flawless-mode-def
     :infix "j"
     :keymaps 'clojure-mode-map
+    "uw" 'cljr-unwind-all
     "tf" 'cljr-thread-first-all
     "tl" 'cljr-thread-last-all)
   (flawless-mode-def
