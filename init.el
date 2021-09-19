@@ -832,7 +832,16 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 
 ;;; Elixir
 (use-package elixir-mode
-  :ensure t)
+  :ensure t
+  :hook alchemist)
+
+(use-package alchemist
+  :ensure t
+  :general
+  (flawless-mode-def
+    :infix "e"
+    "b" 'alchemist-eval-buffer
+    "e" 'alchemist-eval-current-line))
 
 (provide 'init)
 
