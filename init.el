@@ -446,7 +446,6 @@
     "s" 'org-schedule)
   (flawless-mode-def
     :keymaps 'org-mode-map
-    :infix "t"
     "t" 'org-todo)
   (flawless-mode-def
     :keymaps 'org-mode-map
