@@ -185,12 +185,19 @@
   "d" 'delete-window
   "w" 'ace-window)
 
+(use-package default-text-scale
+  :ensure t
+  :general
+  (flawless-def
+    :infix "t"
+    "+" 'default-text-scale-increase
+    "-" 'default-text-scale-decrease
+    "R" 'default-text-scale-reset))
+
 (flawless-def
   :infix "t"
   "F" 'toggle-frame-fullscreen
-  "t" 'toggle-truncate-lines
-  "+" 'text-scale-increase
-  "-" 'text-scale-decrease)
+  "t" 'toggle-truncate-lines)
 
 (flawless-def
  :infix "q"
