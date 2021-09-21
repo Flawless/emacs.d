@@ -83,9 +83,7 @@
   :ensure quelpa
   :custom
   (auto-package-update-delete-old-versions t)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-at-time "03:00"))
+  (auto-package-update-hide-results t))
 
 (use-package gcmh
   :ensure t
