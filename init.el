@@ -800,7 +800,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "uw" 'cljr-unwind
     "uW" 'cljr-unwind-all
     "tf" 'cljr-thread-first-all
-    "tl" 'cljr-thread-last-all)
+    "tl" 'cljr-thread-last-all
+    "am" 'cljr-add-missing-libspec)
   (flawless-mode-def
     "q" 'cider-quit
     "c" 'cider-repl-clear-buffer)
