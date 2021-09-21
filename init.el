@@ -222,10 +222,7 @@
 (use-package prog-mode
   :custom
   (display-line-numbers-type 'relative)
-  (evil-commentary-mode t)
-  :config
-  (rainbow-delimiters-mode)
-  (rainbow-identifiers-mode))
+  (evil-commentary-mode t))
 
 (use-package yasnippet
   :ensure t
