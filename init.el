@@ -388,6 +388,9 @@
 (use-package highlight-symbol
   :ensure t)
 
+(use-package highlight
+  :ensure t)
+
 (use-package highlight-sexp
   :quelpa
   (highlight-sexp :repo "daimrod/highlight-sexp" :fetcher github :version original)
@@ -754,7 +757,6 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
   (clojure-mode . eldoc-mode)
-  (clojure-mode . idle-highlight-mode)
   :general
   (flawless-mode-def
     :infix "i"
@@ -766,7 +768,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "u" '+/insert-random-uid))
 
 (use-package clj-refactor :ensure t)
-(use-package idle-highlight-mode :ensure t)
+(use-package idle-highlight-mode
+  :ensure t
+  :hook prog-mode)
 
 (use-package anakondo
   :ensure t
