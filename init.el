@@ -187,12 +187,16 @@
 
 (use-package default-text-scale
   :ensure t
+  :custom
+  (default-text-scale-amount 25)
   :general
   (flawless-def
     :infix "t"
     "+" 'default-text-scale-increase
     "-" 'default-text-scale-decrease
     "R" 'default-text-scale-reset))
+
+(set-frame-font "Input Mono-14" nil t)
 
 (flawless-def
   :infix "t"
@@ -380,6 +384,9 @@
   (prog-mode . flycheck-mode))
 
 (use-package flycheck-clj-kondo :ensure t)
+
+(use-package highlight-symbol
+  :ensure t)
 
 (use-package highlight-sexp
   :quelpa
