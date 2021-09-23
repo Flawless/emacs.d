@@ -806,7 +806,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (flawless-mode-def
     :infix "i"
     :keymaps 'clojure-mode-map
-    "l" 'cider-inspect-last-result)
+    "l" 'cider-inspect-last-result
+    "e" 'cider-inspect-last-sexp)
   (flawless-mode-def
     "q" 'cider-quit
     "c" 'cider-repl-clear-buffer)
