@@ -804,6 +804,10 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "am" 'cljr-add-missing-libspec
     "nc" 'cljr-clean-ns)
   (flawless-mode-def
+    :infix "i"
+    :keymaps 'clojure-mode-map
+    "l" 'cider-inspect-last-result)
+  (flawless-mode-def
     "q" 'cider-quit
     "c" 'cider-repl-clear-buffer)
   (flawless-mode-def
