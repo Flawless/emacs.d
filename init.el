@@ -73,6 +73,9 @@
 
 (put 'use-package 'lisp-indent-function 1)
 
+(use-package goto-last-change
+  :ensure t)
+
 (use-package use-package-core
   :custom
   ;; (use-package-verbose t)
