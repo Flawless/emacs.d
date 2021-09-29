@@ -210,9 +210,6 @@
   :init
   (gcmh-mode 1))
 
-nisnisin
-nisnisn
-nisnis
 (use-package memory-usage
   :ensure t)
 
