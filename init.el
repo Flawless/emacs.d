@@ -206,7 +206,8 @@
 (use-package gcmh
   :ensure t
   :custom
-  (gcmh-high-cons-threshold most-positive-fixnum)
+  (gcmh-high-cons-threshold #x800000000)
+  (gcmh-idle-delay 15)
   :init
   (gcmh-mode 1))
 
