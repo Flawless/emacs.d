@@ -189,7 +189,7 @@
 (use-package default-text-scale
   :ensure t
   :custom
-  (default-text-scale-amount 25)
+  (default-text-scale-amount 10)
   :general
   (flawless-def
     :infix "t"
@@ -212,6 +212,8 @@
   :ensure t
   :init
   (gcmh-mode 1))
+
+(setq garbage-collection-messages t)
 
 (use-package ace-window :ensure t)
 (use-package ivy
@@ -364,7 +366,10 @@
 
 (use-package undo-tree
   :ensure t
-  :custom (evil-undo-system 'undo-tree)
+  :custom
+  (evil-undo-system 'undo-tree)
+  (ad-return-value (concat ad-return-value ".gz"))
+  (undo-tree-auto-save-history t)
   :init (global-undo-tree-mode))
 
 (use-package lsp-mode :ensure t)
