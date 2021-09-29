@@ -205,8 +205,16 @@
 
 (use-package gcmh
   :ensure t
+  :custom
+  (gcmh-high-cons-threshold most-positive-fixnum)
   :init
   (gcmh-mode 1))
+
+nisnisin
+nisnisn
+nisnis
+(use-package memory-usage
+  :ensure t)
 
 (setq gcmh-verbose t)
 (setq garbage-collection-messages t)
