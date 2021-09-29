@@ -214,6 +214,7 @@
   (gcmh-mode 1))
 
 (setq gcmh-verbose t)
+(setq garbage-collection-messages t)
 
 (use-package ace-window :ensure t)
 (use-package ivy
