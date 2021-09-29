@@ -213,8 +213,6 @@
   :init
   (gcmh-mode 1))
 
-(setq garbage-collection-messages t)
-
 (use-package ace-window :ensure t)
 (use-package ivy
   :ensure t
