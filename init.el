@@ -213,6 +213,8 @@
   :init
   (gcmh-mode 1))
 
+(setq gcmh-verbose t)
+
 (use-package ace-window :ensure t)
 (use-package ivy
   :ensure t
