@@ -213,19 +213,6 @@
 (use-package memory-usage
   :ensure t)
 
-(setq gcmh-verbose t)
-(setq garbage-collection-messages t)
-(defun ap/garbage-collect ()
-  "Run `garbage-collect' and print stats about memory usage."
-  (interactive)
-  (message (cl-loop for (type size used free) in (garbage-collect)
-		    for used = (* used size)
-		    for free = (* (or free 0) size)
-		    for total = (file-size-human-readable (+ used free))
-		    for used = (file-size-human-readable used)
-		    for free = (file-size-human-readable free)
-		    concat (format "%s: %s + %s = %s\n" type used free total))))
-
 (use-package ace-window :ensure t)
 (use-package ivy
   :ensure t
