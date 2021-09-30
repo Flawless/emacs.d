@@ -783,6 +783,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :defer t
   :custom
   (cider-save-file-on-load nil)
+(cider-repl-pop-to-buffer-on-connect 'display-only)
   :init
   (evil-collection-init 'cider)
   (add-hook 'cider-mode-hook #'clj-refactor-mode)
