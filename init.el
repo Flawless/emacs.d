@@ -783,20 +783,22 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :defer t
   :custom
   (cider-save-file-on-load nil)
-(cider-repl-pop-to-buffer-on-connect 'display-only)
+  (cider-repl-pop-to-buffer-on-connect 'display-only)
+  (cider-repl-result-prefix ";; => ")
+  (cider-repl-buffer-size-limit 100000)
+  (nrepl-log-messages t)
+  (cider-repl-display-in-current-window t)
+  (cider-repl-use-clojure-font-lock t)
+  (cider-prompt-save-file-on-load 'always-save)
+  (cider-font-lock-dynamically '(macro core function var))
+  (nrepl-hide-special-buffers t)
+  (cider-overlays-use-font-lock t)
+  (cider-repl-use-pretty-printing t)
   :init
   (evil-collection-init 'cider)
   (add-hook 'cider-mode-hook #'clj-refactor-mode)
   :diminish subword-mode
   :config
-  (setq nrepl-log-messages t
-	cider-repl-display-in-current-window t
-	cider-repl-use-clojure-font-lock t
-	cider-prompt-save-file-on-load 'always-save
-	cider-font-lock-dynamically '(macro core function var)
-	nrepl-hide-special-buffers t
-	cider-overlays-use-font-lock t
-	cider-repl-use-pretty-printing t)
   :general
   (flawless-mode-def
     :infix "j"
