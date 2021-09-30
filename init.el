@@ -785,7 +785,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (cider-save-file-on-load nil)
   (cider-repl-pop-to-buffer-on-connect 'display-only)
   (cider-repl-result-prefix ";; => ")
-  (cider-repl-buffer-size-limit 100000)
+  (cider-repl-buffer-size-limit 10000)
   (nrepl-log-messages t)
   (cider-repl-display-in-current-window t)
   (cider-repl-use-clojure-font-lock t)
