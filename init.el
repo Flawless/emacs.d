@@ -322,6 +322,11 @@
   :init
   (evil-collection-init))
 
+(use-package evil-multiedit
+  :ensure t
+  :config
+  (evil-multiedit-default-keybinds))
+
 (use-package yaml-mode
   :ensure t
   :mode "\\.ya?ml\\'")
