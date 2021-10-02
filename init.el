@@ -83,7 +83,7 @@
     (interactive)
     (find-file user-init-file))
   :general
-  (:states '(normal visual)
+  (:states '(normal visual motion)
     :keymaps 'override
     "SPC fC" 'find-config-file
     "SPC ff" 'find-file
@@ -472,21 +472,30 @@
   :hook (beancount-mode . outline-minor-mode)
   :mode ("\\.bean\\'" . beancount-mode))
 
+(use-package org-agenda
+  :general
+  (:state 'motion
+    :keymaps 'org-agenda-mode-map
+    "SPC" nil))
+
 (use-package org
   :general
-  (flawless-def
+  (:states '(normal visual)
     :infix "o"
     "a" 'org-agenda)
-  (flawless-mode-def
+  (:states '(normal visual)
+    :prefix "SPC m"
     :keymaps 'org-mode-map
     :infix "d"
     "r" 'org-evaluate-time-range
     "d" 'org-deadline
     "s" 'org-schedule)
-  (flawless-mode-def
+  (:states '(normal visual)
+    :prefix "SPC m"
     :keymaps 'org-mode-map
     "t" 'org-todo)
-  (flawless-mode-def
+  (:states '(normal visual)
+    :prefix "SPC m"
     :keymaps 'org-mode-map
     :infix "c"
     "o" 'org-open-at-point
@@ -495,6 +504,8 @@
     "p" 'org-pomodoro
     "t" 'org-clock-resolve-clock)
   (flawless-def
+    :states '(normal visual)
+    :prefix "SPC m"
     :infix "n"
     "n" 'counsel-projectile-switch-to-org
     "p" 'org-pomodoro
@@ -502,7 +513,8 @@
     "o" 'org-clock-goto
     "C" 'org-clock-cancel
     "c" 'org-clock-out)
-  (flawless-mode-def
+  (:states '(normal visual)
+    :prefix "SPC m"
     :infix "l"
     "l" 'org-insert-link
     "C" ''counsel-org-link)
