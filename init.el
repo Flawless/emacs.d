@@ -84,6 +84,7 @@
     (find-file user-init-file))
   :general
   (:states '(normal visual)
+    :keymaps 'override
     "SPC fC" 'find-config-file
     "SPC ff" 'find-file
     "SPC fs" 'save-buffer
