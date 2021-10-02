@@ -47,6 +47,7 @@
 
   :config
   (put 'use-package 'lisp-indent-function 1)
+  (put ':states 'lisp-indent-function 1)
   (customize-set-variable 'package-enable-at-startup nil)
   (package-initialize)
 
@@ -151,10 +152,7 @@
   (general-override-mode)
   (general-evil-setup))
 
-(flawless-def
-  :infix "s"
-  "S" 'swiper-all
-  "s" 'swiper)
+(flawless-def)
 
 (flawless-def
   :config
@@ -225,10 +223,15 @@
   :ensure t)
 
 (use-package ace-window :ensure t)
+
 (use-package ivy
   :ensure t
   :custom
-  (ivy-initial-inputs-alist nil))
+  (ivy-initial-inputs-alist nil)
+  :general
+  (:states '(normal visual)
+	   "SPC sS" 'swiper-all
+	   "SPC s" 'swiper))
 
 (use-package paredit :ensure t)
 (use-package smex :ensure t)
