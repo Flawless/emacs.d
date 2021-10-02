@@ -44,7 +44,6 @@
 
 (use-package emacs
   :hooks
-  ('before-save-hook 'whitespace-cleanup)
 
   :config
 
@@ -74,7 +73,7 @@
 
 (use-package files
   :hook
-  (before-save . delete-trailing-whitespace)
+  ('before-save-hook 'whitespace-cleanup)
   :custom
   (require-final-newline t)
   (backup-by-copying t)
