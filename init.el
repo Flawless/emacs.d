@@ -253,8 +253,9 @@
 (use-package lisp-mode
   :defer 1
   :general
-  (flawless-mode-def
+  (:states '(normal visual)
    :keymaps 'emacs-lisp-mode-map
+   :prefix "SPC m"
    :infix "e"
    "e" 'eval-last-sexp
    "b" 'eval-buffer
