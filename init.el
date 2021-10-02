@@ -223,17 +223,6 @@
     "SPC sS" 'swiper-all
     "SPC s" 'swiper))
 
-(use-package whitespace
-  :ensure t
-  :commands (whitespace-buffer
-             whitespace-cleanup
-             whitespace-mode)
-  :custom
-  (whitespace-line-column 120)
-  (whitespace-style '(face line-tails))
-  :hook
-  (prog-mode whitespace-mode))
-
 (use-package paredit :ensure t)
 (use-package smex :ensure t)
 
