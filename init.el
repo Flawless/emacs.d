@@ -269,7 +269,7 @@
   :general
   (:states '(normal visual)
     :keymap 'override
-    "SPC" 'counsel-M-x))
+    "SPC SPC" 'counsel-M-x))
 
 (use-package which-key
   :ensure t
