@@ -53,7 +53,17 @@
 
   (menu-bar-mode -1)
   (toggle-scroll-bar -1)
-  (tool-bar-mode -1))
+  (tool-bar-mode -1)
+
+  (defun find-config-file ()
+    (interactive)
+    (find-file user-init-file))
+  :general
+  (:states '(normal visual)
+    "SPC fC" 'find-config-file
+    "SPC ff" 'find-file
+    "SPC fs" 'save-buffer
+    "SPC fS" 'write-file))
 
 (use-package files
   :hook
@@ -154,14 +164,10 @@
 
 (flawless-def
   :config
-  (defun find-config-file ()
-    (interactive)
-    (find-file user-init-file))
+
   :infix "f"
   "C" 'find-config-file
-  "f" 'find-file
-  "s" 'save-buffer
-  "S" 'write-file)
+  "f" 'find-file)
 
 (flawless-def
   :infix "b"
