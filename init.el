@@ -730,6 +730,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 ;;   (after-init . mood-line-mode))
 
 (use-package doom-modeline
+  :quelpa (doom-modeline :repo "seagle0128/doom-modeline" :fetcher github :version original)
   :ensure t
   :hook (after-init . doom-modeline-mode))
 
