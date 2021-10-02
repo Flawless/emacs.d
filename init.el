@@ -79,11 +79,10 @@
     "SPC ho" 'describe-symbol
     "SPC hv" 'describe-variable
 
-  "SPC wv" 'split-window-right
-  "SPC ws" 'split-window-vertically
-  "SPC wd" 'delete-window
-  "SPC ww" 'ace-window
-    ))
+    "SPC wv" 'split-window-right
+    "SPC ws" 'split-window-vertically
+    "SPC wd" 'delete-window
+    "SPC ww" 'ace-window))
 
 (use-package files
   :hook
