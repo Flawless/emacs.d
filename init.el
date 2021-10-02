@@ -323,6 +323,9 @@
   (evil-set-initial-state 'magit-mode 'normal)
   :general
   (:states '(normal visual)
+    :keymaps '(magit-mode-map)
+    "SPC" nil)
+  (:states '(normal visual)
 	   :prefix "SPC"
 	   :infix "g"
 	   "g" 'magit-status))
