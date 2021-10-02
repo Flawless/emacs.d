@@ -231,8 +231,6 @@
   :hook
   (prog-mode whitespace-mode))
 
-nissssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
-
 (use-package paredit :ensure t)
 (use-package smex :ensure t)
 
