@@ -848,7 +848,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (flawless-mode-def
     :infix "h"
     :keymaps 'clojure-mode-map
-    "d" 'cider-doc)
+
+  "d" 'cider-doc)
   (flawless-mode-def
     :infix "e"
     :keymaps 'clojure-mode-map
