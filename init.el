@@ -313,7 +313,7 @@
   :custom
   (magit-diff-paint-whitespace-lines 'all)
   :config
-  (evil-set-initial-state 'org-agenda-mode 'normal)
+  (evil-set-initial-state 'magit-mode 'normal)
   :general
   (flawless-def
     :infix "g"
