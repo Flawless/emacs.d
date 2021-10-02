@@ -40,13 +40,13 @@
 (eval-when-compile
   (require 'use-package))
 
-(put 'use-package 'lisp-indent-function 1)
 
 (use-package emacs
   :custom
   (mac-command-modifier 'meta)
 
   :config
+  (put 'use-package 'lisp-indent-function 1)
   (customize-set-variable 'package-enable-at-startup nil)
   (package-initialize)
 
@@ -133,23 +133,23 @@
   :custom
   (general-override-states '(insert emacs hybrid normal visual motion operator replace))
   :config
-  (general-override-mode)
-  (general-evil-setup))
+  (defvar flawless-leader-key "SPC")
+  (defvar flawless-leader-secondary-key "M-SPC")
+  (defvar flawless-mode-leader-key "SPC m")
+  (defvar flawless-mode-leader-secondary-key "M-SPC m")
 
-(defvar flawless-leader-key "SPC")
-(defvar flawless-leader-secondary-key "M-SPC")
-(defvar flawless-mode-leader-key "SPC m")
-(defvar flawless-mode-leader-secondary-key "M-SPC m")
-
-(general-create-definer flawless-def
+  (general-create-definer flawless-def
     :states '(normal visual)
     :prefix flawless-leader-key
     :non-normal-prefix flawless-leader-secondary-key)
 
-(general-create-definer flawless-mode-def
+  (general-create-definer flawless-mode-def
     :states '(normal visual)
     :prefix flawless-mode-leader-key
     :non-normal-prefix flawless-mode-leader-secondary-key)
+
+  (general-override-mode)
+  (general-evil-setup))
 
 (flawless-def
   :infix "s"
@@ -326,7 +326,8 @@
   :config
   (evil-set-initial-state 'magit-mode 'normal)
   :general
-  (:prefix "SPC"
+  (:states '(normal visual)
+	   :prefix "SPC"
 	   :infix "g"
 	   "g" 'magit-status))
 
