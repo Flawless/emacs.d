@@ -43,10 +43,11 @@
 (put 'use-package 'lisp-indent-function 1)
 
 (use-package emacs
+  :custom
+  (mac-command-modifier 'meta)
   :config
   (customize-set-variable 'package-enable-at-startup nil)
   (package-initialize)
-  (setq mac-command-modifier 'meta)
 
   (menu-bar-mode -1)
   (toggle-scroll-bar -1)
