@@ -71,9 +71,16 @@
 	(make-directory dir t)))
     (setq backup-directory-alist `(("." . ,backup-dir))
 	  auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
-	  auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
-	  tramp-backup-directory-alist `((".*" . ,backup-dir))
-	  tramp-auto-save-directory auto-saves-dir)))
+	  auto-save-list-file-prefix (concat auto-saves-dir ".saves-"))))
+
+(use-package tramp
+  :defer t
+  :config
+  (put 'temporary-file-directory 'standard-value `(,temporary-file-directory))
+  :custom
+  (tramp-backup-directory-alist backup-directory-alist)
+  (tramp-default-method "ssh")
+  (tramp-default-proxies-alist nil))
 
 (use-package goto-last-change
   :ensure t)
