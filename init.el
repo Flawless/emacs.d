@@ -268,7 +268,7 @@
   :custom
   (ivy-on-del-error-function #'ignore)
   :general
-  (:states '(normal visual)
+  (:states '(normal visual motion)
     :keymap 'override
     "SPC SPC" 'counsel-M-x))
 
