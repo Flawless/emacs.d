@@ -721,12 +721,17 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
 
-(use-package mood-line
+;; (use-package mood-line
+;;   :ensure t
+;;   ;; :custom-face
+;;   ;; (mode-line ((t (:inherit default (:box (:line-width -1 :style released-button))))))
+;;   :hook
+;;   (after-init . mood-line-mode))
+
+(use-package doom-modeline
   :ensure t
-  ;; :custom-face
-  ;; (mode-line ((t (:inherit default (:box (:line-width -1 :style released-button))))))
   :hook
-  (after-init . mood-line-mode))
+  (after-init . doom-modeline-mode))
 
 (use-package shackle
   :ensure t
