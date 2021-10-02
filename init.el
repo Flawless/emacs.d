@@ -40,6 +40,30 @@
 (eval-when-compile
   (require 'use-package))
 
+(use-package general
+  :demand t
+  :ensure t
+  :commands (general-define-key general-override-mode general-evil-setup general--simulate-keys)
+  :custom
+  (general-override-states '(insert emacs hybrid normal visual motion operator replace))
+  :config
+  (defvar flawless-leader-key "SPC")
+  (defvar flawless-leader-secondary-key "M-SPC")
+  (defvar flawless-mode-leader-key "SPC m")
+  (defvar flawless-mode-leader-secondary-key "M-SPC m")
+
+  (general-create-definer flawless-def
+    :states '(normal visual)
+    :prefix flawless-leader-key
+    :non-normal-prefix flawless-leader-secondary-key)
+
+  (general-create-definer flawless-mode-def
+    :states '(normal visual)
+    :prefix flawless-mode-leader-key
+    :non-normal-prefix flawless-mode-leader-secondary-key)
+
+  (general-override-mode)
+  (general-evil-setup))
 
 (use-package emacs
   :custom
@@ -155,31 +179,6 @@
   :config (evil-mode t))
 
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t)) ;; Prevent flickering issues
-
-(use-package general
-  :demand t
-  :ensure t
-  :commands (general-define-key general-override-mode general-evil-setup general--simulate-keys)
-  :custom
-  (general-override-states '(insert emacs hybrid normal visual motion operator replace))
-  :config
-  (defvar flawless-leader-key "SPC")
-  (defvar flawless-leader-secondary-key "M-SPC")
-  (defvar flawless-mode-leader-key "SPC m")
-  (defvar flawless-mode-leader-secondary-key "M-SPC m")
-
-  (general-create-definer flawless-def
-    :states '(normal visual)
-    :prefix flawless-leader-key
-    :non-normal-prefix flawless-leader-secondary-key)
-
-  (general-create-definer flawless-mode-def
-    :states '(normal visual)
-    :prefix flawless-mode-leader-key
-    :non-normal-prefix flawless-mode-leader-secondary-key)
-
-  (general-override-mode)
-  (general-evil-setup))
 
 (use-package default-text-scale
   :ensure t
