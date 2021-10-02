@@ -63,7 +63,27 @@
     "SPC fC" 'find-config-file
     "SPC ff" 'find-file
     "SPC fs" 'save-buffer
-    "SPC fS" 'write-file))
+    "SPC fS" 'write-file
+
+    "SPC bb" 'counsel-switch-buffer
+    "SPC bi" 'ibuffer
+    "SPC br" 'revert-buffer
+    "SPC bd" 'kill-current-buffer
+    "SPC bs" 'save-buffer
+    "SPC bS" 'save-some-buffers
+
+    "SPC hk" 'describe-key
+    "SPC hf" 'describe-function
+    "SPC hF" 'describe-face
+    "SPC hm" 'describe-mode
+    "SPC ho" 'describe-symbol
+    "SPC hv" 'describe-variable
+
+  "SPC wv" 'split-window-right
+  "SPC ws" 'split-window-vertically
+  "SPC wd" 'delete-window
+  "SPC ww" 'ace-window
+    ))
 
 (use-package files
   :hook
@@ -161,38 +181,6 @@
 
   (general-override-mode)
   (general-evil-setup))
-
-(flawless-def
-  :config
-
-  :infix "f"
-  "C" 'find-config-file
-  "f" 'find-file)
-
-(flawless-def
-  :infix "b"
-  "b" 'counsel-switch-buffer
-  "i" 'ibuffer
-  "r" 'revert-buffer
-  "d" 'kill-current-buffer
-  "s" 'save-buffer
-  "S" 'save-some-buffers)
-
-(flawless-def
-  :infix "h"
-  "k" 'describe-key
-  "f" 'describe-function
-  "F" 'describe-face
-  "m" 'describe-mode
-  "o" 'describe-symbol
-  "v" 'describe-variable)
-
-(flawless-def
-    :infix "w"
-  "v" 'split-window-right
-  "s" 'split-window-vertically
-  "d" 'delete-window
-  "w" 'ace-window)
 
 (use-package default-text-scale
   :ensure t
