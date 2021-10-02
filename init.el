@@ -225,7 +225,9 @@
 
 (use-package whitespace
   :ensure t
-  :defer t
+  :commands (whitespace-buffer
+             whitespace-cleanup
+             whitespace-mode)
   :custom
   (whitespace-line-column 120)
   (whitespace-style '(face line-tails))
