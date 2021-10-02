@@ -482,6 +482,7 @@
 (use-package org
   :general
   (:states '(normal visual)
+    :prefix "SPC"
     :infix "o"
     "a" 'org-agenda)
   (:states '(normal visual)
