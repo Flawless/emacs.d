@@ -58,19 +58,16 @@
   :custom
   (require-final-newline t)
   (backup-by-copying t)
+  (backup-directory-alist
+   `((".*" . "~/tmp/emacs/backups")))
   (delete-old-versions t)
   (version-control t)
   (kept-new-versions 50)
   (kept-old-versions 20)
   (create-lockfiles nil)
   :config
-  (let ((backup-dir "~/tmp/emacs/backups")
-	(auto-saves-dir "~/tmp/emacs/auto-saves/"))
-    (dolist (dir (list backup-dir auto-saves-dir))
-      (when (not (file-directory-p dir))
-	(make-directory dir t)))
-    (setq backup-directory-alist `(("." . ,backup-dir))
-	  auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
+  (let((auto-saves-dir "~/tmp/emacs/auto-saves/"))
+    (setq auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
 	  auto-save-list-file-prefix (concat auto-saves-dir ".saves-"))))
 
 (use-package tramp
