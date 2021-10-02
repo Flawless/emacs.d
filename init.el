@@ -83,7 +83,7 @@
     (interactive)
     (find-file user-init-file))
   :general
-  (:states '(normal visual motion)
+  (:states '(normal visual)
     :keymaps 'override
     "SPC fC" 'find-config-file
     "SPC ff" 'find-file
@@ -186,7 +186,7 @@
   :custom
   (default-text-scale-amount 10)
   :general
-  (:states '(normal visual motion)
+  (:states '(normal visual)
     :prefix "SPC"
     :infix "t"
     "+" 'default-text-scale-increase
@@ -221,7 +221,7 @@
   :custom
   (ivy-initial-inputs-alist nil)
   :general
-  (:states '(normal visual motion)
+  (:states '(normal visual)
     "SPC sS" 'swiper-all
     "SPC ss" 'swiper))
 
@@ -269,7 +269,7 @@
   :custom
   (ivy-on-del-error-function #'ignore)
   :general
-  (:states '(normal visual motion)
+  (:states '(normal visual)
     :keymap 'override
     "SPC SPC" 'counsel-M-x))
 
