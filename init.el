@@ -33,37 +33,6 @@
 			  ;; ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")
 			  ))
 
-(add-hook 'before-save-hook 'whitespace-cleanup)
-
-;; Put backup files neatly away
-(let ((backup-dir "~/tmp/emacs/backups")
-      (auto-saves-dir "~/tmp/emacs/auto-saves/"))
-  (dolist (dir (list backup-dir auto-saves-dir))
-    (when (not (file-directory-p dir))
-      (make-directory dir t)))
-  (setq backup-directory-alist `(("." . ,backup-dir))
-	auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
-	auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
-	tramp-backup-directory-alist `((".*" . ,backup-dir))
-	tramp-auto-save-directory auto-saves-dir))
-
-(setq backup-by-copying t    ; Don't delink hardlinks
-      delete-old-versions t  ; Clean up the backups
-      version-control t      ; Use version numbers on backups,
-      kept-new-versions 50   ; keep some new versions
-      kept-old-versions 20)  ; and some old ones, too
-
-;; disable lockfiles
-(setq create-lockfiles nil)
-
-(customize-set-variable 'package-enable-at-startup nil)
-(package-initialize)
-(setq mac-command-modifier 'meta)
-
-(menu-bar-mode -1)
-(toggle-scroll-bar -1)
-(tool-bar-mode -1)
-
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -72,6 +41,48 @@
   (require 'use-package))
 
 (put 'use-package 'lisp-indent-function 1)
+
+(use-package emacs
+  :hooks
+  ('before-save-hook 'whitespace-cleanup)
+
+  :config
+
+  ;; Put backup files neatly away
+  (let ((backup-dir "~/tmp/emacs/backups")
+	(auto-saves-dir "~/tmp/emacs/auto-saves/"))
+    (dolist (dir (list backup-dir auto-saves-dir))
+      (when (not (file-directory-p dir))
+	(make-directory dir t)))
+    (setq backup-directory-alist `(("." . ,backup-dir))
+	  auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
+	  auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
+	  tramp-backup-directory-alist `((".*" . ,backup-dir))
+	  tramp-auto-save-directory auto-saves-dir))
+
+	     ; and some old ones, too
+
+  ;; disable lockfiles
+
+  (customize-set-variable 'package-enable-at-startup nil)
+  (package-initialize)
+  (setq mac-command-modifier 'meta)
+
+  (menu-bar-mode -1)
+  (toggle-scroll-bar -1)
+  (tool-bar-mode -1))
+
+(use-package files
+  :hook
+  (before-save . delete-trailing-whitespace)
+  :custom
+  (require-final-newline t)
+  (backup-by-copying t)
+  (delete-old-versions t)
+  (version-control t)
+  (kept-new-versions 50)
+  (kept-old-versions 20)
+  (create-lockfiles nil))
 
 (use-package goto-last-change
   :ensure t)
@@ -315,9 +326,9 @@
   :config
   (evil-set-initial-state 'magit-mode 'normal)
   :general
-  (flawless-def
-    :infix "g"
-    "g" 'magit-status))
+  (:prefix "SPC"
+	   :infix "g"
+	   "g" 'magit-status))
 
 (use-package evil-collection
   :ensure t
