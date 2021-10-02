@@ -186,7 +186,8 @@
   :custom
   (default-text-scale-amount 10)
   :general
-  (flawless-def
+  (:states '(normal visual motion)
+    :prefix "SPC"
     :infix "t"
     "+" 'default-text-scale-increase
     "-" 'default-text-scale-decrease
@@ -220,7 +221,7 @@
   :custom
   (ivy-initial-inputs-alist nil)
   :general
-  (:states '(normal visual)
+  (:states '(normal visual motion)
     "SPC sS" 'swiper-all
     "SPC ss" 'swiper))
 
