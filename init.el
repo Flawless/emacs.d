@@ -730,8 +730,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
 (use-package doom-modeline
   :ensure t
-  :hook
-  (after-init . doom-modeline-mode))
+  :hook (after-init . doom-modeline-mode))
 
 (use-package shackle
   :ensure t
