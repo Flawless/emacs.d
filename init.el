@@ -312,6 +312,8 @@
   :init (evil-collection-init 'magit)
   :custom
   (magit-diff-paint-whitespace-lines 'all)
+  :config
+  (evil-set-initial-state 'org-agenda-mode 'normal)
   :general
   (flawless-def
     :infix "g"
@@ -461,6 +463,9 @@
 
 (use-package org
   :general
+  (flawless-def
+    :infix "o"
+    "a" 'org-agenda)
   (flawless-mode-def
     :keymaps 'org-mode-map
     :infix "d"
@@ -521,6 +526,7 @@
    (org-clock-cancel . save-buffer))
 
   :config
+  (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
   (defun lt:yank-org-link (text)
     (if (derived-mode-p 'org-mode)
