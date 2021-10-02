@@ -319,6 +319,7 @@
   :config
   (evil-set-initial-state 'magit-mode 'normal)
   :general
+  ("SPC" nil)
   (:states '(normal visual)
 	   :prefix "SPC"
 	   :infix "g"
