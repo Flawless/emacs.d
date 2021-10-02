@@ -43,26 +43,7 @@
 (put 'use-package 'lisp-indent-function 1)
 
 (use-package emacs
-  :hooks
-
   :config
-
-  ;; Put backup files neatly away
-  (let ((backup-dir "~/tmp/emacs/backups")
-	(auto-saves-dir "~/tmp/emacs/auto-saves/"))
-    (dolist (dir (list backup-dir auto-saves-dir))
-      (when (not (file-directory-p dir))
-	(make-directory dir t)))
-    (setq backup-directory-alist `(("." . ,backup-dir))
-	  auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
-	  auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
-	  tramp-backup-directory-alist `((".*" . ,backup-dir))
-	  tramp-auto-save-directory auto-saves-dir))
-
-	     ; and some old ones, too
-
-  ;; disable lockfiles
-
   (customize-set-variable 'package-enable-at-startup nil)
   (package-initialize)
   (setq mac-command-modifier 'meta)
@@ -73,7 +54,7 @@
 
 (use-package files
   :hook
-  ('before-save-hook 'whitespace-cleanup)
+  ('before-save-hook . 'whitespace-cleanup)
   :custom
   (require-final-newline t)
   (backup-by-copying t)
@@ -81,7 +62,18 @@
   (version-control t)
   (kept-new-versions 50)
   (kept-old-versions 20)
-  (create-lockfiles nil))
+  (create-lockfiles nil)
+  :config
+  (let ((backup-dir "~/tmp/emacs/backups")
+	(auto-saves-dir "~/tmp/emacs/auto-saves/"))
+    (dolist (dir (list backup-dir auto-saves-dir))
+      (when (not (file-directory-p dir))
+	(make-directory dir t)))
+    (setq backup-directory-alist `(("." . ,backup-dir))
+	  auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
+	  auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
+	  tramp-backup-directory-alist `((".*" . ,backup-dir))
+	  tramp-auto-save-directory auto-saves-dir)))
 
 (use-package goto-last-change
   :ensure t)
