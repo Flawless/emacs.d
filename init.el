@@ -45,6 +45,7 @@
 (use-package emacs
   :custom
   (mac-command-modifier 'meta)
+
   :config
   (customize-set-variable 'package-enable-at-startup nil)
   (package-initialize)
