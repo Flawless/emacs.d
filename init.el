@@ -152,8 +152,6 @@
   (general-override-mode)
   (general-evil-setup))
 
-(flawless-def)
-
 (flawless-def
   :config
   (defun find-config-file ()
@@ -230,8 +228,8 @@
   (ivy-initial-inputs-alist nil)
   :general
   (:states '(normal visual)
-	   "SPC sS" 'swiper-all
-	   "SPC s" 'swiper))
+    "SPC sS" 'swiper-all
+    "SPC s" 'swiper))
 
 (use-package paredit :ensure t)
 (use-package smex :ensure t)
