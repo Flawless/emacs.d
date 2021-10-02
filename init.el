@@ -267,7 +267,8 @@
   :custom
   (ivy-on-del-error-function #'ignore)
   :general
-  (flawless-def
+  (:states '(normal visual)
+    :keymap 'override
     "SPC" 'counsel-M-x))
 
 (use-package which-key
