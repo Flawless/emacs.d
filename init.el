@@ -313,13 +313,16 @@
   :hook '(prog-mode help-mode))
 
 (use-package display-line-numbers-mode
-  :hook (prog-mode org-mode beancount-mode yaml-mode))
+  :hook (prog-mode org-mode beancount-mode yaml-mode text-mode))
 
 (use-package magit
   :ensure t
   :init (evil-collection-init 'magit)
   :custom
   (magit-diff-paint-whitespace-lines 'all)
+  (magit-display-buffer-function
+   (lambda (buffer)
+     (display-buffer buffer '(display-buffer-same-window))))
   :config
   (evil-set-initial-state 'magit-mode 'normal)
   :general
@@ -329,7 +332,8 @@
   (:states '(normal visual)
 	   :prefix "SPC"
 	   :infix "g"
-	   "g" 'magit-status))
+	   "g" 'magit-status
+	   "l" 'magit-log-buffer-file))
 
 (use-package evil-collection
   :ensure t
@@ -730,7 +734,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 ;;   (after-init . mood-line-mode))
 
 (use-package doom-modeline
-  :quelpa (doom-modeline :repo "seagle0128/doom-modeline" :fetcher github :version original)
+  ;; :quelpa (doom-modeline :repo "seagle0128/doom-modeline" :fetcher github :version original)
   :ensure t
   :hook (after-init . doom-modeline-mode))
 
@@ -744,6 +748,9 @@ my-org-clocktable-formatter' to that clocktable's arguments."
       :other t
       :size 0.25
       :align bottom))))
+
+(use-package diff-hl-mode
+  :ensure t)
 
 (use-package git-auto-commit-mode
   :custom
