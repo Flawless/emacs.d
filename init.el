@@ -111,7 +111,7 @@
 
 (use-package files
   :hook
-  ('before-save-hook . 'whitespace-cleanup)
+  (before-save . whitespace-cleanup)
   :custom
   (require-final-newline t)
   (backup-by-copying t)
@@ -318,6 +318,9 @@
 (use-package magit
   :ensure t
   :init (evil-collection-init 'magit)
+  :hook
+  (magit-pre-refresh diff-hl-magit-pre-refresh)
+  (magit-post-refresh diff-hl-magit-post-refresh)
   :custom
   (magit-diff-paint-whitespace-lines 'all)
   (magit-display-buffer-function
@@ -433,6 +436,7 @@
   :general
   (flawless-def
     :infix "p"
+    "t" 'projectile-toggle-between-implementation-and-test
     "s" 'projectile-save-project-buffers
     "g" 'counsel-git-grep
     "p" 'counsel-projectile-switch-project
@@ -511,7 +515,7 @@
     "t" 'org-clock-resolve-clock)
   (flawless-def
     :states '(normal visual)
-    :prefix "SPC m"
+    :prefix "SPC"
     :infix "n"
     "n" 'counsel-projectile-switch-to-org
     "p" 'org-pomodoro
@@ -749,8 +753,13 @@ my-org-clocktable-formatter' to that clocktable's arguments."
       :size 0.25
       :align bottom))))
 
-(use-package diff-hl-mode
-  :ensure t)
+(use-package diff-hl
+  :ensure t
+  :custom
+  (diff-hl-insert ((t (:background "#a6e22c" :foreground "#a6e22c"))))
+  (diff-hl-delete ((t (:background "#f83535" :foreground "#f83535"))))
+  (diff-hl-change ((t (:background "#e7db74" :foreground "#e7db74"))))
+  :hook (find-file . (lambda () (when (vc-backend (buffer-file-name)) (diff-hl-mode)))))
 
 (use-package git-auto-commit-mode
   :custom
@@ -844,9 +853,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (cider-repl-use-pretty-printing t)
   :init
   (evil-collection-init 'cider)
-  (add-hook 'cider-mode-hook #'clj-refactor-mode)
+  :hook (cider-mode clj-refactor-mode)
   :diminish subword-mode
-  :config
   :general
   (flawless-mode-def
     :infix "j"
