@@ -853,7 +853,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (cider-repl-use-pretty-printing t)
   :init
   (evil-collection-init 'cider)
-  :hook (cider-mode clj-refactor-mode)
+  :hook
+  (cider-mode . clj-refactor-mode)
   :diminish subword-mode
   :general
   (flawless-mode-def
