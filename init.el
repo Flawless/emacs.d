@@ -755,7 +755,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
 (use-package diff-hl
   :ensure t
-  :custom
+  :custom-face
   (diff-hl-insert ((t (:background "#a6e22c" :foreground "#a6e22c"))))
   (diff-hl-delete ((t (:background "#f83535" :foreground "#f83535"))))
   (diff-hl-change ((t (:background "#e7db74" :foreground "#e7db74"))))
