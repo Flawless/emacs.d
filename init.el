@@ -926,6 +926,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :general
   (flawless-mode-def
     :infix "e"
+    :keymaps 'alchemist-mode-map
     "b" 'alchemist-eval-buffer
     "e" 'alchemist-eval-current-line))
 
