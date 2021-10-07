@@ -336,6 +336,7 @@
 	   :prefix "SPC"
 	   :infix "g"
 	   "g" 'magit-status
+	   "f" 'magit-find-file
 	   "l" 'magit-log-buffer-file))
 
 (use-package evil-collection
@@ -738,7 +739,9 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 ;;   (after-init . mood-line-mode))
 
 (use-package doom-modeline
-  ;; :quelpa (doom-modeline :repo "seagle0128/doom-modeline" :fetcher github :version original)
+  :custom
+  (column-number-mode t)
+  (line-number-mode t)
   :ensure t
   :hook (after-init . doom-modeline-mode))
 
