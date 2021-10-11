@@ -817,6 +817,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 	     (random (expt 16 6))
 	     (random (expt 16 6)))))
   :hook
+  (before-save . (lambda ()
+		   (when (eq major-mode 'c++-mode)
+		     (cider-format-buffer))))
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
   (clojure-mode . eldoc-mode)
