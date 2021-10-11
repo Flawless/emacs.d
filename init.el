@@ -335,6 +335,8 @@
   (:states '(normal visual)
 	   :prefix "SPC"
 	   :infix "g"
+	   "b" 'magit-checkout
+	   "B" 'magit-blame
 	   "g" 'magit-status
 	   "f" 'magit-find-file
 	   "l" 'magit-log-buffer-file))
