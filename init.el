@@ -532,7 +532,7 @@
     "l" 'org-insert-link
     "C" ''counsel-org-link)
   :custom
-  (org-set-startup-visibility . "CONTENT")
+  (org-set-startup-visibility 'CONTENT')
   (org-directory "~/org/")
   (org-agenda-files (directory-files-recursively org-directory "\\.org$"))
   (org-superstar-headline-bullets-list '("⁖" "◉" "○" "✸" "✿"))
