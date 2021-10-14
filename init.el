@@ -532,6 +532,7 @@
     "l" 'org-insert-link
     "C" ''counsel-org-link)
   :custom
+  (org-startup-folded "OVERVIEW")
   (org-directory "~/org/")
   (org-agenda-files (directory-files-recursively org-directory "\\.org$"))
   (org-superstar-headline-bullets-list '("⁖" "◉" "○" "✸" "✿"))
@@ -562,7 +563,6 @@
    (org-clock-cancel . save-buffer))
 
   :config
-  (org-set-startup-visibility "CONTENT")
   (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
   (defun lt:yank-org-link (text)
