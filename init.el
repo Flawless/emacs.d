@@ -315,6 +315,8 @@
 (use-package display-line-numbers-mode
   :hook (prog-mode org-mode beancount-mode yaml-mode text-mode))
 
+(use-package git-timemachine :ensure t)
+
 (use-package magit
   :ensure t
   :init (evil-collection-init 'magit)
