@@ -495,6 +495,13 @@
     :keymaps 'org-agenda-mode-map
     "SPC" nil))
 
+(use-package smerge
+  :general
+  (:state '(normal visual)
+	  :keymaps 'smerge-mode-map
+	  "gj" 'smerge-prev
+	  "gk" 'smerge-next))
+
 (use-package org
   :general
   (:states '(normal visual)
