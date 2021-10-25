@@ -509,9 +509,6 @@
     :infix "o"
     "a" 'org-agenda)
   (:states '(normal visual)
-    :keymaps 'org-mode-map
-    "gj" 'org-evaluate-time-range)
-  (:states '(normal visual)
     :prefix "SPC m"
     :keymaps 'org-mode-map
     :infix "d"
