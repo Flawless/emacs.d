@@ -526,7 +526,6 @@
     "o" 'org-open-at-point
     "r" 'org-clock-report
     "i" 'org-clock-in
-    "r" 'org-resolve-clocks
     "p" 'org-pomodoro
     "t" 'org-clock-resolve-clock)
   (flawless-def
