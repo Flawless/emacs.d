@@ -526,8 +526,7 @@
     "o" 'org-open-at-point
     "r" 'org-clock-report
     "i" 'org-clock-in
-    "p" 'org-pomodoro
-    "t" 'org-clock-resolve-clock)
+    "p" 'org-pomodoro)
   (flawless-def
     :states '(normal visual)
     :prefix "SPC"
@@ -536,6 +535,7 @@
     "p" 'org-pomodoro
     "i" 'org-clock-in-last
     "o" 'org-clock-goto
+    "r" 'org-resolve-clocks
     "C" 'org-clock-cancel
     "c" 'org-clock-out)
   (:states '(normal visual)
