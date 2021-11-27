@@ -421,9 +421,7 @@
   :hook
   (lisp-mode . lispyville-mode)
   (emacs-lisp-mode . lispyville-mode)
-  (clojure-mode . lispyville-mode)
-  (clojurec-mode . lispyville-mode)
-  (clojurescript-mode . lispyville-mode))
+  (clojure-mode . lispyville-mode))
 
 (use-package centered-cursor-mode
   :ensure t
@@ -839,6 +837,22 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 	 ("\\.cljs\\'" . clojurescript-mode)
 	 ("\\.edn\\'" . clojure-mode))
   :config
+  (define-clojure-indent
+    (re-frame.core/reg-event-fx 1)
+    (re-frame.core/reg-fx 1)
+    (rf/reg-event-fx 1)
+    (rf/reg-fx 1)
+    (re-frame.core/reg-event-db 1)
+    (re-frame.core/reg-db 1)
+    (rf/reg-event-db 1)
+    (rf/reg-db 1)
+    (re-frame.core/reg-sub 1)
+    (rf/reg-sub 1)
+    (component-style-def 1)
+    (reg-view 1)
+    (reg-modal 1)
+    (attempt-all 1)
+    (try-all 1))
   (require 'flycheck-clj-kondo)
   (defun +/insert-random-uuid ()
     "Insert a random UUID.
@@ -859,23 +873,6 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (before-save . (lambda ()
 		   (when (eq major-mode 'c++-mode)
 		     (cider-format-buffer))))
-  (clojure-mode . (lambda ()
-		    (define-clojure-indent
-		      (re-frame.core/reg-event-fx 1)
-		      (re-frame.core/reg-fx 1)
-		      (rf/reg-event-fx 1)
-		      (rf/reg-fx 1)
-		      (re-frame.core/reg-event-db 1)
-		      (re-frame.core/reg-db 1)
-		      (rf/reg-event-db 1)
-		      (rf/reg-db 1)
-		      (re-frame.core/reg-sub 1)
-		      (rf/reg-sub 1)
-		      (component-style-def 1)
-		      (reg-view 1)
-		      (reg-modal 1)
-		      (attempt-all 1)
-		      (try-all 1))))
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
   (clojure-mode . eldoc-mode)
@@ -894,10 +891,10 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :ensure t
   :hook prog-mode)
 
-(use-package anakondo
-  :ensure t
-  :hook
-  (clojure-mode . anakondo-minor-mode))
+;; (use-package anakondo
+;;   :ensure t
+;;   :hook
+;;   (clojure-mode . anakondo-minor-mode))
 
 (use-package cider
   :ensure t
@@ -924,6 +921,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (flawless-mode-def
     :infix "j"
     :keymaps 'clojure-mode-map
+    "rs" 'cljr-rename-symbol
     "uw" 'cljr-unwind
     "uW" 'cljr-unwind-all
     "tf" 'cljr-thread-first-all
