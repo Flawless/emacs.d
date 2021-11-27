@@ -919,12 +919,13 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :diminish subword-mode
   :general
   (flawless-mode-def
-    :infix "D"
+    :infix "d"
     :keymaps 'clojure-mode-map
-    "Dd" 'cider-debug-defun-at-point)
+    "e" 'cider-debug-defun-at-point)
   (flawless-mode-def
     :infix "j"
     :keymaps 'clojure-mode-map
+    "ml" 'cljr-move-to-let
     "rs" 'cljr-rename-symbol
     "uw" 'cljr-unwind
     "uW" 'cljr-unwind-all
