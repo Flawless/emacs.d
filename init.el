@@ -919,6 +919,10 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :diminish subword-mode
   :general
   (flawless-mode-def
+    :infix "D"
+    :keymaps 'clojure-mode-map
+    "Dd" 'cider-debug-defun-at-point)
+  (flawless-mode-def
     :infix "j"
     :keymaps 'clojure-mode-map
     "rs" 'cljr-rename-symbol
