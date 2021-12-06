@@ -950,12 +950,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "b" 'cider-switch-to-repl-buffer
     "B" 'cider-switch-to-repl-on-insert)
   (flawless-mode-def
-    :infix "j"
-    :keymaps 'clojure-mode-map
-    "c" 'cider-jack-in)
-  (flawless-mode-def
     :infix "c"
     :keymaps 'clojure-mode-map
+    "j" 'cider-jack-in
     "c" 'cider-connect-clj
     "s" 'cider-connect-cljs
     "C" 'cider-connect-clj&cljs
