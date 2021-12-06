@@ -89,6 +89,7 @@
     "SPC ff" 'find-file
     "SPC fs" 'save-buffer
     "SPC fS" 'write-file
+    "SPC fR" 'recover-file
 
     "SPC bb" 'counsel-switch-buffer
     "SPC bi" 'ibuffer
