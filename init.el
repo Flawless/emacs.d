@@ -484,6 +484,7 @@
   :general
   (flawless-def
     :infix "p"
+    "C" 'projectile-invalidate-cache
     "t" 'projectile-toggle-between-implementation-and-test
     "s" 'projectile-save-project-buffers
     "g" 'counsel-git-grep
