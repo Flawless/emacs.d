@@ -111,6 +111,10 @@
     "SPC wd" 'delete-window
     "SPC ww" 'ace-window))
 
+(use-package balanced-windows
+  :config
+  (balanced-windows-mode))
+
 (use-package files
   :hook
   (before-save . whitespace-cleanup)
