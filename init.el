@@ -287,6 +287,7 @@
   :custom
   (yas-verbosity 1)
   (yas-wrap-around-region t)
+  (yas-snippet-dirs '("~/.emacs.d/snippets/"))
   :config
   (with-eval-after-load 'yasnippet
     (setq yas-snippet-dirs '(yasnippet-snippets-dir)))
