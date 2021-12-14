@@ -295,6 +295,9 @@
   (yas-reload-all)
   (yas-global-mode))
 
+(use-package company-yasnippets
+  :ensure t)
+
 (use-package yasnippet-snippets
   :ensure t)
 
@@ -841,6 +844,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :requires
   (evil-lispy-mode lispyville-mode cider-mode clj-refactor anakondo)
   :mode (("\\.clj\\'" . clojure-mode)
+	 ("\\.bb\\'" . clojure-mode)
 	 ("\\.cljc\\'" . clojurec-mode)
 	 ("\\.cljs\\'" . clojurescript-mode)
 	 ("\\.edn\\'" . clojure-mode))
