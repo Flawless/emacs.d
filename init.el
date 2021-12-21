@@ -924,12 +924,30 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (nrepl-hide-special-buffers t)
   (cider-overlays-use-font-lock t)
   (cider-repl-use-pretty-printing t)
+  (cider-clojure-cli-global-options "-A:portal")
   :init
   (evil-collection-init 'cider)
+  (defun portal.api/open ()
+    (interactive)
+    (cider-nrepl-sync-request:eval
+     "(require 'portal.api) (portal.api/tap) (portal.api/open)"))
+
+  (defun portal.api/clear ()
+    (interactive)
+    (cider-nrepl-sync-request:eval "(portal.api/clear)"))
+
+  (defun portal.api/close ()
+    (interactive)
+    (cider-nrepl-sync-request:eval "(portal.api/close)"))
   :hook
   (cider-mode . clj-refactor-mode)
   :diminish subword-mode
   :general
+  (flawless-mode-def
+    :infix "p"
+    :keymaps 'clojure-mode-map)
+    "o" 'portal.api/open
+    "c" 'portal.api/clear
   (flawless-mode-def
     :infix "d"
     :keymaps 'clojure-mode-map
