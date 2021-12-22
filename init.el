@@ -848,7 +848,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 	 ("\\.cljc\\'" . clojurec-mode)
 	 ("\\.cljs\\'" . clojurescript-mode)
 	 ("\\.edn\\'" . clojure-mode))
-  :config
+  :init
   (define-clojure-indent
     (re-frame.core/reg-event-fx 1)
     (re-frame.core/reg-fx 1)
@@ -865,7 +865,6 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (reg-modal 1)
     (attempt-all 1)
     (try-all 1))
-  (require 'flycheck-clj-kondo)
   (defun +/insert-random-uuid ()
     "Insert a random UUID.
 Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
@@ -881,6 +880,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 	     (random (expt 16 4))
 	     (random (expt 16 6))
 	     (random (expt 16 6)))))
+  :config
+  (require 'flycheck-clj-kondo)
   :hook
   (before-save . (lambda ()
 		   (when (eq major-mode 'c++-mode)
@@ -945,9 +946,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :general
   (flawless-mode-def
     :infix "p"
-    :keymaps 'clojure-mode-map)
+    :keymaps 'clojure-mode-map
     "o" 'portal.api/open
-    "c" 'portal.api/clear
+    "c" 'portal.api/clear)
   (flawless-mode-def
     :infix "d"
     :keymaps 'clojure-mode-map
