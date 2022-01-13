@@ -295,8 +295,8 @@
   (yas-reload-all)
   (yas-global-mode))
 
-(use-package company-yasnippets
-  :ensure t)
+;; (use-package company-yasnippets
+;;   :ensure t)
 
 (use-package yasnippet-snippets
   :ensure t)
