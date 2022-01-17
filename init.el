@@ -1033,7 +1033,10 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 
 ;; TeX
 
-(use-package auctex
-  :ensure t)
+(use-package tex
+  :defer t
+  :ensure auctex)
+
+
 
 ;;; init.el ends here
