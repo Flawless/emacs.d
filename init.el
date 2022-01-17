@@ -1031,4 +1031,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 
 (provide 'init)
 
+;; TeX
+
+(use-package auctex
+  :ensure t)
+
 ;;; init.el ends here
