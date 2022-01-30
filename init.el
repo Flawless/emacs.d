@@ -865,6 +865,22 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (reg-modal 1)
     (attempt-all 1)
     (try-all 1))
+  (define-clojure-indent
+    (re-frame.core/reg-event-fx 1)
+    (re-frame.core/reg-fx 1)
+    (rf/reg-event-fx 1)
+    (rf/reg-fx 1)
+    (re-frame.core/reg-event-db 1)
+    (re-frame.core/reg-db 1)
+    (rf/reg-event-db 1)
+    (rf/reg-db 1)
+    (re-frame.core/reg-sub 1)
+    (rf/reg-sub 1)
+    (component-style-def 1)
+    (reg-view 1)
+    (reg-modal 1)
+    (attempt-all 1)
+    (try-all 1))
   (defun +/insert-random-uuid ()
     "Insert a random UUID.
 Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
