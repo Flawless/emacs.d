@@ -115,6 +115,11 @@
   :config
   (balanced-windows-mode))
 
+(use-package neotree
+  :ensure t
+  :custom
+  (neo-theme (if (display-graphic-p) 'icons 'arrow)))
+
 (use-package files
   :hook
   (before-save . whitespace-cleanup)
@@ -1046,6 +1051,12 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "e" 'alchemist-eval-current-line))
 
 (provide 'init)
+
+;;; JS
+(use-package js2-mode
+  :ensure t
+  :custom
+  (js-indent-line 2))
 
 ;; TeX
 
