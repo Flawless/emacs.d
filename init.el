@@ -1055,8 +1055,11 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 ;;; JS
 (use-package js2-mode
   :ensure t
+  :mode
+  (("\\.js\\" . js2-mode))
+  (("\\.jsx\\" . js2-mode))
   :custom
-  (js-indent-line 2))
+  (js-indent-level 2))
 
 ;; TeX
 
