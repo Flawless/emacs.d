@@ -10,10 +10,12 @@
      ("melpa" . "https://melpa.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")
+     ("melpa-stable" . "https://stable.melpa.org/packages/")
+     ("melpa" . "https://melpa.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")))
  '(package-enable-at-startup nil)
  '(package-selected-packages
-   '(preview-latex auctex-mode auctex company-yasnippets company-yasnippet balanced-windows frame-fns frame-cmds zoom-frm outshine outorg git-timemachine diff-hl-mode diff-hl doom-modeline adaptive-wrap evil-multiedit memory-usage goto-last-change highlight highlight-symbol default-text-scale alchemist elixir-mode yasnippet-snippets org-duration yaml-mode which-key use-package-ensure-system-package undo-tree smex shackle rainbow-mode rainbow-identifiers rainbow-delimiters quelpa-use-package org-pomodoro mood-line magit lsp-mode lispyville idle-highlight-mode highlight-sexp git-auto-commit-mode general gcmh flycheck-projectile flycheck-clj-kondo evil-org evil-lispy evil-commentary evil-collection darktooth-theme counsel-projectile company clojure-snippets clj-refactor centered-cursor-mode beancount auto-package-update anakondo))
+   '(neo-tree preview-latex auctex-mode auctex company-yasnippets company-yasnippet balanced-windows frame-fns frame-cmds zoom-frm outshine outorg git-timemachine diff-hl-mode diff-hl doom-modeline adaptive-wrap evil-multiedit memory-usage goto-last-change highlight highlight-symbol default-text-scale alchemist elixir-mode yasnippet-snippets org-duration yaml-mode which-key use-package-ensure-system-package undo-tree smex shackle rainbow-mode rainbow-identifiers rainbow-delimiters quelpa-use-package org-pomodoro mood-line magit lsp-mode lispyville idle-highlight-mode highlight-sexp git-auto-commit-mode general gcmh flycheck-projectile flycheck-clj-kondo evil-org evil-lispy evil-commentary evil-collection darktooth-theme counsel-projectile company clojure-snippets clj-refactor centered-cursor-mode beancount auto-package-update anakondo))
  '(safe-local-variable-values
    '((org-todo-keywords quote
 			((sequence "TODO(t)" "WAIT(w)" "RVIW(r)" "STRT(s)" "CTRL(c)" "HOLD(h)" "TEST(q)" "|" "DONE(d)" "KILL(k)"))))))
