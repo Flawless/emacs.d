@@ -1056,7 +1056,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 (use-package js2-mode
   :ensure t
   :mode
-  (("\\.js?x\\" . js2-mode))
+  (("\\.js\\" . js2-mode))
   :custom
   (js-indent-level 2))
 
