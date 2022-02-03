@@ -1053,7 +1053,10 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 (provide 'init)
 
 ;;; JS
-(use-package javascript-mode
+(use-package js2-mode
+  :ensure t
+  :mode
+  (("\\.js$" . js2-mode))
   :custom
   (js-indent-level 2))
 
