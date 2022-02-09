@@ -626,7 +626,7 @@
       "* TODO %?\n %i\n %a")))
   (org-clock-persist 'history)
   (org-clock-idle-time 15)
-  (org-columns-default-format "%40ITEM(Task) %TODO %Effort(Estimated Effort){:} %CLOCKSUM(Clocked)")
+  (org-columns-default-format "%40ITEM(Task) %TODO %Effort(Estimated Effort){:} %CLOCKSUM(Clocked){:}")
 
   :after (evil-org org-pomodoro)
 
