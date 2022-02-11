@@ -588,7 +588,8 @@
     "o" 'org-open-at-point
     "r" 'org-clock-report
     "i" 'org-clock-in
-    "p" 'org-pomodoro)
+    "p" 'org-pomodoro
+    "e" 'org-set-effort)
   (flawless-def
     :states '(normal visual)
     :prefix "SPC"
@@ -626,7 +627,7 @@
       "* TODO %?\n %i\n %a")))
   (org-clock-persist 'history)
   (org-clock-idle-time 15)
-  (org-columns-default-format "%40ITEM(Task) %TODO %Effort(Estimated Effort){:} %CLOCKSUM(Clocked){:}")
+  (org-columns-default-format "%80ITEM(Task) %TODO %Effort(Estimated Effort){:} %CLOCKSUM(Clocked){:}")
 
   :after (evil-org org-pomodoro)
 
