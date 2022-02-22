@@ -274,10 +274,11 @@
   :ensure t
   :custom
   (ivy-initial-inputs-alist nil)
+  :config
   (defun lt:swiper-org-section ()
     "Pre-fill swiper input with region."
     (interactive)
-    (swiper "^\\\* "))
+    (swiper "^\\* "))
   :general
   (:states '(normal visual)
     "SPC sS" 'swiper-all
