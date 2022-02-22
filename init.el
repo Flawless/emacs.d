@@ -274,10 +274,15 @@
   :ensure t
   :custom
   (ivy-initial-inputs-alist nil)
+  (defun lt:swiper-org-section ()
+    "Pre-fill swiper input with region."
+    (interactive)
+    (swiper "^\\\* "))
   :general
   (:states '(normal visual)
     "SPC sS" 'swiper-all
-    "SPC ss" 'swiper))
+    "SPC ss" 'swiper
+    "SPC so" 'lt:swiper-org-section))
 
 (use-package paredit :ensure t)
 (use-package smex :ensure t)
@@ -790,7 +795,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 	    (insert "*Category time*")
 	    (org-table-align))
 	  (cl-incf n)))))
-  (defun counsel-projectile-swith-to-org ()
+  (defun lt:counsel-projectile-swith-to-org ()
     (interactive)
     (counsel-projectile-switch-project "~/org/")))
 
