@@ -548,6 +548,8 @@
   :quelpa (outshine :fetcher github :repo "alphapapa/outshine"))
 
 (use-package org-agenda
+  :custom
+  (org-agenda-window-setup 'current-window)
   :general
   (:state 'motion
     :keymaps 'org-agenda-mode-map
@@ -860,7 +862,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 	 ("\\.cljc\\'" . clojurec-mode)
 	 ("\\.cljs\\'" . clojurescript-mode)
 	 ("\\.edn\\'" . clojure-mode))
-  :init
+  :config
   (define-clojure-indent
     (re-frame.core/reg-event-fx 1)
     (re-frame.core/reg-fx 1)
@@ -892,7 +894,6 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 	     (random (expt 16 4))
 	     (random (expt 16 6))
 	     (random (expt 16 6)))))
-  :config
   (require 'flycheck-clj-kondo)
   :hook
   (before-save . (lambda ()
@@ -969,6 +970,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     :infix "j"
     :keymaps 'clojure-mode-map
     "ml" 'cljr-move-to-let
+    "xl" 'cljr-expand-let
     "rs" 'cljr-rename-symbol
     "uw" 'cljr-unwind
     "uW" 'cljr-unwind-all
