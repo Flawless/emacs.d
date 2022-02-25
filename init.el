@@ -70,6 +70,11 @@
   (mac-command-modifier 'meta)
 
   :config
+  (defun lt:reload-dir-locals-for-current-buffer ()
+    "reload dir locals for the current buffer"
+    (interactive)
+    (let ((enable-local-variables :all))
+      (hack-dir-local-variables-non-file-buffer)))
   (put 'use-package 'lisp-indent-function 1)
   (put ':states 'lisp-indent-function 1)
   (customize-set-variable 'package-enable-at-startup nil)
