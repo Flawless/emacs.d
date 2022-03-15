@@ -1078,10 +1078,10 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 
 ;; protobuf
 
-(use-package protobuff-mode
+(use-package protobuf-mode
   :ensure t
   :mode
-  (("\\.proto$" . protobuff-mode)))
+  (("\\.proto$" . protobuf-mode)))
 
 
 
