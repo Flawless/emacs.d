@@ -70,6 +70,7 @@
   (mac-command-modifier 'meta)
 
   :config
+  (add-to-list 'exec-path "/usr/local/bin")
   (defun lt:reload-dir-locals-for-current-buffer ()
     "reload dir locals for the current buffer"
     (interactive)
@@ -1074,6 +1075,13 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 (use-package tex
   :defer t
   :ensure auctex)
+
+;; protobuf
+
+(use-package protobuff-mode
+  :ensure t
+  :mode
+  (("\\.proto$" . protobuff-mode)))
 
 
 
