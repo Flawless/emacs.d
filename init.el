@@ -297,7 +297,10 @@
 (use-package prog-mode
   :custom
   (display-line-numbers-type 'relative)
-  (evil-commentary-mode t))
+  (evil-commentary-mode t)
+  :general
+  (:states '(normal visual)
+    "SPC mCa" 'mc/mark-all-dwim))
 
 (use-package yasnippet
   :ensure t
