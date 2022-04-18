@@ -92,7 +92,6 @@
   (:states '(normal visual)
     :keymaps 'override
     "SPC u" 'universal-argument
-
     "SPC fC" 'find-config-file
     "SPC ff" 'find-file
     "SPC fs" 'save-buffer
@@ -1030,7 +1029,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     :keymaps 'clojure-mode-map
     "j" 'cider-jack-in
     "s" 'cider-jack-in-cljs
-    "J" 'cider-jack-in-cljs
+    "J" 'cider-jack-in-clj&cljs
     "c" 'cider-connect-clj
     "s" 'cider-connect-cljs
     "C" 'cider-connect-clj&cljs
