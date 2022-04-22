@@ -582,7 +582,7 @@
 	  "gj" 'smerge-prev
 	  "gk" 'smerge-next))
 
- (use-package org
+(use-package org
   :general
   (:states '(normal visual)
     :prefix "SPC"
@@ -653,11 +653,9 @@
 
   :after (evil-org org-pomodoro)
   :hook
-  ((evil-org-mode . org-mode)
-   (auto-fill-mode . org-mode)
-   (org-clock-in . save-buffer)
-   (org-clock-out . save-buffer)
-   (org-clock-cancel . save-buffer))
+  (evil-org-mode
+   auto-fill-mode
+   ((org-clock-in org-clock-out org-clock-cancel) . save-buffer))
 
   :config
   (evil-set-initial-state 'org-agenda-mode 'normal)
