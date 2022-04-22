@@ -658,6 +658,7 @@
    ((org-clock-in org-clock-out org-clock-cancel) . save-buffer))
 
   :config
+  (auto-fill-mode)
   (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
   (defun lt:yank-org-link (text)
