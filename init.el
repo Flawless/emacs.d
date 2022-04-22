@@ -121,9 +121,6 @@
 ;; (use-package save-place
 ;;   :ensure t
 ;;   :custom (save-place t))
-(use-package auto-fill
-  :hook (org-mode auto-fill-mode))
-
 (use-package balanced-windows
   :config
   (balanced-windows-mode))
@@ -655,7 +652,9 @@
 
   :after (evil-org org-pomodoro)
   :hook
-  ((org-clock-in org-clock-out org-clock-cancel) . save-buffer)
+  ((org-mode . auto-fill-mode)
+   (org-mode . evil-org-mode)
+   ((org-clock-in org-clock-out org-clock-cancel) . save-buffer))
 
   :config
   (evil-set-initial-state 'org-agenda-mode 'normal)
@@ -825,7 +824,6 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
 (use-package evil-org
   :ensure t
-  :hook org-mode
   :config
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
