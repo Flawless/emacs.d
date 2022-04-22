@@ -118,6 +118,10 @@
     "SPC wd" 'delete-window
     "SPC ww" 'ace-window))
 
+;; (use-package save-place
+;;   :ensure t
+;;   :custom (save-place t))
+
 (use-package balanced-windows
   :config
   (balanced-windows-mode))
