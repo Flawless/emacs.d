@@ -653,8 +653,8 @@
 
   :after (evil-org org-pomodoro)
   :hook
-  (evil-org-mode . org-mode
-   auto-fill-mode . org-mode
+  ((evil-org-mode . org-mode)
+   (auto-fill-mode . org-mode)
    (org-clock-in . save-buffer)
    (org-clock-out . save-buffer)
    (org-clock-cancel . save-buffer))
