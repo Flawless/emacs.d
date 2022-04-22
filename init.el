@@ -122,7 +122,7 @@
 ;;   :ensure t
 ;;   :custom (save-place t))
 (use-package auto-fill
-  :hook org-mode)
+  :hook (org-mode auto-fill-mode))
 
 (use-package balanced-windows
   :config
