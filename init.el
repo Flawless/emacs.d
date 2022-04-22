@@ -85,8 +85,6 @@
   (toggle-scroll-bar -1)
   (tool-bar-mode -1)
 
-  (auto-fill-mode t)
-
   (defun find-config-file ()
     (interactive)
     (find-file user-init-file))
@@ -654,7 +652,6 @@
   (org-columns-default-format "%80ITEM(Task) %TODO %Effort(Estimated Effort){:} %CLOCKSUM(Clocked){:}")
 
   :after (evil-org org-pomodoro)
-
   :hook
   ((evil-org-mode . org)
    (auto-fill-mode . org)
@@ -663,6 +660,7 @@
    (org-clock-cancel . save-buffer))
 
   :config
+  (auto-fill-mode)
   (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
   (defun lt:yank-org-link (text)
