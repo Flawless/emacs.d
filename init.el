@@ -85,6 +85,8 @@
   (toggle-scroll-bar -1)
   (tool-bar-mode -1)
 
+  (auto-fill-mode t)
+
   (defun find-config-file ()
     (interactive)
     (find-file user-init-file))
