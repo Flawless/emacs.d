@@ -653,12 +653,13 @@
 
   :after (evil-org org-pomodoro)
   :hook
-  (evil-org-mode
-   auto-fill-mode
-   ((org-clock-in org-clock-out org-clock-cancel) . save-buffer))
+  (evil-org-mode . org-mode
+   auto-fill-mode . org-mode
+   (org-clock-in . save-buffer)
+   (org-clock-out . save-buffer)
+   (org-clock-cancel . save-buffer))
 
   :config
-  (auto-fill-mode)
   (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
   (defun lt:yank-org-link (text)
