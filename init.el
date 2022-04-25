@@ -644,7 +644,9 @@
 				("4" "Q4" tags-todo "-important-urgent")))
 
   (org-capture-templates
-   '(("ja" "ARVL YT task" entry (file (lt:capture-issue "~/org/arvl/tyrell/tasks" :arvl))
+   `(("j" "Taks templates")
+     ("ja" "ARVL YT task" entry
+      (function ,(apply-partially 'lt:capture-issue "~/org/arvl/tyrell/tasks" :arvl))
       "* TODO")
      ("b" "Book" entry (file org-books-file)
       "* %^{TITLE}\n:PROPERTIES:\n:ADDED: %<[%Y-%02m-%02d]>\n:END:%^{AUTHOR}p\n%?" :empty-lines 1)
@@ -664,10 +666,10 @@
   (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
   (defun lt:capture-issue (path issue-type)
-    (case issue-type
+    (cl-case issue-type
 	  (:arvl
 	   (let ((issue-id (read-string "ID: " "RIGEL-"))
-		 (name (read-string "Name (camelCase prefex): ")))
+		 (name (read-string "Name (camelCase prefix): ")))
 	     (expand-file-name (format "%s_%s.txt"
 				       issue-id
 				       name) path)))))
