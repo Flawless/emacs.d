@@ -586,7 +586,8 @@
   (:states '(normal visual)
     :prefix "SPC"
     :infix "o"
-    "a" 'org-agenda)
+    "a" 'org-agenda
+    "c" 'org-capture)
   (:states '(normal visual)
     :prefix "SPC m"
     :keymaps 'org-mode-map
@@ -641,8 +642,11 @@
 				("2" "Q2" tags-todo "+important-urgent")
 				("3" "Q3" tags-todo "-important+urgent")
 				("4" "Q4" tags-todo "-important-urgent")))
+
   (org-capture-templates
-   '(("b" "Book" entry (file org-books-file)
+   '(("ja" "Task" entry (file (lt:capture-issue "~/org/arvl/tyrell/tasks" :arvl))
+      "* TODO")
+     ("b" "Book" entry (file org-books-file)
       "* %^{TITLE}\n:PROPERTIES:\n:ADDED: %<[%Y-%02m-%02d]>\n:END:%^{AUTHOR}p\n%?" :empty-lines 1)
      ("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
       "* TODO %?\n %i\n %a")))
@@ -659,6 +663,14 @@
   :config
   (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
+  (defun lt:capture-issue (path issue-type)
+    (case issue-type
+	  (:arvl
+	   (let ((issue-id (read-string "ID: " "RIGEL-"))
+		 (name (read-string "Name (camelCase prefex): ")))
+	     (expand-file-name (format "%s_%s.txt"
+				       issue-id
+				       name) path)))))
   (defun lt:yank-org-link (text)
     (if (derived-mode-p 'org-mode)
 	(insert text)
