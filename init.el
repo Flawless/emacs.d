@@ -973,6 +973,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 (use-package cider
   :ensure t
   :defer t
+  :config
+  (cider-add-to-alist 'cider-jack-in-dependencies "djblue/portal" "0.24.0")
   :custom
   (cider-save-file-on-load nil)
   (cider-repl-pop-to-buffer-on-connect 'display-only)
@@ -1106,7 +1108,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :ensure t
   :mode
   (("\\.js$" . js2-mode))
-  :custom
+
   (js-indent-level 2))
 
 ;; TeX
