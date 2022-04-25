@@ -646,8 +646,10 @@
   (org-capture-templates
    `(("j" "Taks templates")
      ("ja" "ARVL YT task" entry
-      (function ,(apply-partially 'lt:capture-issue "~/org/arvl/tyrell/tasks" :arvl))
-      "* TODO")
+      (file ,(apply-partially 'lt:capture-issue "~/org/arvl/tyrell/tasks" :arvl))
+      "#+TITLE:
+#+CATEGORY: ARVL
+* TODO RIGEL-")
      ("b" "Book" entry (file org-books-file)
       "* %^{TITLE}\n:PROPERTIES:\n:ADDED: %<[%Y-%02m-%02d]>\n:END:%^{AUTHOR}p\n%?" :empty-lines 1)
      ("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
@@ -670,7 +672,7 @@
 	  (:arvl
 	   (let ((issue-id (read-string "ID: " "RIGEL-"))
 		 (name (read-string "Name (camelCase prefix): ")))
-	     (expand-file-name (format "%s_%s.txt"
+	     (expand-file-name (format "%s_%s.org"
 				       issue-id
 				       name) path)))))
   (defun lt:yank-org-link (text)
