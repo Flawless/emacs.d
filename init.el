@@ -644,7 +644,7 @@
 				("4" "Q4" tags-todo "-important-urgent")))
 
   (org-capture-templates
-   '(("ja" "Task" entry (file (lt:capture-issue "~/org/arvl/tyrell/tasks" :arvl))
+   '(("j" "Task" entry (file (lt:capture-issue "~/org/arvl/tyrell/tasks" :arvl))
       "* TODO")
      ("b" "Book" entry (file org-books-file)
       "* %^{TITLE}\n:PROPERTIES:\n:ADDED: %<[%Y-%02m-%02d]>\n:END:%^{AUTHOR}p\n%?" :empty-lines 1)
