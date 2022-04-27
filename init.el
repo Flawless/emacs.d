@@ -118,6 +118,11 @@
     "SPC wd" 'delete-window
     "SPC ww" 'ace-window))
 
+(use-package vlf
+  :init
+  (require 'vlf-setup)
+  :ensure t)
+
 ;; (use-package save-place
 ;;   :ensure t
 ;;   :custom (save-place t))
