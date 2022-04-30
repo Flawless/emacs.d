@@ -981,6 +981,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   ;; :config
   ;; (cider-add-to-alist 'cider-jack-in-dependencies "djblue/portal" "0.24.0")
   :custom
+  (cider-repl-pop-to-buffer-on-connect nil)
   (cider-save-file-on-load nil)
   (cider-repl-pop-to-buffer-on-connect 'display-only)
   (cider-repl-result-prefix "\n;; => ")
