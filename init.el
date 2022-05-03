@@ -398,6 +398,9 @@
 (use-package display-line-numbers-mode
   :hook (prog-mode org-mode beancount-mode yaml-mode text-mode))
 
+(use-package display-fill-column-indicator-mode
+  :hook (text-mode))
+
 (use-package git-timemachine :ensure t)
 
 (use-package magit
