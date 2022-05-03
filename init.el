@@ -68,6 +68,7 @@
 (use-package emacs
   :custom
   (mac-command-modifier 'meta)
+  (fill-column 120)
 
   :config
   (add-to-list 'exec-path "/usr/local/bin")
@@ -307,6 +308,7 @@
   :custom
   (display-line-numbers-type 'relative)
   (evil-commentary-mode t)
+  (display-fill-column-indicator-mode t)
   :general
   (:states '(normal visual)
     "SPC mCa" 'mc/mark-all-dwim))
