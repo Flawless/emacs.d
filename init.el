@@ -308,7 +308,8 @@
   :custom
   (display-line-numbers-type 'relative)
   (evil-commentary-mode t)
-  (display-fill-column-indicator-mode t)
+  :hook
+  (prog-mode . display-fill-column-indicator-mode)
   :general
   (:states '(normal visual)
     "SPC mCa" 'mc/mark-all-dwim))
