@@ -565,11 +565,7 @@
 (use-package beancount
   :ensure t
   :quelpa (beancount :fetcher github :repo "beancount/beancount-mode" :files ("beancount.el" "COPYING"))
-  :hook (beancount-mode . outshine-mode)
   :mode ("\\.bean\\'" . beancount-mode))
-
-(use-package outshine
-  :quelpa (outshine :fetcher github :repo "alphapapa/outshine"))
 
 (use-package org-agenda
   :custom
