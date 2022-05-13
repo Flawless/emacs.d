@@ -590,9 +590,6 @@
   :general
   (:states '(normal visual)
     :prefix "SPC"
-    "at")
-  (:states '(normal visual)
-    :prefix "SPC"
     :infix "o"
     "a" 'org-agenda
     "c" 'org-capture)
