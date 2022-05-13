@@ -589,7 +589,8 @@
 (use-package org
   :general
   (:states '(normal visual)
-    "SPC at")
+    :prefix "SPC"
+    "at")
   (:states '(normal visual)
     :prefix "SPC"
     :infix "o"
