@@ -589,6 +589,8 @@
 (use-package org
   :general
   (:states '(normal visual)
+    "SPC at")
+  (:states '(normal visual)
     :prefix "SPC"
     :infix "o"
     "a" 'org-agenda
@@ -1129,6 +1131,16 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :mode
   (("\\.proto$" . protobuf-mode)))
 
+(use-package telega
+  :quelpa (telega :fetcher github
+		  :repo "zevlg/telega.el"
+		  :branch "master"
+		  :files (:defaults "contrib" "etc" "server" "Makefile"))
+  :init
+  (evil-collection-init 'telega)
+  :custom
+  (telega-use-docker t)
+  :ensure t)
 
 
 ;;; init.el ends here
