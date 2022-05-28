@@ -526,6 +526,7 @@
   :general
   (flawless-def
     :infix "p"
+    "c" 'projectile-kill-buffers
     "C" 'projectile-invalidate-cache
     "t" 'projectile-toggle-between-implementation-and-test
     "s" 'projectile-save-project-buffers
