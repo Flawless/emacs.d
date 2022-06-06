@@ -484,7 +484,10 @@
   (evil-undo-system 'undo-tree)
   (ad-return-value (concat ad-return-value ".gz"))
   (undo-tree-auto-save-history t)
-  :init (global-undo-tree-mode))
+  :init (global-undo-tree-mode)
+  :general
+  (:state '(normal visual)
+	  "SPC m u" 'undo-tree-visualize))
 
 (use-package lsp-mode :ensure t)
 (use-package clojure-snippets
