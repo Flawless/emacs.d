@@ -579,14 +579,12 @@
   :custom
   (org-agenda-window-setup 'current-window)
   :general
-  (:state 'motion
-    :keymaps 'org-agenda-mode-map
+  (:state 'motion :keymaps 'org-agenda-mode-map
     "SPC" nil))
 
 (use-package smerge
   :general
-  (:state '(normal visual)
-	  :keymaps 'smerge-mode-map
+  (:state '(normal visual) :keymaps 'smerge-mode-map
 	  "gj" 'smerge-prev
 	  "gk" 'smerge-next))
 
