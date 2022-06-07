@@ -960,6 +960,12 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
   (clojure-mode . eldoc-mode)
+  (clojure-mode . (lambda ()
+		 (auto-fill-mode 1)
+		 (set (make-local-variable 'fill-nobreak-predicate)
+		      (lambda ()
+			(not (eq (get-text-property (point) 'face)
+				 'font-lock-comment-face))))))
   :general
   (flawless-mode-def
     :infix "i"
