@@ -961,11 +961,13 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (clojure-mode . subword-mode)
   (clojure-mode . eldoc-mode)
   (clojure-mode . (lambda ()
-		 (auto-fill-mode 1)
-		 (set (make-local-variable 'fill-nobreak-predicate)
-		      (lambda ()
-			(not (eq (get-text-property (point) 'face)
-				 'font-lock-comment-face))))))
+		    (auto-fill-mode 1)
+		    (set (make-local-variable 'fill-nobreak-predicate)
+			 (lambda ()
+			   (not (or (eq (get-text-property (point) 'face)
+					'font-lock-comment-face)
+				    (eq (get-text-property (point) 'face)
+					'font-lock-string-face (point) 'face)))))))
   :general
   (flawless-mode-def
     :infix "i"
