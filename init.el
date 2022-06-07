@@ -486,8 +486,8 @@
   (undo-tree-auto-save-history t)
   :init (global-undo-tree-mode)
   :general
-  (:state '(normal visual)
-	  "SPC m u" 'undo-tree-visualize))
+  (flawless-mode-def
+    "u" 'undo-tree-visualize))
 
 (use-package lsp-mode :ensure t)
 (use-package clojure-snippets
