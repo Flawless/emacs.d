@@ -951,7 +951,6 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 	     (random (expt 16 6)))))
   (require 'flycheck-clj-kondo)
   :hook
-  (before-save . cider-format-buffer)
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
   (clojure-mode . eldoc-mode)
