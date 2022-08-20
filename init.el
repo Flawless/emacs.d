@@ -40,6 +40,36 @@
 (eval-when-compile
   (require 'use-package))
 
+(use-package use-package-core
+  :custom
+  ;; (use-package-verbose t)
+  ;; (use-package-minimum-reported-time 0.005)
+  (use-package-enable-imenu-support t))
+
+(use-package auto-package-update
+  :ensure quelpa
+  :custom
+  (auto-package-update-delete-old-versions t)
+  (auto-package-update-hide-results t))
+
+(use-package system-packages
+  :ensure t
+  :custom
+  (system-packages-noconfirm t))
+
+(use-package use-package-ensure-system-package :ensure t)
+
+(use-package quelpa
+  :ensure t
+  :defer t
+  :custom
+  (quelpa-update-melpa-p nil "Don't update the MELPA git repo."))
+
+(use-package quelpa-use-package
+  :ensure t
+  :init
+  (setq quelpa-use-package-inhibit-loading-quelpa t))
+
 (use-package general
   :demand t
   :ensure t
@@ -71,6 +101,18 @@
   (fill-column 120)
 
   :config
+  (use-package files
+    :hook
+    (before-save . whitespace-cleanup)
+    :custom
+    (require-final-newline t)
+    (backup-by-copying t)
+    (delete-old-versions t)
+    (version-control t)
+    (kept-new-versions 50)
+    (kept-old-versions 20)
+    (create-lockfiles nil))
+
   (defun my-mode-line-visual-bell ()
     (setq visible-bell nil)
     (setq ring-bell-function 'my-mode-line-visual-bell--flash))
@@ -170,18 +212,6 @@
   :custom
   (neo-theme (if (display-graphic-p) 'icons 'arrow)))
 
-(use-package files
-  :hook
-  (before-save . whitespace-cleanup)
-  :custom
-  (require-final-newline t)
-  (backup-by-copying t)
-  (delete-old-versions t)
-  (version-control t)
-  (kept-new-versions 50)
-  (kept-old-versions 20)
-  (create-lockfiles nil))
-
 (use-package tramp
   :defer t
   :config
@@ -194,42 +224,17 @@
 (use-package goto-last-change
   :ensure t)
 
-(use-package use-package-core
-  :custom
-  ;; (use-package-verbose t)
-  ;; (use-package-minimum-reported-time 0.005)
-  (use-package-enable-imenu-support t))
-
-(use-package auto-package-update
-  :ensure quelpa
-  :custom
-  (auto-package-update-delete-old-versions t)
-  (auto-package-update-hide-results t))
-
-(use-package system-packages
-  :ensure t
-  :custom
-  (system-packages-noconfirm t))
-
-(use-package use-package-ensure-system-package :ensure t)
-
-(use-package quelpa
-  :ensure t
-  :defer t
-  :custom
-  (quelpa-update-melpa-p nil "Don't update the MELPA git repo."))
-
-(use-package quelpa-use-package
-  :ensure t
-  :init
-  (setq quelpa-use-package-inhibit-loading-quelpa t))
-
 (use-package evil
   :ensure t
   :custom
   (evil-want-C-u-scroll t)
   (evil-want-keybinding nil)
-  :config (evil-mode t))
+  :config
+  (use-package counsel-projectile
+    :ensure t
+    :init (counsel-projectile-mode t)
+    :after (counsel projectile))
+  (evil-mode t))
 
 (use-package default-text-scale
   :ensure t
@@ -270,17 +275,6 @@
     "SPC ss" 'swiper
     "SPC so" 'lt:swiper-org-section))
 
-(use-package paredit :ensure t)
-(use-package smex :ensure t)
-
-(use-package prog-mode
-  :custom
-  (display-line-numbers-type 'relative)
-  (evil-commentary-mode t)
-  :general
-  (:states '(normal visual)
-    "SPC mCa" 'mc/mark-all-dwim))
-
 (use-package yasnippet
   :ensure t
   :custom
@@ -294,24 +288,19 @@
   (yas-reload-all)
   (yas-global-mode))
 
+(use-package centered-cursor-mode
+  :ensure t
+  :hook prog-mode
+  :custom
+  (ccm-vps-init (round (* 21 (window-text-height)) 34))
+  ;; :general
+  ;; ("zj" 'ccm-vpos-up)
+  ;; ("zh" 'ccm-vpos-down)
+  ;; ("zz" 'ccm-vpos-recenter)
+  )
+
 (use-package yasnippet-snippets
   :ensure t)
-
-(use-package clojure-snippets
-  :ensure t)
-
-(use-package lisp-mode
-  :defer 1
-  :general
-  (:states '(normal visual)
-   :keymaps 'emacs-lisp-mode-map
-   :prefix "SPC m"
-   :infix "e"
-   "e" 'eval-last-sexp
-   "b" 'eval-buffer
-   "d" 'eval-defun
-   "l" 'load-library
-   "r" 'eval-region))
 
 (use-package counsel
   :ensure t
@@ -331,6 +320,31 @@
   (which-key-allow-evil-operators t "Show evil keybindings")
   (which-key-sort-order 'which-key-key-order-alpha  "Sort things properly alphabetical"))
 
+(use-package projectile
+  :ensure t
+  :init (projectile-mode t)
+  :custom
+  (projectile-project-search-path '("~/projects/"))
+  (projectile-sort-order 'recently-active)
+  (projectile-enable-caching t)
+  :config
+  (use-package counsel-projectile
+    :ensure t
+    :init (counsel-projectile-mode t)
+    :after (counsel projectile))
+  :general
+  (flawless-def
+    :infix "p"
+    "c" 'projectile-kill-buffers
+    "C" 'projectile-invalidate-cache
+    "t" 'projectile-toggle-between-implementation-and-test
+    "s" 'projectile-save-project-buffers
+    "g" 'counsel-git-grep
+    "p" 'counsel-projectile-switch-project
+    "b" 'counsel-projectile-switch-to-buffer
+    "f" 'counsel-projectile-find-file))
+
+;; Visual
 ;; (use-package darktooth-theme
 ;;   :ensure t
 ;;   :load-path "themes"
@@ -364,7 +378,38 @@
 ;;     :ensure t
 ;;     :hook '(prog-mode help-mode))
 
+
 ;;   (load-theme 'darktooth t))
+
+(use-package diff-hl
+  :ensure t
+  :custom-face
+  (diff-hl-insert ((t (:background "#a6e22c" :foreground "#a6e22c"))))
+  (diff-hl-delete ((t (:background "#f83535" :foreground "#f83535"))))
+  (diff-hl-change ((t (:background "#e7db74" :foreground "#e7db74"))))
+  :hook (find-file . (lambda () (when (vc-backend (buffer-file-name)) (diff-hl-mode)))))
+
+(use-package shackle
+  :ensure t
+  :custom
+  ;; (shackle-default-rule (:popup t))
+  (shackle-rules
+   '(("*cider-repl.*\\*"
+      :regexp t
+      :other t
+      :size 0.25
+      :align bottom))))
+
+(use-package doom-modeline
+  :custom
+  (column-number-mode t)
+  (line-number-mode t)
+  :ensure t
+  :hook (after-init . doom-modeline-mode))
+
+(use-package idle-highlight-mode
+  :ensure t
+  :hook prog-mode)
 
 (use-package theme-changer
   :custom
@@ -378,14 +423,36 @@
     :load-path "themes")
   (change-theme 'almost-mono-white 'almost-mono-gray))
 
-(use-package evil-commentary
-  :ensure t)
-
+;; Text editing
 (use-package display-line-numbers-mode
   :hook (prog-mode org-mode beancount-mode yaml-mode text-mode))
 
 (use-package display-fill-column-indicator-mode
   :hook (text-mode prog-mode))
+
+(use-package evil-multiedit
+  :ensure t
+  :config
+  (evil-multiedit-default-keybinds))
+
+(use-package undo-tree
+  :ensure t
+  :custom
+  (evil-undo-system 'undo-tree)
+  (ad-return-value (concat ad-return-value ".gz"))
+  (undo-tree-auto-save-history t)
+  :init (global-undo-tree-mode)
+  :general
+  (flawless-mode-def
+    "u" 'undo-tree-visualize))
+
+;; Programming
+;;; Git
+(use-package smerge
+  :general
+  (:states '(normal visual) :keymaps 'smerge-mode-map
+	  "gj" 'smerge-prev
+	  "gk" 'smerge-next))
 
 (use-package git-timemachine :ensure t)
 
@@ -413,70 +480,7 @@
     "f" 'magit-find-file
     "l" 'magit-log-buffer-file))
 
-(use-package evil-collection
-  :ensure t
-  :init
-  (evil-collection-init))
-
-(use-package evil-multiedit
-  :ensure t
-  :config
-  (evil-multiedit-default-keybinds))
-
-(use-package yaml-mode
-  :ensure t
-  :mode "\\.ya?ml\\'")
-
-(use-package flycheck-projectile
-  :ensure t
-  :general
-  (:states '(normal visual) :prefix "SPC" :infix "f"
-    "p" 'flycheck-projectile-list-errors))
-
-(use-package lispy :ensure t)
-
-(use-package evil-lispy
-  :ensure t
-  :hook
-  (lisp-mode . evil-lispy-mode)
-  (emacs-lisp-mode . evil-lispy-mode)
-  (clojure-mode . evil-lispy-mode))
-
-(use-package lispyville
-  :ensure t
-  :hook
-  (lisp-mode . lispyville-mode)
-  (emacs-lisp-mode . lispyville-mode)
-  (clojure-mode . lispyville-mode))
-
-(use-package centered-cursor-mode
-  :ensure t
-  :hook prog-mode
-  :custom
-  (ccm-vps-init (round (* 21 (window-text-height)) 34))
-  ;; :general
-  ;; ("zj" 'ccm-vpos-up)
-  ;; ("zh" 'ccm-vpos-down)
-  ;; ("zz" 'ccm-vpos-recenter)
-  )
-
-(use-package undo-tree
-  :ensure t
-  :custom
-  (evil-undo-system 'undo-tree)
-  (ad-return-value (concat ad-return-value ".gz"))
-  (undo-tree-auto-save-history t)
-  :init (global-undo-tree-mode)
-  :general
-  (flawless-mode-def
-    "u" 'undo-tree-visualize))
-
-(use-package lsp-mode :ensure t)
-
-(use-package clojure-snippets
-  :ensure t
-  :defer t)
-
+;;; Basic programming (not basic lang!!)
 (use-package company
   :ensure t
   :pin melpa-stable
@@ -485,40 +489,270 @@
 (use-package flycheck
   :ensure t
   :hook
-  (prog-mode . flycheck-mode))
+  (prog-mode . flycheck-mode)
+  :config
+  (use-package flycheck-projectile
+    :ensure t
+    :general
+    (:states '(normal visual) :prefix "SPC" :infix "f"
+	     "p" 'flycheck-projectile-list-errors))
+  (use-package flycheck-clj-kondo :ensure t))
 
-(use-package flycheck-clj-kondo :ensure t)
+(use-package highlight :ensure t)
 
-(use-package highlight-symbol
-  :ensure t)
+(use-package highlight-symbol :ensure t)
 
-(use-package highlight
-  :ensure t)
+(use-package lsp-mode :ensure t)
 
-(use-package projectile
-  :ensure t
-  :init (projectile-mode t)
+(use-package prog-mode
   :custom
-  (projectile-project-search-path '("~/projects/"))
-  (projectile-sort-order 'recently-active)
-  (projectile-enable-caching t)
+  (display-line-numbers-type 'relative)
+  (evil-commentary-mode t)
   :general
-  (flawless-def
-    :infix "p"
-    "c" 'projectile-kill-buffers
-    "C" 'projectile-invalidate-cache
-    "t" 'projectile-toggle-between-implementation-and-test
-    "s" 'projectile-save-project-buffers
-    "g" 'counsel-git-grep
-    "p" 'counsel-projectile-switch-project
-    "b" 'counsel-projectile-switch-to-buffer
-    "f" 'counsel-projectile-find-file))
+  (:states '(normal visual)
+    "SPC mCa" 'mc/mark-all-dwim))
 
-(use-package counsel-projectile
+(use-package evil-commentary
+  :ensure t)
+
+;;; Lisps
+
+(use-package lisp-mode
+  :defer 1
+  :general
+  (:states '(normal visual)
+    :keymaps 'emacs-lisp-mode-map
+    :prefix "SPC m"
+    :infix "e"
+    "e" 'eval-last-sexp
+    "b" 'eval-buffer
+    "d" 'eval-defun
+    "l" 'load-library
+    "r" 'eval-region)
+  :config
+  (use-package lispy :ensure t)
+
+  (use-package evil-lispy
+    :ensure t
+    :hook
+    (lisp-mode . evil-lispy-mode)
+    (emacs-lisp-mode . evil-lispy-mode)
+    (clojure-mode . evil-lispy-mode))
+
+  (use-package lispyville
+    :ensure t
+    :hook
+    (lisp-mode . lispyville-mode)
+    (emacs-lisp-mode . lispyville-mode)
+    (clojure-mode . lispyville-mode))
+
+  (use-package paredit :ensure t)
+
+  (use-package smex :ensure t))
+
+;;; Clojure
+;; (use-package clojure-mode
+;;   :ensure t
+;;   :requires
+;;   (evil-lispy-mode lispyville-mode cider-mode clj-refactor anakondo)
+;;   :mode (("\\.clj\\'" . clojure-mode)
+;;	 ("\\.bb\\'" . clojure-mode)
+;;	 ("\\.cljc\\'" . clojurec-mode)
+;;	 ("\\.cljs\\'" . clojurescript-mode)
+;;	 ("\\.edn\\'" . clojure-mode))
+;;   :config
+;;   (use-package clj-refactor :ensure t)
+
+;;   (use-package clojure-snippets :ensure t :defer t)
+
+;;   (use-package cider
+;;     :ensure t
+;;     :defer t
+;;     :config
+;;     (cider-add-to-alist 'cider-jack-in-dependencies "djblue/portal" "0.24.0")
+;;     :custom
+;;     (cider-save-file-on-load nil)
+;;     (cider-repl-pop-to-buffer-on-connect nil)
+;;     (cider-repl-result-prefix "\n;; => ")
+;;     (cider-repl-buffer-size-limit 10000)
+;;     (nrepl-log-messages t)
+;;     (cider-repl-display-in-current-window t)
+;;     (cider-repl-use-clojure-font-lock t)
+;;     (cider-prompt-save-file-on-load 'always-save)
+;;     (cider-font-lock-dynamically '(macro core function var))
+;;     (nrepl-hide-special-buffers t)
+;;     (cider-overlays-use-font-lock t)
+;;     (cider-repl-use-pretty-printing t)
+;;     (cider-clojure-cli-global-options "-A:portal")
+;;     :init
+;;     (evil-collection-init 'cider)
+;;     (defun portal.api/open ()
+;;       (interactive)
+;;       (cider-nrepl-sync-request:eval
+;;        "(require 'portal.api) (portal.api/tap) (portal.api/open)"))
+
+;;     (defun portal.api/clear ()
+;;       (interactive)
+;;       (cider-nrepl-sync-request:eval "(portal.api/clear)"))
+
+;;     (defun portal.api/close ()
+;;       (interactive)
+;;       (cider-nrepl-sync-request:eval "(portal.api/close)"))
+;;     :hook
+;;     (cider-mode . clj-refactor-mode)
+;;     :diminish subword-mode
+;;     :general
+;;     (flawless-mode-def
+;;       :infix "p"
+;;       :keymaps 'clojure-mode-map
+;;       "o" 'portal.api/open
+;;       "c" 'portal.api/clear)
+;;     (flawless-mode-def
+;;       :infix "d"
+;;       :keymaps 'clojure-mode-map
+;;       "e" 'cider-debug-defun-at-point)
+;;     (flawless-mode-def
+;;       :infix "j"
+;;       :keymaps 'clojure-mode-map
+;;       "ml" 'cljr-move-to-let
+;;       "xl" 'cljr-expand-let
+;;       "rs" 'cljr-rename-symbol
+;;       "uw" 'cljr-unwind
+;;       "uW" 'cljr-unwind-all
+;;       "tf" 'cljr-thread-first-all
+;;       "tl" 'cljr-thread-last-all
+;;       "tt" 'transpose-sexps
+;;       "am" 'cljr-add-missing-libspec
+;;       "nc" 'cljr-clean-ns)
+;;     (flawless-mode-def
+;;       :infix "i"
+;;       :keymaps 'clojure-mode-map
+;;       "l" 'cider-inspect-last-result
+;;       "e" 'cider-inspect-last-sexp)
+;;     (flawless-mode-def
+;;       :keymaps 'cider-repl-mode-map
+;;       "q" 'cider-quit
+;;       "c" 'cider-repl-clear-buffer)
+;;     (flawless-mode-def
+;;       :infix "r"
+;;       :keymaps 'clojure-mode-map
+;;       "b" 'cider-switch-to-repl-buffer
+;;       "B" 'cider-switch-to-repl-on-insert)
+;;     (flawless-mode-def
+;;       :infix "c"
+;;       :keymaps 'clojure-mode-map
+;;       "j" 'cider-jack-in
+;;       "s" 'cider-jack-in-cljs
+;;       "J" 'cider-jack-in-clj&cljs
+;;       "c" 'cider-connect-clj
+;;       "s" 'cider-connect-cljs
+;;       "C" 'cider-connect-clj&cljs
+;;       "S" 'cider-connect-sibling-cljs)
+;;     (flawless-mode-def
+;;       :infix "h"
+;;       :keymaps 'clojure-mode-map
+;;       "d" 'cider-doc)
+;;     (flawless-mode-def
+;;       :infix "e"
+;;       :keymaps 'clojure-mode-map
+;;       "c" 'cider-pprint-eval-last-sexp-to-comment
+;;       "e" 'cider-eval-last-sexp
+;;       "d" 'cider-eval-defun-at-point
+;;       "b" 'cider-eval-buffer)
+;;     (flawless-mode-def
+;;       :infix "t"
+;;       :keymaps 'clojure-mode-map
+;;       "P" 'cider-test-run-project-tests
+;;       "t" 'cider-test-run-test
+;;       "n" 'cider-test-run-ns-tests)
+;;     (flawless-mode-def
+;;       :infix "P"
+;;       :keymaps 'clojure-mode-map
+;;       "t" 'cider-profile-toggle
+;;       "T" 'cider-profile-ns-toggle
+;;       "v" 'cider-profile-var-summary
+;;       "C" 'cider-profile-clear)
+;;     (flawless-mode-def
+;;       :infix "m"
+;;       :keymaps 'clojure-mode-map
+;;       "m" 'cider-macroexpand-1
+;;       "M" 'cider-macroexpand-all))
+
+;;   (define-clojure-indent
+;;     (defroutes 'defun)
+;;     (GET 2)
+;;     (POST 2)
+;;     (PUT 2)
+;;     (DELETE 2)
+;;     (HEAD 2)
+;;     (ANY 2)
+;;     (OPTIONS 2)
+;;     (PATCH 2)
+;;     (rfn 2)
+;;     (let-routes 1)
+;;     (context 2)
+;;     (re-frame.core/reg-event-fx 1)
+;;     (re-frame.core/reg-fx 1)
+;;     (re-frame.core/reg-cofx 1)
+;;     (rf/reg-event-fx 1)
+;;     (rf/reg-fx 1)
+;;     (re-frame.core/reg-event-db 1)
+;;     (re-frame.core/reg-db 1)
+;;     (rf/reg-event-db 1)
+;;     (rf/reg-db 1)
+;;     (re-frame.core/reg-sub 1)
+;;     (rf/reg-sub 1)
+;;     (component-style-def 1)
+;;     (reg-view 1)
+;;     (reg-modal 1)
+;;     (attempt-all 1)
+;;     (try-all 1))
+
+;;   (defun +/insert-random-uuid ()
+;;     "Insert a random UUID.
+;; Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
+
+;; WARNING: this is a simple implementation. The chance of generating the same UUID is much higher than a robust algorithm.."
+;;     (interactive)
+;;     (insert
+;;      (format "#uuid \"%04x%04x-%04x-%04x-%04x-%06x%06x\""
+;;	     (random (expt 16 4))
+;;	     (random (expt 16 4))
+;;	     (random (expt 16 4))
+;;	     (random (expt 16 4))
+;;	     (random (expt 16 4))
+;;	     (random (expt 16 6))
+;;	     (random (expt 16 6)))))
+;;   (require 'flycheck-clj-kondo)
+;;   :hook
+;;   (clojure-mode . yas-minor-mode)
+;;   (clojure-mode . subword-mode)
+;;   (clojure-mode . eldoc-mode)
+;;   (clojure-mode . (lambda ()
+;;		    (auto-fill-mode 1)
+;;		    (set (make-local-variable 'fill-nobreak-predicate)
+;;			 (lambda ()
+;;			   (not (or (eq (get-text-property (point) 'face)
+;;					'font-lock-comment-face)
+;;				    (eq (get-text-property (point) 'face)
+;;					'font-lock-string-face (point) 'face)))))))
+;;   :general
+;;   (flawless-mode-def
+;;     :infix "i"
+;;     :keymaps 'clojure-mode-map
+;;     "t" 'transpose-sexps
+;;     "s" 'indent-sexp
+;;     "r" 'indent-region
+;;     "B" 'cider-format-buffer
+;;     "u" '+/insert-random-uid))
+
+;;; YML
+
+(use-package yaml-mode
   :ensure t
-  :init (counsel-projectile-mode t)
-  :after (counsel projectile))
+  :mode "\\.ya?ml\\'")
 
+;;; Beancount
 (use-package beancount
   :ensure t
   :quelpa (beancount :fetcher github :repo "beancount/beancount-mode" :files ("beancount.el" "COPYING"))
@@ -528,18 +762,13 @@
 	  "SPC mq" 'beancount-query
 	  "SPC mc" 'beancount-check))
 
-(use-package org-agenda
-  :custom
-  (org-agenda-window-setup 'current-window)
-  :general
-  (:state 'motion :keymaps 'org-agenda-mode-map
-	  "SPC" nil))
-
-(use-package smerge
-  :general
-  (:states '(normal visual) :keymaps 'smerge-mode-map
-	  "gj" 'smerge-prev
-	  "gk" 'smerge-next))
+;;; Org
+;; (use-package org-agenda
+;;   :custom
+;;   (org-agenda-window-setup 'current-window)
+;;   :general
+;;   (:state 'motion :keymaps 'org-agenda-mode-map
+;;	  "SPC" nil))
 
 ;; (use-package org
 ;;   :general
@@ -821,296 +1050,41 @@
 ;;     (interactive)
 ;;     (counsel-projectile-switch-project "~/org/")))
 
-(use-package org-duration
-  :config
-  (setq org-duration-units `(("min" . 1)
-			     ("h" . 60)
-			     ("d" . ,(* 60 8))
-			     ("w" . ,(* 60 8 5))
-			     ("m" . ,(* 60 8 5 4))
-			     ("y" . ,(* 60 8 5 4 11))))
-  (org-duration-set-regexps))
+;; (use-package org-duration
+;;   :config
+;;   (setq org-duration-units `(("min" . 1)
+;;			     ("h" . 60)
+;;			     ("d" . ,(* 60 8))
+;;			     ("w" . ,(* 60 8 5))
+;;			     ("m" . ,(* 60 8 5 4))
+;;			     ("y" . ,(* 60 8 5 4 11))))
+;;   (org-duration-set-regexps))
 
-(use-package org-pomodoro :ensure t)
+;; (use-package org-pomodoro :ensure t)
 
-(use-package evil-org
-  :ensure t
-  :config
-  (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
-
-(use-package doom-modeline
-  :custom
-  (column-number-mode t)
-  (line-number-mode t)
-  :ensure t
-  :hook (after-init . doom-modeline-mode))
-
-(use-package shackle
-  :ensure t
-  :custom
-  ;; (shackle-default-rule (:popup t))
-  (shackle-rules
-   '(("*cider-repl.*\\*"
-      :regexp t
-      :other t
-      :size 0.25
-      :align bottom))))
-
-(use-package diff-hl
-  :ensure t
-  :custom-face
-  (diff-hl-insert ((t (:background "#a6e22c" :foreground "#a6e22c"))))
-  (diff-hl-delete ((t (:background "#f83535" :foreground "#f83535"))))
-  (diff-hl-change ((t (:background "#e7db74" :foreground "#e7db74"))))
-  :hook (find-file . (lambda () (when (vc-backend (buffer-file-name)) (diff-hl-mode)))))
-
-
-;; Programming languages
-;;; Clojure
-(use-package clojure-mode
-  :ensure t
-  :requires
-  (evil-lispy-mode lispyville-mode cider-mode clj-refactor anakondo)
-  :mode (("\\.clj\\'" . clojure-mode)
-	 ("\\.bb\\'" . clojure-mode)
-	 ("\\.cljc\\'" . clojurec-mode)
-	 ("\\.cljs\\'" . clojurescript-mode)
-	 ("\\.edn\\'" . clojure-mode))
-  :config
-  (define-clojure-indent
-    (defroutes 'defun)
-    (GET 2)
-    (POST 2)
-    (PUT 2)
-    (DELETE 2)
-    (HEAD 2)
-    (ANY 2)
-    (OPTIONS 2)
-    (PATCH 2)
-    (rfn 2)
-    (let-routes 1)
-    (context 2)
-    (re-frame.core/reg-event-fx 1)
-    (re-frame.core/reg-fx 1)
-    (re-frame.core/reg-cofx 1)
-    (rf/reg-event-fx 1)
-    (rf/reg-fx 1)
-    (re-frame.core/reg-event-db 1)
-    (re-frame.core/reg-db 1)
-    (rf/reg-event-db 1)
-    (rf/reg-db 1)
-    (re-frame.core/reg-sub 1)
-    (rf/reg-sub 1)
-    (component-style-def 1)
-    (reg-view 1)
-    (reg-modal 1)
-    (attempt-all 1)
-    (try-all 1))
-
-  (defun +/insert-random-uuid ()
-    "Insert a random UUID.
-Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
-
-WARNING: this is a simple implementation. The chance of generating the same UUID is much higher than a robust algorithm.."
-    (interactive)
-    (insert
-     (format "#uuid \"%04x%04x-%04x-%04x-%04x-%06x%06x\""
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 6))
-	     (random (expt 16 6)))))
-  (require 'flycheck-clj-kondo)
-  :hook
-  (clojure-mode . yas-minor-mode)
-  (clojure-mode . subword-mode)
-  (clojure-mode . eldoc-mode)
-  (clojure-mode . (lambda ()
-		    (auto-fill-mode 1)
-		    (set (make-local-variable 'fill-nobreak-predicate)
-			 (lambda ()
-			   (not (or (eq (get-text-property (point) 'face)
-					'font-lock-comment-face)
-				    (eq (get-text-property (point) 'face)
-					'font-lock-string-face (point) 'face)))))))
-  :general
-  (flawless-mode-def
-    :infix "i"
-    :keymaps 'clojure-mode-map
-    "t" 'transpose-sexps
-    "s" 'indent-sexp
-    "r" 'indent-region
-    "B" 'cider-format-buffer
-    "u" '+/insert-random-uid))
-
-(use-package clj-refactor :ensure t)
-(use-package idle-highlight-mode
-  :ensure t
-  :hook prog-mode)
-
-;; (use-package anakondo
+;; (use-package evil-org
 ;;   :ensure t
-;;   :hook
-;;   (clojure-mode . anakondo-minor-mode))
+;;   :config
+;;   (require 'evil-org-agenda)
+;;   (evil-org-agenda-set-keys))
 
-(use-package cider
-  :ensure t
-  :defer t
-  :config
-  (cider-add-to-alist 'cider-jack-in-dependencies "djblue/portal" "0.24.0")
-  :custom
-  (cider-save-file-on-load nil)
-  (cider-repl-pop-to-buffer-on-connect nil)
-  (cider-repl-result-prefix "\n;; => ")
-  (cider-repl-buffer-size-limit 10000)
-  (nrepl-log-messages t)
-  (cider-repl-display-in-current-window t)
-  (cider-repl-use-clojure-font-lock t)
-  (cider-prompt-save-file-on-load 'always-save)
-  (cider-font-lock-dynamically '(macro core function var))
-  (nrepl-hide-special-buffers t)
-  (cider-overlays-use-font-lock t)
-  (cider-repl-use-pretty-printing t)
-  (cider-clojure-cli-global-options "-A:portal")
-  :init
-  (evil-collection-init 'cider)
-  (defun portal.api/open ()
-    (interactive)
-    (cider-nrepl-sync-request:eval
-     "(require 'portal.api) (portal.api/tap) (portal.api/open)"))
-
-  (defun portal.api/clear ()
-    (interactive)
-    (cider-nrepl-sync-request:eval "(portal.api/clear)"))
-
-  (defun portal.api/close ()
-    (interactive)
-    (cider-nrepl-sync-request:eval "(portal.api/close)"))
-  :hook
-  (cider-mode . clj-refactor-mode)
-  :diminish subword-mode
-  :general
-  (flawless-mode-def
-    :infix "p"
-    :keymaps 'clojure-mode-map
-    "o" 'portal.api/open
-    "c" 'portal.api/clear)
-  (flawless-mode-def
-    :infix "d"
-    :keymaps 'clojure-mode-map
-    "e" 'cider-debug-defun-at-point)
-  (flawless-mode-def
-    :infix "j"
-    :keymaps 'clojure-mode-map
-    "ml" 'cljr-move-to-let
-    "xl" 'cljr-expand-let
-    "rs" 'cljr-rename-symbol
-    "uw" 'cljr-unwind
-    "uW" 'cljr-unwind-all
-    "tf" 'cljr-thread-first-all
-    "tl" 'cljr-thread-last-all
-    "tt" 'transpose-sexps
-    "am" 'cljr-add-missing-libspec
-    "nc" 'cljr-clean-ns)
-  (flawless-mode-def
-    :infix "i"
-    :keymaps 'clojure-mode-map
-    "l" 'cider-inspect-last-result
-    "e" 'cider-inspect-last-sexp)
-  (flawless-mode-def
-    :keymaps 'cider-repl-mode-map
-    "q" 'cider-quit
-    "c" 'cider-repl-clear-buffer)
-  (flawless-mode-def
-    :infix "r"
-    :keymaps 'clojure-mode-map
-    "b" 'cider-switch-to-repl-buffer
-    "B" 'cider-switch-to-repl-on-insert)
-  (flawless-mode-def
-    :infix "c"
-    :keymaps 'clojure-mode-map
-    "j" 'cider-jack-in
-    "s" 'cider-jack-in-cljs
-    "J" 'cider-jack-in-clj&cljs
-    "c" 'cider-connect-clj
-    "s" 'cider-connect-cljs
-    "C" 'cider-connect-clj&cljs
-    "S" 'cider-connect-sibling-cljs)
-  (flawless-mode-def
-    :infix "h"
-    :keymaps 'clojure-mode-map
-    "d" 'cider-doc)
-  (flawless-mode-def
-    :infix "e"
-    :keymaps 'clojure-mode-map
-    "c" 'cider-pprint-eval-last-sexp-to-comment
-    "e" 'cider-eval-last-sexp
-    "d" 'cider-eval-defun-at-point
-    "b" 'cider-eval-buffer)
-  (flawless-mode-def
-    :infix "t"
-    :keymaps 'clojure-mode-map
-    "P" 'cider-test-run-project-tests
-    "t" 'cider-test-run-test
-    "n" 'cider-test-run-ns-tests)
-  (flawless-mode-def
-    :infix "P"
-    :keymaps 'clojure-mode-map
-    "t" 'cider-profile-toggle
-    "T" 'cider-profile-ns-toggle
-    "v" 'cider-profile-var-summary
-    "C" 'cider-profile-clear)
-  (flawless-mode-def
-    :infix "m"
-    :keymaps 'clojure-mode-map
-    "m" 'cider-macroexpand-1
-    "M" 'cider-macroexpand-all))
-
-;;; Elixir
-(use-package elixir-mode
-  :ensure t
-  :hook alchemist)
-
-(use-package alchemist
-  :ensure t
-  :general
-  (flawless-mode-def
-    :infix "e"
-    :keymaps 'alchemist-mode-map
-    "b" 'alchemist-eval-buffer
-    "e" 'alchemist-eval-current-line))
-
-(provide 'init)
 ;;; Web
 (use-package css-mode
   :custom
   (css-indent-offset 2))
 
-
-;;; JS
-;; (use-package js2-mode
-;;   :ensure t
-;;   :mode
-;;   (("\\.js$" . js2-mode))
-
-;;   (js-indent-level 2))
-
-;; TeX
-
+;;; TeX
 (use-package tex
   :defer t
   :ensure auctex)
 
-;; protobuf
-
+;;; protobuf
 (use-package protobuf-mode
   :ensure t
   :mode
   (("\\.proto$" . protobuf-mode)))
 
+;; Telega
 (use-package telega
   :ensure t
   :quelpa (telega :fetcher github
