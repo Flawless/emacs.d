@@ -22,6 +22,7 @@
 (require 'package)
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(write-region "" nil custom-file)
 (load custom-file)
 
 (customize-set-variable 'package-archives
