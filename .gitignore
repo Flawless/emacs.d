@@ -47,3 +47,9 @@ flycheck_*
 
 # Custom vars
 custom.el
+
+/projectile-bookmarks.eld
+/.sync_9ee473743539.db
+/.sync_9ee473743539.db-wal
+/org-clock-save.el
+/transient/

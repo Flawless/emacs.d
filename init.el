@@ -71,6 +71,11 @@
   (fill-column 120)
 
   :config
+  ;; Prevent flickering issues
+  (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
+
+  (set-frame-font "Input Mono-14" nil t)
+
   (add-to-list 'exec-path "/usr/local/bin")
   (defun lt:reload-dir-locals-for-current-buffer ()
     "reload dir locals for the current buffer"
@@ -117,16 +122,18 @@
     "SPC wv" 'split-window-right
     "SPC ws" 'split-window-vertically
     "SPC wd" 'delete-window
-    "SPC ww" 'ace-window))
+    "SPC ww" 'ace-window
+
+    "SPC tF" 'toggle-frame-fullscreen
+    "SPC tt" 'toggle-truncate-lines
+
+    "SPC qq" 'save-buffers-kill-emacs))
 
 (use-package vlf
   :init
   (require 'vlf-setup)
   :ensure t)
 
-;; (use-package save-place
-;;   :ensure t
-;;   :custom (save-place t))
 (use-package balanced-windows
   :config
   (balanced-windows-mode))
@@ -197,51 +204,6 @@
   (evil-want-keybinding nil)
   :config (evil-mode t))
 
-(add-to-list 'default-frame-alist '(inhibit-double-buffering . t)) ;; Prevent flickering issues
-
-;; (use-package frame-cmds
-;;   :ensure t
-;;   :quelpa (frame-cmds :fetcher github :repo "emacsmirror/frame-cmds"))
-
-;; (use-package frame-fns
-;;   :ensure t
-;;   :quelpa (frame-fns :fetcher github :repo "emacsmirror/frame-fns"))
-
-;; (use-package zoom-frm
-;;   :ensure t
-;;   :quelpa (zoom-frm :fetcher github :repo "emacsmirror/zoom-frm")
-;;   :custom
-;;   (defun my-dpi (&optional frame)
-;;     "Get the DPI of FRAME (or current if nil)."
-;;     (cl-flet ((pyth (lambda (w h)
-;;                       (sqrt (+ (* w w)
-;;                                (* h h)))))
-;;               (mm2in (lambda (mm)
-;;                        (/ mm 25.4))))
-;;       (let* ((atts (frame-monitor-attributes frame))
-;;              (pix-w (cl-fourth (assoc 'geometry atts)))
-;;              (pix-h (cl-fifth (assoc 'geometry atts)))
-;;              (pix-d (pyth pix-w pix-h))
-;;              (mm-w (cl-second (assoc 'mm-size atts)))
-;;              (mm-h (cl-third (assoc 'mm-size atts)))
-;;              (mm-d (pyth mm-w mm-h)))
-;;	(/ pix-d (mm2in mm-d)))))
-
-;;   (defvar my-zoom-frm-wanted-dpi 70
-;;     "The DPI I want to achieve when using `my-zoom-frm-by-dpi'.")
-
-;;   (defun my-zoom-frm-by-dpi (&optional frame)
-;;     "Zoom FRAME so the DPI is closer to `my-zoom-frm-wanted-dpi'."
-;;     (interactive)
-;;     (let ((frame (or frame (selected-frame))))
-;;       (when (frame-parameter frame 'zoomed)
-;;	(zoom-frm-unzoom frame))
-;;       (let ((frame-zoom-font-difference (1- (round (/ (my-dpi frame)
-;;                                                       my-zoom-frm-wanted-dpi)))))
-;;	(when (called-interactively-p 'interactive)
-;;           (message "Zooming by %S" frame-zoom-font-difference))
-;;	(zoom-frm-in frame)))))
-
 (use-package default-text-scale
   :ensure t
   :custom
@@ -254,12 +216,7 @@
     "-" 'default-text-scale-decrease
     "R" 'default-text-scale-reset))
 
-(set-frame-font "Input Mono-14" nil t)
 
-(flawless-def
-  :infix "t"
-  "F" 'toggle-frame-fullscreen
-  "t" 'toggle-truncate-lines)
 
 (flawless-def
  :infix "q"
@@ -893,13 +850,6 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :config
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
-
-;; (use-package mood-line
-;;   :ensure t
-;;   ;; :custom-face
-;;   ;; (mode-line ((t (:inherit default (:box (:line-width -1 :style released-button))))))
-;;   :hook
-;;   (after-init . mood-line-mode))
 
 (use-package doom-modeline
   :custom
