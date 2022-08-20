@@ -71,6 +71,34 @@
   (fill-column 120)
 
   :config
+
+  (defun my-mode-line-visual-bell ()
+    (setq visible-bell nil)
+    (setq ring-bell-function 'my-mode-line-visual-bell--flash))
+
+  (defun my-mode-line-visual-bell--flash ()
+    (let ((frame (selected-frame)))
+      (run-with-timer
+       0.1 nil
+       #'(lambda (frame)
+	   (let ((inhibit-quit)
+		 (inhibit-redisplay t))
+	     (invert-face 'header-line frame)
+	     (invert-face 'header-line-highlight frame)
+	     (invert-face 'mode-line frame)
+	     (invert-face 'mode-line-inactive frame)))
+       frame)
+      (let ((inhibit-quit)
+	    (inhibit-redisplay t))
+	(invert-face 'header-line frame)
+	(invert-face 'header-line-highlight frame)
+	(invert-face 'mode-line frame)
+	(invert-face 'mode-line-inactive frame))))
+
+  (my-mode-line-visual-bell)
+
+  (defalias 'yes-or-no-p 'y-or-n-p)
+
   ;; Prevent flickering issues
   (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
@@ -445,9 +473,11 @@
     "u" 'undo-tree-visualize))
 
 (use-package lsp-mode :ensure t)
+
 (use-package clojure-snippets
   :ensure t
   :defer t)
+
 (use-package company
   :ensure t
   :pin melpa-stable
@@ -489,33 +519,6 @@
   :ensure t
   :init (counsel-projectile-mode t)
   :after (counsel projectile))
-
-(defalias 'yes-or-no-p 'y-or-n-p)
-
-(defun my-mode-line-visual-bell ()
-  (setq visible-bell nil)
-  (setq ring-bell-function 'my-mode-line-visual-bell--flash))
-
-(defun my-mode-line-visual-bell--flash ()
-  (let ((frame (selected-frame)))
-    (run-with-timer
-     0.1 nil
-     #'(lambda (frame)
-	 (let ((inhibit-quit)
-	       (inhibit-redisplay t))
-	   (invert-face 'header-line frame)
-	   (invert-face 'header-line-highlight frame)
-	   (invert-face 'mode-line frame)
-	   (invert-face 'mode-line-inactive frame)))
-     frame)
-    (let ((inhibit-quit)
-	  (inhibit-redisplay t))
-      (invert-face 'header-line frame)
-      (invert-face 'header-line-highlight frame)
-      (invert-face 'mode-line frame)
-      (invert-face 'mode-line-inactive frame))))
-
-(my-mode-line-visual-bell)
 
 (use-package beancount
   :ensure t
