@@ -216,12 +216,6 @@
     "-" 'default-text-scale-decrease
     "R" 'default-text-scale-reset))
 
-
-
-(flawless-def
- :infix "q"
- "q" 'save-buffers-kill-emacs)
-
 (use-package gcmh
   :ensure t
   :custom
