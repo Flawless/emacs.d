@@ -71,7 +71,6 @@
   (fill-column 120)
 
   :config
-
   (defun my-mode-line-visual-bell ()
     (setq visible-bell nil)
     (setq ring-bell-function 'my-mode-line-visual-bell--flash))
