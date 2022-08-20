@@ -448,37 +448,37 @@
 
 ;; Programming
 ;;; Git
-(use-package smerge
-  :general
-  (:states '(normal visual) :keymaps 'smerge-mode-map
-	  "gj" 'smerge-prev
-	  "gk" 'smerge-next))
+;; (use-package smerge
+;;   :general
+;;   (:states '(normal visual) :keymaps 'smerge-mode-map
+;;	  "gj" 'smerge-prev
+;;	  "gk" 'smerge-next))
 
-(use-package git-timemachine :ensure t)
+;; (use-package git-timemachine :ensure t)
 
-(use-package magit
-  :ensure t
-  :init (evil-collection-init 'magit)
-  :hook
-  (magit-pre-refresh diff-hl-magit-pre-refresh)
-  (magit-post-refresh diff-hl-magit-post-refresh)
-  :custom
-  (magit-git-executable "/usr/local/bin/git")
-  (magit-diff-paint-whitespace-lines 'all)
-  (magit-display-buffer-function
-   (lambda (buffer)
-     (display-buffer buffer '(display-buffer-same-window))))
-  :config
-  (evil-set-initial-state 'magit-mode 'normal)
-  :general
-  (:states '(normal visual) :keymaps '(magit-mode-map)
-    "SPC" nil)
-  (:states '(normal visual) :prefix "SPC" :infix "g"
-    "b" 'magit-checkout
-    "B" 'magit-blame
-    "g" 'magit-status
-    "f" 'magit-find-file
-    "l" 'magit-log-buffer-file))
+;; (use-package magit
+;;   :ensure t
+;;   :init (evil-collection-init 'magit)
+;;   :hook
+;;   (magit-pre-refresh diff-hl-magit-pre-refresh)
+;;   (magit-post-refresh diff-hl-magit-post-refresh)
+;;   :custom
+;;   (magit-git-executable "/usr/local/bin/git")
+;;   (magit-diff-paint-whitespace-lines 'all)
+;;   (magit-display-buffer-function
+;;    (lambda (buffer)
+;;      (display-buffer buffer '(display-buffer-same-window))))
+;;   :config
+;;   (evil-set-initial-state 'magit-mode 'normal)
+;;   :general
+;;   (:states '(normal visual) :keymaps '(magit-mode-map)
+;;     "SPC" nil)
+;;   (:states '(normal visual) :prefix "SPC" :infix "g"
+;;     "b" 'magit-checkout
+;;     "B" 'magit-blame
+;;     "g" 'magit-status
+;;     "f" 'magit-find-file
+;;     "l" 'magit-log-buffer-file))
 
 ;;; Basic programming (not basic lang!!)
 (use-package company
