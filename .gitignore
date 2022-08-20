@@ -53,3 +53,5 @@ custom.el
 /.sync_9ee473743539.db-wal
 /org-clock-save.el
 /transient/
+/projectile.cache
+/smex-items
