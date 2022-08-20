@@ -267,9 +267,6 @@
   (yas-reload-all)
   (yas-global-mode))
 
-;; (use-package company-yasnippets
-;;   :ensure t)
-
 (use-package yasnippet-snippets
   :ensure t)
 
@@ -380,17 +377,14 @@
   :config
   (evil-set-initial-state 'magit-mode 'normal)
   :general
-  (:states '(normal visual)
-    :keymaps '(magit-mode-map)
+  (:states '(normal visual) :keymaps '(magit-mode-map)
     "SPC" nil)
-  (:states '(normal visual)
-	   :prefix "SPC"
-	   :infix "g"
-	   "b" 'magit-checkout
-	   "B" 'magit-blame
-	   "g" 'magit-status
-	   "f" 'magit-find-file
-	   "l" 'magit-log-buffer-file))
+  (:states '(normal visual) :prefix "SPC" :infix "g"
+    "b" 'magit-checkout
+    "B" 'magit-blame
+    "g" 'magit-status
+    "f" 'magit-find-file
+    "l" 'magit-log-buffer-file))
 
 (use-package evil-collection
   :ensure t
@@ -409,8 +403,7 @@
 (use-package flycheck-projectile
   :ensure t
   :general
-  (flawless-mode-def
-    :infix "f"
+  (:states '(normal visual) :prefix "SPC" :infix "f"
     "p" 'flycheck-projectile-list-errors))
 
 (use-package lispy :ensure t)
