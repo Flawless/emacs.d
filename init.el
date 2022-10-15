@@ -46,11 +46,11 @@
   ;; (use-package-minimum-reported-time 0.005)
   (use-package-enable-imenu-support t))
 
-(use-package auto-package-update
-  :ensure quelpa
-  :custom
-  (auto-package-update-delete-old-versions t)
-  (auto-package-update-hide-results t))
+;; (use-package auto-package-update
+;;   :ensure quelpa
+;;   :custom
+;;   (auto-package-update-delete-old-versions t)
+;;   (auto-package-update-hide-results t))
 
 (use-package system-packages
   :ensure t
@@ -136,6 +136,9 @@
 	(invert-face 'mode-line frame)
 	(invert-face 'mode-line-inactive frame))))
 
+  (use-package dired
+    :init (evil-collection-init 'dired))
+
   (my-mode-line-visual-bell)
 
   (defalias 'yes-or-no-p 'y-or-n-p)
@@ -154,7 +157,6 @@
   (put 'use-package 'lisp-indent-function 1)
   (put ':states 'lisp-indent-function 1)
   (customize-set-variable 'package-enable-at-startup nil)
-  (package-initialize)
 
   (menu-bar-mode -1)
   (toggle-scroll-bar -1)
@@ -230,6 +232,10 @@
   (evil-want-C-u-scroll t)
   (evil-want-keybinding nil)
   :config
+  (use-package evil-collection :ensure t)
+  (use-package evil-surround
+    :ensure t
+    :config (global-evil-surround-mode 1))
   (use-package counsel-projectile
     :ensure t
     :init (counsel-projectile-mode t)
@@ -421,7 +427,7 @@
   (use-package almost-mono-themes
     :ensure t
     :load-path "themes")
-  (change-theme 'almost-mono-white 'almost-mono-gray))
+  (change-theme 'almost-mono-cream 'almost-mono-gray))
 
 ;; Text editing
 (use-package display-line-numbers-mode
@@ -553,8 +559,6 @@
 ;;; Clojure
 (use-package clojure-mode
   :ensure t
-  :requires
-  (evil-lispy-mode lispyville-mode cider-mode clj-refactor anakondo)
   :mode (("\\.clj\\'" . clojure-mode)
 	 ("\\.bb\\'" . clojure-mode)
 	 ("\\.cljc\\'" . clojurec-mode)
@@ -562,14 +566,16 @@
 	 ("\\.edn\\'" . clojure-mode))
   :config
   (use-package clj-refactor :ensure t)
-
   (use-package clojure-snippets :ensure t :defer t)
+  (use-package anakondo :ensure t)
 
   (use-package cider
     :ensure t
     :defer t
+
     :config
     (cider-add-to-alist 'cider-jack-in-dependencies "djblue/portal" "0.24.0")
+
     :custom
     (cider-save-file-on-load nil)
     (cider-repl-pop-to-buffer-on-connect nil)
@@ -584,8 +590,10 @@
     (cider-overlays-use-font-lock t)
     (cider-repl-use-pretty-printing t)
     (cider-clojure-cli-global-options "-A:portal")
+
     :init
     (evil-collection-init 'cider)
+
     (defun portal.api/open ()
       (interactive)
       (cider-nrepl-sync-request:eval
@@ -600,83 +608,7 @@
       (cider-nrepl-sync-request:eval "(portal.api/close)"))
     :hook
     (cider-mode . clj-refactor-mode)
-    :diminish subword-mode
-    :general
-    (flawless-mode-def
-      :infix "p"
-      :keymaps 'clojure-mode-map
-      "o" 'portal.api/open
-      "c" 'portal.api/clear)
-    (flawless-mode-def
-      :infix "d"
-      :keymaps 'clojure-mode-map
-      "e" 'cider-debug-defun-at-point)
-    (flawless-mode-def
-      :infix "j"
-      :keymaps 'clojure-mode-map
-      "ml" 'cljr-move-to-let
-      "xl" 'cljr-expand-let
-      "rs" 'cljr-rename-symbol
-      "uw" 'cljr-unwind
-      "uW" 'cljr-unwind-all
-      "tf" 'cljr-thread-first-all
-      "tl" 'cljr-thread-last-all
-      "tt" 'transpose-sexps
-      "am" 'cljr-add-missing-libspec
-      "nc" 'cljr-clean-ns)
-    (flawless-mode-def
-      :infix "i"
-      :keymaps 'clojure-mode-map
-      "l" 'cider-inspect-last-result
-      "e" 'cider-inspect-last-sexp)
-    (flawless-mode-def
-      :keymaps 'cider-repl-mode-map
-      "q" 'cider-quit
-      "c" 'cider-repl-clear-buffer)
-    (flawless-mode-def
-      :infix "r"
-      :keymaps 'clojure-mode-map
-      "b" 'cider-switch-to-repl-buffer
-      "B" 'cider-switch-to-repl-on-insert)
-    (flawless-mode-def
-      :infix "c"
-      :keymaps 'clojure-mode-map
-      "j" 'cider-jack-in
-      "s" 'cider-jack-in-cljs
-      "J" 'cider-jack-in-clj&cljs
-      "c" 'cider-connect-clj
-      "s" 'cider-connect-cljs
-      "C" 'cider-connect-clj&cljs
-      "S" 'cider-connect-sibling-cljs)
-    (flawless-mode-def
-      :infix "h"
-      :keymaps 'clojure-mode-map
-      "d" 'cider-doc)
-    (flawless-mode-def
-      :infix "e"
-      :keymaps 'clojure-mode-map
-      "c" 'cider-pprint-eval-last-sexp-to-comment
-      "e" 'cider-eval-last-sexp
-      "d" 'cider-eval-defun-at-point
-      "b" 'cider-eval-buffer)
-    (flawless-mode-def
-      :infix "t"
-      :keymaps 'clojure-mode-map
-      "P" 'cider-test-run-project-tests
-      "t" 'cider-test-run-test
-      "n" 'cider-test-run-ns-tests)
-    (flawless-mode-def
-      :infix "P"
-      :keymaps 'clojure-mode-map
-      "t" 'cider-profile-toggle
-      "T" 'cider-profile-ns-toggle
-      "v" 'cider-profile-var-summary
-      "C" 'cider-profile-clear)
-    (flawless-mode-def
-      :infix "m"
-      :keymaps 'clojure-mode-map
-      "m" 'cider-macroexpand-1
-      "M" 'cider-macroexpand-all))
+    :diminish subword-mode)
 
   (define-clojure-indent
     (defroutes 'defun)
@@ -724,6 +656,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 	     (random (expt 16 6))
 	     (random (expt 16 6)))))
   (require 'flycheck-clj-kondo)
+
   :hook
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
@@ -736,7 +669,81 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 					'font-lock-comment-face)
 				    (eq (get-text-property (point) 'face)
 					'font-lock-string-face (point) 'face)))))))
+
   :general
+  (:states '(normal visual) :prefix "SPC mc" :keymaps 'clojure-mode-map
+	   "j" 'cider-jack-in
+	   "s" 'cider-jack-in-cljs
+	   "J" 'cider-jack-in-clj&cljs
+	   "c" 'cider-connect-clj
+	   "s" 'cider-connect-cljs
+	   "C" 'cider-connect-clj&cljs
+	   "S" 'cider-connect-sibling-cljs)
+  (flawless-mode-def
+    :infix "p"
+    :keymaps 'clojure-mode-map
+    "o" 'portal.api/open
+    "c" 'portal.api/clear)
+  (flawless-mode-def
+    :infix "d"
+    :keymaps 'clojure-mode-map
+    "e" 'cider-debug-defun-at-point)
+  (flawless-mode-def
+    :infix "j"
+    :keymaps 'clojure-mode-map
+    "ml" 'cljr-move-to-let
+    "xl" 'cljr-expand-let
+    "rs" 'cljr-rename-symbol
+    "uw" 'cljr-unwind
+    "uW" 'cljr-unwind-all
+    "tf" 'cljr-thread-first-all
+    "tl" 'cljr-thread-last-all
+    "tt" 'transpose-sexps
+    "am" 'cljr-add-missing-libspec
+    "nc" 'cljr-clean-ns)
+  (flawless-mode-def
+    :infix "i"
+    :keymaps 'clojure-mode-map
+    "l" 'cider-inspect-last-result
+    "e" 'cider-inspect-last-sexp)
+  (flawless-mode-def
+    :keymaps 'cider-repl-mode-map
+    "q" 'cider-quit
+    "c" 'cider-repl-clear-buffer)
+  (flawless-mode-def
+    :infix "r"
+    :keymaps 'clojure-mode-map
+    "b" 'cider-switch-to-repl-buffer
+    "B" 'cider-switch-to-repl-on-insert)
+  (flawless-mode-def
+    :infix "h"
+    :keymaps 'clojure-mode-map
+    "d" 'cider-doc)
+  (flawless-mode-def
+    :infix "e"
+    :keymaps 'clojure-mode-map
+    "c" 'cider-pprint-eval-last-sexp-to-comment
+    "e" 'cider-eval-last-sexp
+    "d" 'cider-eval-defun-at-point
+    "b" 'cider-eval-buffer)
+  (flawless-mode-def
+    :infix "t"
+    :keymaps 'clojure-mode-map
+    "P" 'cider-test-run-project-tests
+    "t" 'cider-test-run-test
+    "n" 'cider-test-run-ns-tests)
+  (flawless-mode-def
+    :infix "P"
+    :keymaps 'clojure-mode-map
+    "t" 'cider-profile-toggle
+    "T" 'cider-profile-ns-toggle
+    "v" 'cider-profile-var-summary
+    "C" 'cider-profile-clear)
+  (flawless-mode-def
+    :infix "m"
+    :keymaps 'clojure-mode-map
+    "m" 'cider-macroexpand-1
+    "M" 'cider-macroexpand-all)
   (flawless-mode-def
     :infix "i"
     :keymaps 'clojure-mode-map
@@ -759,13 +766,18 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :mode ("\\.bean\\'" . beancount-mode)
   :general
   (:states '(normal visual) :keymaps 'beancount-mode-map
-	  "SPC mq" 'beancount-query
-	  "SPC mc" 'beancount-check))
+	   "SPC mq" 'beancount-query
+	   "SPC mc" 'beancount-check))
 
 ;;; Org
 (use-package org
   :general
-  (:states '(normal visual)
+ (:states '(normal visual) :keymap 'outline-mode-map
+    ;; "gh" 'org-next-visible-heading
+    ;; "gl" 'org-previous-visible-heading
+    "gj" 'outline-forward-same-level
+    "gk" 'outline-backward-same-level)
+ (:states '(normal visual)
     :prefix "SPC"
     "at" 'org-set-tags-command)
   (:states '(normal visual)
@@ -814,6 +826,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "l" 'org-insert-link
     "C" ''counsel-org-link)
   :custom
+  (org-log-reschedule 'time)
+  (org-log-redeadline 'time)
+
   (org-startup-folded "OVERVIEW")
   (org-directory "~/org/")
   (org-agenda-files (directory-files-recursively org-directory "\\.org$"))
@@ -852,7 +867,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 :END:"
       :clock-in t)
 
-     ("b" "Book" entry (file org-books-file)
+     ("b" "Book" entry (file "evolution/books.org")
       "* %^{TITLE}\n:PROPERTIES:\n:ADDED: %<[%Y-%02m-%02d]>\n:END:%^{AUTHOR}p\n%?" :empty-lines 1)
 
      ("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
@@ -860,7 +875,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 
      ("n" "Notes")
 
-     ("nc" "Current task note" item (clock))))
+     ("nc" "Current task note" item (clock))
+     ("nl" "Current task note + link to line" item (clock) "%a")
+     ("no" "Current task link to comment" item (clock) "%(lt:capture-comment-line \"%i\")\n  %a")))
   (org-clock-persist 'history)
   (org-clock-idle-time 15)
   (org-columns-default-format "%80ITEM(Task) %TODO %Effort(Estimated Effort){:} %CLOCKSUM(Clocked){:}")
@@ -872,24 +889,6 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
    ((org-clock-in org-clock-out org-clock-cancel) . save-buffer))
 
   :config
-  (use-package org-duration
-    :config
-    (setq org-duration-units `(("min" . 1)
-			       ("h" . 60)
-			       ("d" . ,(* 60 8))
-			       ("w" . ,(* 60 8 5))
-			       ("m" . ,(* 60 8 5 4))
-			       ("y" . ,(* 60 8 5 4 11))))
-    (org-duration-set-regexps))
-
-  (use-package org-pomodoro :ensure t)
-
-  (use-package evil-org
-    :ensure t
-    :config
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys))
-
   (use-package org-agenda
     :custom
     (org-agenda-window-setup 'current-window)
@@ -904,6 +903,15 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     (setq org-fancy-priorities-list '("⬆" " " "⬇")))
   (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
+  (defun lt:capture-comment-line (&optional line)
+    (let ((c
+	   (save-excursion
+	     (save-window-excursion
+	       (switch-to-buffer (plist-get org-capture-plist :original-buffer))
+	       comment-start))))
+      (while (string-prefix-p c line)
+	(setq line (string-remove-prefix c line)))
+      (comment-string-strip line t t)))
   (defun lt:capture-issue (path issue-type)
     #'(lambda ()
 	(cl-case issue-type
@@ -1067,10 +1075,32 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (interactive)
     (counsel-projectile-switch-project "~/org/")))
 
+(use-package org-duration
+  :config
+  (setq org-duration-units `(("min" . 1)
+			     ("h" . 60)
+			     ("d" . ,(* 60 8))
+			     ("w" . ,(* 60 8 5))
+			     ("m" . ,(* 60 8 5 4))
+			     ("y" . ,(* 60 8 5 4 11))))
+  (org-duration-set-regexps))
+
+(use-package org-pomodoro :ensure t)
+
+(use-package evil-org
+  :ensure t
+  :config
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
+
 ;;; Web
 (use-package css-mode
   :custom
   (css-indent-offset 2))
+
+;; TS
+(use-package tide
+  :ensure t)
 
 ;;; TeX
 (use-package tex
@@ -1093,10 +1123,15 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :init
   (evil-collection-init 'telega)
   :custom
-  (telega-use-docker t)
+  (telega-accounts
+   (list
+    (list "AlexanderUshanov" 'telega-database-dir telega-database-dir)
+    (list "flaw1322" 'telega-database-dir
+	  (expand-file-name "flaw1322" telega-database-dir))))
   :general
   (:states '(normal visual) :prefix "SPC" :infix "c"
 	   "w" 'telega-chat-with
-	   "g" 'telega))
+	   "g" 'telega
+	   "A" 'telega-account-switch))
 
 ;;; init.el ends here
