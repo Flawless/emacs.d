@@ -28,7 +28,6 @@
 			`(,@package-archives
 			  ("melpa" . "https://melpa.org/packages/")
 			  ("melpa-stable" . "https://stable.melpa.org/packages/")
-
 			  ;; ("org" . "https://orgmode.org/elpa/")
 			  ;; ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")
 			  ))
@@ -96,7 +95,27 @@
   (general-evil-setup))
 
 (use-package emacs
+  :delight
+  (eldoc-mode)
+  (auto-fill-function)
+  (auto-revert-mode)
   :custom
+  (mode-line-format
+   ("%e"
+    ;; mode-line-front-space
+    ;; mode-line-mule-info
+    ;; mode-line-client
+    ;; mode-line-modified
+    ;; mode-line-remote
+    ;; mode-line-frame-identification
+    ;; mode-line-buffer-identification
+    ;; mode-line-position
+    ;; (vc-mode vc-mode)
+    ;; mode-line-modes
+    ;; mode-line-misc-info
+    (:eval
+     (lt:org-clock-todays-total))
+    mode-line-end-spaces))
   (mac-command-modifier 'meta)
   (fill-column 120)
 
@@ -135,9 +154,9 @@
 	(invert-face 'header-line-highlight frame)
 	(invert-face 'mode-line frame)
 	(invert-face 'mode-line-inactive frame))))
-
   (use-package dired
-    :init (evil-collection-init 'dired))
+    :init
+    (evil-collection-init 'dired))
 
   (my-mode-line-visual-bell)
 
@@ -194,20 +213,165 @@
     "SPC ws" 'split-window-vertically
     "SPC wd" 'delete-window
     "SPC ww" 'ace-window
+    "SPC wm" 'maximize-window
 
     "SPC tF" 'toggle-frame-fullscreen
     "SPC tt" 'toggle-truncate-lines
 
     "SPC qq" 'save-buffers-kill-emacs))
 
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+	  treemacs-deferred-git-apply-delay        0.5
+	  treemacs-directory-name-transformer      #'identity
+	  treemacs-display-in-side-window          t
+	  treemacs-eldoc-display                   'simple
+	  treemacs-file-event-delay                2000
+	  treemacs-file-extension-regex            treemacs-last-period-regex-value
+	  treemacs-file-follow-delay               0.2
+	  treemacs-file-name-transformer           #'identity
+	  treemacs-follow-after-init               t
+	  treemacs-expand-after-init               t
+	  treemacs-find-workspace-method           'find-for-file-or-pick-first
+	  treemacs-git-command-pipe                ""
+	  treemacs-goto-tag-strategy               'refetch-index
+	  treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+	  treemacs-hide-dot-git-directory          t
+	  treemacs-indentation                     2
+	  treemacs-indentation-string              " "
+	  treemacs-is-never-other-window           nil
+	  treemacs-max-git-entries                 5000
+	  treemacs-missing-project-action          'ask
+	  treemacs-move-forward-on-expand          nil
+	  treemacs-no-png-images                   t
+	  treemacs-no-delete-other-windows         t
+	  treemacs-project-follow-cleanup          nil
+	  treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+	  treemacs-position                        'left
+	  treemacs-read-string-input               'from-child-frame
+	  treemacs-recenter-distance               0.1
+	  treemacs-recenter-after-file-follow      nil
+	  treemacs-recenter-after-tag-follow       nil
+	  treemacs-recenter-after-project-jump     'always
+	  treemacs-recenter-after-project-expand   'on-distance
+	  treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+	  treemacs-show-cursor                     nil
+	  treemacs-show-hidden-files               t
+	  treemacs-silent-filewatch                nil
+	  treemacs-silent-refresh                  nil
+	  treemacs-sorting                         'alphabetic-asc
+	  treemacs-select-when-already-in-treemacs 'move-back
+	  treemacs-space-between-root-nodes        t
+	  treemacs-tag-follow-cleanup              t
+	  treemacs-tag-follow-delay                1.5
+	  treemacs-text-scale                      nil
+	  treemacs-user-mode-line-format           nil
+	  treemacs-user-header-line-format         nil
+	  treemacs-wide-toggle-width               70
+	  treemacs-width                           35
+	  treemacs-width-increment                 1
+	  treemacs-width-is-initially-locked       t
+	  treemacs-workspace-switch-cleanup        nil)
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+    (when treemacs-python-executable
+      (treemacs-git-commit-diff-mode t))
+
+    (pcase (cons (not (null (executable-find "git")))
+		 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple)))
+
+    (treemacs-hide-gitignored-files-mode nil))
+
+(use-package treemacs-evil
+  :after (treemacs evil)
+  :ensure t)
+
+(use-package treemacs-projectile
+  :after (treemacs projectile)
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once)
+  :ensure t)
+
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
+
+(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+  :ensure t
+  :config (treemacs-set-scope-type 'Perspectives))
+
+(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+  :after (treemacs)
+  :ensure t
+  :config (treemacs-set-scope-type 'Tabs))
+
+  :bind
+  (:map global-map
+	("M-0"       . treemacs-select-window)
+	("C-x t 1"   . treemacs-delete-other-windows)
+	("C-x t t"   . treemacs)
+	("C-x t d"   . treemacs-select-directory)
+	("C-x t B"   . treemacs-bookmark)
+	("C-x t C-t" . treemacs-find-file)
+	("C-x t M-t" . treemacs-find-tag)))
+
+(use-package vterm
+  :ensure t
+  :init
+  (evil-collection-init 'vterm)
+  :config
+  (use-package multi-vterm :ensure t)
+  :general
+  (:states '(normal visual)
+    :prefix "SPC"
+    "V" 'multi-vterm)
+  (:states '(normal visual)
+    :keymaps 'vterm-mode-map
+    "C-c C-c" 'vterm-send-C-c
+    "C-p" 'vterm-yank-pop
+    "p" 'vterm-yank)
+  (:states '(normal visual)
+    :keymaps 'vterm-mode-map
+    :prefix "SPC"
+    "k" 'vterm-send-next-key))
+
 (use-package vlf
   :init
   (require 'vlf-setup)
   :ensure t)
 
-(use-package balanced-windows
+(use-package winner
   :config
-  (balanced-windows-mode))
+  (winner-mode 1)
+  :general
+  (:states '(normal visual)
+    :keymaps 'override
+    "SPC wz" 'winner-undo
+    "SPC wx" 'winner-redo))
+
+;; (use-package balanced-windows
+;;   :config
+;;   (balanced-windows-mode))
 
 (use-package neotree
   :ensure t
@@ -228,11 +392,17 @@
 
 (use-package evil
   :ensure t
+  :init
+  (setq evil-want-keybinding nil)
   :custom
   (evil-want-C-u-scroll t)
-  (evil-want-keybinding nil)
   :config
-  (use-package evil-collection :ensure t)
+  (use-package evil-collection
+    :ensure t
+    :requires evil
+    :delight evil-collection-unimpaired-mode
+    :custom
+    (evil-collection-want-find-usages-bindings t))
   (use-package evil-surround
     :ensure t
     :config (global-evil-surround-mode 1))
@@ -256,8 +426,9 @@
 
 (use-package gcmh
   :ensure t
+  :delight
   :custom
-  (gcmh-high-cons-threshold #x800000000)
+  (gcmh-high-cons-threshold #x6000000000)
   :init
   (gcmh-mode 1))
 
@@ -283,6 +454,7 @@
 
 (use-package yasnippet
   :ensure t
+  :delight yas-minor-mode
   :custom
   (yas-verbosity 1)
   (yas-wrap-around-region t)
@@ -296,6 +468,7 @@
 
 (use-package centered-cursor-mode
   :ensure t
+  :delight
   :hook prog-mode
   :custom
   (ccm-vps-init (round (* 21 (window-text-height)) 34))
@@ -314,11 +487,12 @@
   (ivy-on-del-error-function #'ignore)
   :general
   (:states '(normal visual)
-    :keymap 'override
+    :keymaps 'override
     "SPC SPC" 'counsel-M-x))
 
 (use-package which-key
   :ensure t
+  :delight
   :commands (which-key-mode)
   :init (which-key-mode)
   :custom
@@ -328,6 +502,7 @@
 
 (use-package projectile
   :ensure t
+  :delight '(:eval (concat " P:" (projectile-project-name)))
   :init (projectile-mode t)
   :custom
   (projectile-project-search-path '("~/projects/"))
@@ -346,46 +521,61 @@
     "t" 'projectile-toggle-between-implementation-and-test
     "s" 'projectile-save-project-buffers
     "g" 'counsel-git-grep
+    "r" 'counsel-rg
     "p" 'counsel-projectile-switch-project
     "b" 'counsel-projectile-switch-to-buffer
     "f" 'counsel-projectile-find-file))
 
 ;; Visual
-;; (use-package darktooth-theme
-;;   :ensure t
-;;   :load-path "themes"
-;;   :init
-;;   (setq darktooth-theme-kit t)
-;;   :config
-;;   (use-package highlight-sexp
-;;     :quelpa
-;;     (highlight-sexp :repo "daimrod/highlight-sexp" :fetcher github :version original)
-;;     :hook
-;;     (lisp-mode . highlight-sexp-mode)
-;;     (emacs-lisp-mode . highlight-sexp-mode)
-;;     (clojure-mode . highlight-sexp-mode))
+(use-package minimap
+  :ensure t
+  :delight)
 
-;;   (use-package rainbow-delimiters
-;;     :ensure t
-;;     :hook
-;;     (prog-mode . rainbow-delimiters-mode))
+(use-package delight
+  :ensure t)
 
-;;   (use-package rainbow-identifiers
-;;     :ensure t
-;;     :custom
-;;     (rainbow-identifiers-cie-l*a*b*-lightness 80)
-;;     (rainbow-identifiers-cie-l*a*b*-saturation 50)
-;;     (rainbow-identifiers-choose-face-function
-;;      #'rainbow-identifiers-cie-l*a*b*-choose-face)
-;;     :hook
-;;     (prog-mode . rainbow-identifiers-mode))
+(use-package nord-theme
+    ;; nano-theme
+  ;; darktooth-theme
+  ;; :quelpa (nano-theme
+  ;;	   :fetcher github
+  ;;	   :repo "rougier/nano-theme")
+  :ensure t
+  :load-path "themes"
+  ;; :init
+  ;; (setq darktooth-theme-kit t)
+  :config
+  (use-package highlight-sexp
+    :delight
+    :quelpa
+    (highlight-sexp :repo "daimrod/highlight-sexp" :fetcher github :version original)
+    :hook
+    (lisp-mode . highlight-sexp-mode)
+    (emacs-lisp-mode . highlight-sexp-mode)
+    (clojure-mode . highlight-sexp-mode))
 
-;;   (use-package rainbow-mode
-;;     :ensure t
-;;     :hook '(prog-mode help-mode))
+  (use-package rainbow-delimiters
+    :ensure t
+    :hook
+    (prog-mode . rainbow-delimiters-mode))
+
+  (use-package rainbow-identifiers
+    :ensure t
+    :custom
+    (rainbow-identifiers-cie-l*a*b*-lightness 80)
+    (rainbow-identifiers-cie-l*a*b*-saturation 50)
+    (rainbow-identifiers-choose-face-function
+     #'rainbow-identifiers-cie-l*a*b*-choose-face)
+    :hook
+    (prog-mode . rainbow-identifiers-mode))
+
+  (use-package rainbow-mode
+    :ensure t
+    :delight
+    :hook '(prog-mode help-mode))
 
 
-;;   (load-theme 'darktooth t))
+  (load-theme 'nord t))
 
 (use-package diff-hl
   :ensure t
@@ -397,37 +587,51 @@
 
 (use-package shackle
   :ensure t
+  :config
+  (shackle-mode)
   :custom
-  ;; (shackle-default-rule (:popup t))
+  ;; (shackle-default-rule '(:popup t))
   (shackle-rules
-   '(("*cider-repl.*\\*"
+   '(("\\*cider-repl.*\\*"
       :regexp t
       :other t
       :size 0.25
+      :align bottom)
+     ("\\*vterm\\*"
+      :regexp t
+      :other t
+      :size 0.25
+      :popup t
+      :align bottom)
+     ("\\*vterminal.*\\*"
+      :regexp t
+      :other t
+      :size 0.25
+      :popup t
       :align bottom))))
 
-(use-package doom-modeline
-  :custom
-  (column-number-mode t)
-  (line-number-mode t)
-  :ensure t
-  :hook (after-init . doom-modeline-mode))
+;; (use-package doom-modeline
+;;   :custom
+;;   (column-number-mode t)
+;;   (line-number-mode t)
+;;   :ensure t
+;;   :hook (after-init . doom-modeline-mode))
 
 (use-package idle-highlight-mode
   :ensure t
   :hook prog-mode)
 
-(use-package theme-changer
-  :custom
-  (calendar-location-name "Saint-Petersburg, Russia")
-  (calendar-latitude 59.85)
-  (calendar-longitude 30.18)
-  :ensure t
-  :config
-  (use-package almost-mono-themes
-    :ensure t
-    :load-path "themes")
-  (change-theme 'almost-mono-cream 'almost-mono-gray))
+;; (use-package theme-changer
+;;   :custom
+;;   (calendar-location-name "Saint-Petersburg, Russia")
+;;   (calendar-latitude 59.85)
+;;   (calendar-longitude 30.18)
+;;   :ensure t
+;;   :config
+;;   (use-package almost-mono-themes
+;;     :ensure t
+;;     :load-path "themes")
+;;   (change-theme 'almost-mono-cream 'almost-mono-gray))
 
 ;; Text editing
 (use-package display-line-numbers-mode
@@ -441,18 +645,28 @@
   :config
   (evil-multiedit-default-keybinds))
 
-(use-package undo-tree
+;; (use-package undo-tree
+;;   :ensure t
+;;   :delight
+;;   :custom
+;;   (evil-undo-system 'undo-tree)
+;;   (ad-return-value (concat ad-return-value ".gz"))
+;;   (undo-tree-auto-save-history t)
+;;   (undo-limit #x1000000)
+;;   :init (global-undo-tree-mode)
+;;   :general
+;;   (flawless-mode-def
+;;     "u" 'undo-tree-visualize))
+(use-package undo-fu
   :ensure t
+  :delight
   :custom
-  (evil-undo-system 'undo-tree)
-  (ad-return-value (concat ad-return-value ".gz"))
-  (undo-tree-auto-save-history t)
-  :init (global-undo-tree-mode)
-  :general
-  (flawless-mode-def
-    "u" 'undo-tree-visualize))
+  (evil-undo-system 'undo-fu))
 
 ;; Programming
+;;; Doc
+(use-package devdocs :ensure)
+
 ;;; Git
 (use-package smerge
   :general
@@ -489,11 +703,13 @@
 ;;; Basic programming (not basic lang!!)
 (use-package company
   :ensure t
+  :delight
   :pin melpa-stable
   :init (global-company-mode))
 
 (use-package flycheck
   :ensure t
+  :delight
   :hook
   (prog-mode . flycheck-mode)
   :config
@@ -508,7 +724,39 @@
 
 (use-package highlight-symbol :ensure t)
 
-(use-package lsp-mode :ensure t)
+(use-package lsp-mode
+  :delight
+  (lsp-mode "LSP")
+  (lsp-lens-mode "")
+  :ensure t
+  :custom
+  (read-process-output-max (* 1024 1024))
+  (lsp-auto-guess-root t)
+  :general
+  (:states '(normal visual) :keymaps '(lsp-mode-map)
+	   "gr" 'lsp-find-references
+	   ;; "gi" 'lsp-find-implementation
+	   ;; "gD" 'lsp-find-definition
+	   ;; "gd" 'xref-find-definitions
+	   "SPC mjrs" 'lsp-rename))
+
+(use-package lsp-treemacs
+  :after (lsp-mode treemacs)
+  :ensure t)
+
+(use-package lsp-ui
+  :after (lsp-mode)
+  :ensure t
+  :commands lsp-ui-mode
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-doc-enable nil))
+
+(use-package dap-mode
+  :after (lsp-mode)
+  :defer
+  :ensure t)
 
 (use-package prog-mode
   :custom
@@ -519,6 +767,7 @@
     "SPC mCa" 'mc/mark-all-dwim))
 
 (use-package evil-commentary
+  :delight
   :ensure t)
 
 ;;; Lisps
@@ -539,6 +788,7 @@
   (use-package lispy :ensure t)
 
   (use-package evil-lispy
+    :delight
     :ensure t
     :hook
     (lisp-mode . evil-lispy-mode)
@@ -547,6 +797,7 @@
 
   (use-package lispyville
     :ensure t
+    :delight
     :hook
     (lisp-mode . lispyville-mode)
     (emacs-lisp-mode . lispyville-mode)
@@ -557,6 +808,8 @@
   (use-package smex :ensure t))
 
 ;;; Clojure
+(use-package neil :ensure t)
+
 (use-package clojure-mode
   :ensure t
   :mode (("\\.clj\\'" . clojure-mode)
@@ -565,50 +818,49 @@
 	 ("\\.cljs\\'" . clojurescript-mode)
 	 ("\\.edn\\'" . clojure-mode))
   :config
-  (use-package clj-refactor :ensure t)
+  (use-package clj-refactor
+    :ensure t
+    :delight)
   (use-package clojure-snippets :ensure t :defer t)
   (use-package anakondo :ensure t)
 
   (use-package cider
     :ensure t
     :defer t
+    :delight
+    (clojurescript-mode "")
+    (cider-auto-test-mode " t")
+    (cider-enlighten-mode " e")
 
     :config
-    (cider-add-to-alist 'cider-jack-in-dependencies "djblue/portal" "0.24.0")
+    (add-to-list 'display-buffer-alist '("\\*cider-error\\*"
+					 (display-buffer-in-side-window)
+					 (side . right)
+					 (slot . 3)
+					 (window-height . shrink-window-if-larger-than-buffer)
+					 (dedicated . t)))
 
     :custom
     (cider-save-file-on-load nil)
-    (cider-repl-pop-to-buffer-on-connect nil)
+    (cider-repl-pop-to-buffer-on-connect t)
     (cider-repl-result-prefix "\n;; => ")
     (cider-repl-buffer-size-limit 10000)
     (nrepl-log-messages t)
     (cider-repl-display-in-current-window t)
     (cider-repl-use-clojure-font-lock t)
     (cider-prompt-save-file-on-load 'always-save)
-    (cider-font-lock-dynamically '(macro core function var))
+    (cider-font-lock-dynamically '(macro core deprecated))
     (nrepl-hide-special-buffers t)
     (cider-overlays-use-font-lock t)
     (cider-repl-use-pretty-printing t)
-    (cider-clojure-cli-global-options "-A:portal")
+    (cljr-magic-requires nil)
 
     :init
     (evil-collection-init 'cider)
 
-    (defun portal.api/open ()
-      (interactive)
-      (cider-nrepl-sync-request:eval
-       "(require 'portal.api) (portal.api/tap) (portal.api/open)"))
-
-    (defun portal.api/clear ()
-      (interactive)
-      (cider-nrepl-sync-request:eval "(portal.api/clear)"))
-
-    (defun portal.api/close ()
-      (interactive)
-      (cider-nrepl-sync-request:eval "(portal.api/close)"))
     :hook
     (cider-mode . clj-refactor-mode)
-    :diminish subword-mode)
+    :delight)
 
   (define-clojure-indent
     (defroutes 'defun)
@@ -658,6 +910,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (require 'flycheck-clj-kondo)
 
   :hook
+  (clojure-mode . lsp)
+  (clojure-mode . lsp-ui-mode)
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
   (clojure-mode . eldoc-mode)
@@ -679,11 +933,11 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 	   "s" 'cider-connect-cljs
 	   "C" 'cider-connect-clj&cljs
 	   "S" 'cider-connect-sibling-cljs)
-  (flawless-mode-def
-    :infix "p"
-    :keymaps 'clojure-mode-map
-    "o" 'portal.api/open
-    "c" 'portal.api/clear)
+  (:states '(normal visual) :prefix "SPC ms" :keymaps 'clojure-mode-map
+	   "b" 'sesman-link-with-buffer
+	   "s" 'sesman-link-session)
+  (:states '(normal visual) :prefix "SPC mm" :keymaps 'clojure-mode-map
+	   "e" 'cider-enlighten-mode)
   (flawless-mode-def
     :infix "d"
     :keymaps 'clojure-mode-map
@@ -731,6 +985,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     :keymaps 'clojure-mode-map
     "P" 'cider-test-run-project-tests
     "t" 'cider-test-run-test
+    "f" 'cider-test-rerun-failed-tests
     "n" 'cider-test-run-ns-tests)
   (flawless-mode-def
     :infix "P"
@@ -753,6 +1008,10 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "B" 'cider-format-buffer
     "u" '+/insert-random-uid))
 
+(use-package lsp-java
+  :after (lsp-mode)
+  :ensure t)
+
 ;;; YML
 
 (use-package yaml-mode
@@ -771,6 +1030,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 
 ;;; Org
 (use-package org
+  :ensure org-contrib
   :general
  (:states '(normal visual) :keymap 'outline-mode-map
     ;; "gh" 'org-next-visible-heading
@@ -779,7 +1039,10 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "gk" 'outline-backward-same-level)
  (:states '(normal visual)
     :prefix "SPC"
-    "at" 'org-set-tags-command)
+    :keymaps 'org-mode-map
+    "mst" 'org-set-tags-command
+    "msp" 'org-set-property
+    "msa" 'org-attach)
   (:states '(normal visual)
     :prefix "SPC"
     :infix "o"
@@ -821,12 +1084,15 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "C" 'org-clock-cancel
     "c" 'org-clock-out)
   (:states '(normal visual)
+    :keymaps 'org-mode-map
     :prefix "SPC m"
     :infix "l"
     "l" 'org-insert-link
     "C" ''counsel-org-link)
   :custom
+  (org-attach-store-link-p 'attached)
   (org-log-reschedule 'time)
+
   (org-log-redeadline 'time)
 
   (org-startup-folded "OVERVIEW")
@@ -834,16 +1100,18 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (org-agenda-files (directory-files-recursively org-directory "\\.org$"))
   (org-superstar-headline-bullets-list '("⁖" "◉" "○" "✸" "✿"))
   (org-todo-keywords
-   '((sequence "TODO(t)" "WAIT(w@/!)" "RVIW(r)" "STRT(s!)" "CTRL(c!)" "HOLD(h!)" "TEST(q!)"
+   '((sequence "TODO(t!)" "WAIT(w@/!)" "RVIW(r)" "STRT(s!)" "CTRL(c!)" "HOLD(h!)" "TEST(q!)"
 	       "|" "DONE(d!)" "KILL(k@)")))
   (org-tag-alist '(("important" . ?i)
 		   ("urgent" . ?u)
-		   ("arvl" . ?a)))
-  (org-agenda-custom-commands '(("1" "Q1" tags-todo "+important+urgent")
-				("2" "Q2" tags-todo "+important-urgent")
-				("3" "Q3" tags-todo "-important+urgent")
-				("4" "Q4" tags-todo "-important-urgent")
-				("d" "Daily" ((org-agenda-ndays 60)))))
+		   ("buy" . ?b)))
+  (org-agenda-custom-commands
+   '(("b" "Backlog" ((todo "TODO")
+		     (tags-todo "-expense")))
+     ("d" "Daily" ((org-agenda-ndays 60)))
+     ("e" "Planned Expenses" tags-todo "+expense")
+     ("i" "Inbox"
+      (search ((org-agenda-files '("~/inbox.org")))))))
 
   (org-capture-templates
    `(("a" "ARVL")
@@ -870,8 +1138,14 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
      ("b" "Book" entry (file "evolution/books.org")
       "* %^{TITLE}\n:PROPERTIES:\n:ADDED: %<[%Y-%02m-%02d]>\n:END:%^{AUTHOR}p\n%?" :empty-lines 1)
 
-     ("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
+     ("q" "Quick Inbox")
+     ("qe" "Expence"         entry (file+headline "~/org/inbox.org" "Expenses")
+      "* TODO %? :expense:\n")
+     ("qt" "Todo")
+     ("qtl" "Todo with link" entry (file+headline "~/org/inbox.org" "Tasks")
       "* TODO %?\n %i\n %a")
+     ("qtt" "Todo" entry (file+headline "~/org/inbox.org" "Tasks")
+      "* TODO %?\n")
 
      ("n" "Notes")
 
@@ -889,6 +1163,38 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
    ((org-clock-in org-clock-out org-clock-cancel) . save-buffer))
 
   :config
+  ;; ox-extra
+  (require 'ox-extra)
+  (ox-extras-activate '(latex-header-blocks ignore-headlines))
+  ;; ox-latex
+  (setq org-latex-pdf-process
+	'("pdflatex -interaction nonstopmode -output-directory %o %f"
+	  "bibtex %b"
+	  "pdflatex -interaction nonstopmode -output-directory %o %f"
+	  "pdflatex -interaction nonstopmode -output-directory %o %f"))
+  (setq org-latex-with-hyperref nil) ;; stop org adding hypersetup{author..} to latex export
+    ;; (setq org-latex-prefer-user-labels t)
+
+    ;; deleted unwanted file extensions after latexMK
+  (setq org-latex-logfiles-extensions
+	'("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl" "xmpi" "run.xml" "bcf" "acn" "acr" "alg" "glg" "gls" "ist"))
+
+  (unless (boundp 'org-latex-classes)
+    (setq org-latex-classes nil))
+  ;; other
+  (defun lt:org-clock-todays-total ()
+    "Visit each file in `org-agenda-files' and return the total time of today's
+clocked tasks in minutes."
+    (interactive)
+    (let ((files (org-agenda-files))
+	  (total 0))
+      (org-agenda-prepare-buffers files)
+      (dolist (file files)
+	(with-current-buffer (find-buffer-visiting file)
+	  (setq total (+ total (org-clock-sum-today)))))
+      (format " Today's total: %s " (org-minutes-to-clocksum-string total))))
+  (use-package org-clock-today
+    :ensure t)
   (use-package org-agenda
     :custom
     (org-agenda-window-setup 'current-window)
@@ -896,6 +1202,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     (:state 'motion :keymaps 'org-agenda-mode-map
 	    "SPC" nil))
   (use-package org-fancy-priorities
+    :delight
     :ensure t
     :hook
     (org-mode . org-fancy-priorities-mode)
@@ -1085,9 +1392,20 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 			     ("y" . ,(* 60 8 5 4 11))))
   (org-duration-set-regexps))
 
-(use-package org-pomodoro :ensure t)
+(use-package org-pomodoro
+  :ensure t
+  :custom
+  (org-pomodoro-clock-break t)
+  (org-pomodoro-finished-sound-args "-volume 0.3")
+  (org-pomodoro-long-break-sound-args "-volume 0.3")
+  (org-pomodoro-short-break-sound-args "-volume 0.3")
+  (org-pomodoro-manual-break t)
+  (org-pomodoro-format "%s")
+  (org-pomodoro-short-break-format "%s")
+  (org-pomodoro-long-break-format "%s"))
 
 (use-package evil-org
+  :delight
   :ensure t
   :config
   (require 'evil-org-agenda)
@@ -1113,7 +1431,14 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :mode
   (("\\.proto$" . protobuf-mode)))
 
-;; Telega
+;; Network
+;;; Mail
+(use-package notmuch
+  :ensure t
+  :init
+  (evil-collection-init 'notmuch))
+
+;;; Telega
 (use-package telega
   :ensure t
   :quelpa (telega :fetcher github
@@ -1121,17 +1446,56 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 		  :branch "master"
 		  :files (:defaults "contrib" "etc" "server" "Makefile"))
   :init
+  (telega-mode-line-mode t)
   (evil-collection-init 'telega)
   :custom
+  (telega-chat-fill-column 80)
   (telega-accounts
    (list
     (list "AlexanderUshanov" 'telega-database-dir telega-database-dir)
     (list "flaw1322" 'telega-database-dir
-	  (expand-file-name "flaw1322" telega-database-dir))))
+	  (expand-file-name "flaw1322" telega-database-dir))
+    (list "C11H26NO2PS" 'telega-database-dir
+	  (expand-file-name "c11h26no2ps" telega-database-dir))))
+  ;; (telega-filters-custom
+  ;;  (("Main" . main)
+  ;;   ("Important" . important)
+  ;;   ("Online" and
+  ;;    (not saved-messages)
+  ;;    (user is-online))
+  ;;   ("lng_filters_type_groups" type basicgroup supergroup)
+  ;;   ("lng_filters_type_channels" type channel)
+  ;;   ("lng_filters_type_no_archived" . archive)))
   :general
   (:states '(normal visual) :prefix "SPC" :infix "c"
 	   "w" 'telega-chat-with
 	   "g" 'telega
 	   "A" 'telega-account-switch))
+
+;; (use-package sweeprolog
+;;   :ensure f
+;;   :config
+;;   (lsp-register-client
+;;    (make-lsp-client
+;;     :new-connection
+;;     (lsp-stdio-connection (list "swipl"
+;;				"-g" "use_module(library(lsp_server))."
+;;				"-g" "lsp_server:main"
+;;				"-t" "halt"
+;;				"--" "stdio"))
+;;     :major-modes '(prolog-mode)
+;;     :priority 1
+;;     :multi-root t
+;;     :server-id 'prolog-ls)))
+
+(use-package rustic
+  :ensure t
+  :config
+  (setq rustic-format-on-save t)
+  :general
+  (:states '(normal visual) :keymaps 'rustic-mode-map
+	   "SPC mcC" 'rustic-compile
+	   "SPC mcc" 'rustic-cargo-comp
+	   "SPC mer" 'rustic-cargo-run))
 
 ;;; init.el ends here
