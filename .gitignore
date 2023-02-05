@@ -55,3 +55,14 @@ custom.el
 /transient/
 /projectile.cache
 /smex-items
+/.cache/
+/.dap-breakpoints
+/.lsp-session-v1
+/.mc-lists.el
+/async-bytecomp.log
+/devdocs/
+/eclipse.jdt.ls/
+/games/
+/quelpa/
+/workspace/
+/projects
