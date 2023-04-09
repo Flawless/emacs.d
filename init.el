@@ -1,4 +1,4 @@
-;;; init.el --- Description -*- lexical-binding: t; -*-
+; init.el --- Description -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2021 Alexander Ushanov
 ;;
@@ -45,11 +45,12 @@
   ;; (use-package-minimum-reported-time 0.005)
   (use-package-enable-imenu-support t))
 
-;; (use-package auto-package-update
-;;   :ensure quelpa
-;;   :custom
-;;   (auto-package-update-delete-old-versions t)
-;;   (auto-package-update-hide-results t))
+(use-package auto-package-update
+   :ensure t
+   :config
+   (setq auto-package-update-delete-old-versions t
+	 auto-package-update-interval 4)
+   (auto-package-update-maybe))
 
 (use-package system-packages
   :ensure t
@@ -100,6 +101,17 @@
   (auto-fill-function)
   (auto-revert-mode)
   :custom
+  (defun lt:whiteboard ()
+    (interactive)
+    (load-theme 'whiteboard)
+    (setq hl-sexp-background-color "#eceff4")
+    (hl-sexp-delete-overlay)
+    (hl-sexp-create-overlay)
+    (setq rainbow-identifiers-choose-face-function
+	  'rainbow-identifiers-cie-l*a*b*-choose-face)
+    (setq rainbow-identifiers-cie-l*a*b*-lightness 45)
+    (setq rainbow-identifiers-cie-l*a*b*-saturation 45))
+  (make-backup-file-name-function 'my-backup-file-name)
   (mode-line-format
    ("%e"
     ;; mode-line-front-space
@@ -120,6 +132,44 @@
   (fill-column 120)
 
   :config
+  (defun lt/backup-file-name (fpath)
+    "Return a new file path of a given file path.
+If the new path's directories does not exist, create them."
+    (let* ((backupRootDir "~/.emacs.d/emacs-backup/")
+	   (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath )) ; remove Windows driver letter in path, ➢ for example: “C:”
+	   (backupFilePath (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~") )))
+      (make-directory (file-name-directory backupFilePath) (file-name-directory backupFilePath))
+      backupFilePath))
+
+ (defmacro measure-time (&rest body)
+    "Measure the time it takes to evaluate BODY."
+    `(let ((time (current-time)))
+       ,@body
+       (message "%.06f" (float-time (time-since time)))))
+
+ (defcustom lt-prevent-gc nil
+   "Prevent custom gc call")
+
+ (defun lt/garbage-collect ()
+   "Run `garbage-collect' and print stats about memory usage."
+   (interactive)
+   (when (not lt-prevent-gc)
+     (let ((time (current-time)))
+       (message (concat (format-time-string "%Y-%m-%dT%H:%M:%S.%3N%z, " time)
+			(cl-loop for (type size used free) in (garbage-collect)
+				 for used = (* used size)
+				 for free = (* (or free 0) size)
+				 for total = (+ used free)
+				 for total_h = (file-size-human-readable total)
+				 for used_h = (file-size-human-readable used)
+				 for free_h = (file-size-human-readable free)
+				 concat (format "%s: %s + %s = %s, " type used free total))
+			(format "%.06f" (float-time (time-since time))))))))
+
+  (define-minor-mode ansi-color-mode
+    "..."
+    nil nil nil
+    (ansi-color-apply-on-region 1 (buffer-size)))
   (use-package files
     :hook
     (before-save . whitespace-cleanup)
@@ -156,7 +206,8 @@
 	(invert-face 'mode-line-inactive frame))))
   (use-package dired
     :init
-    (evil-collection-init 'dired))
+    (evil-collection-init 'dired)
+    :hook (dired-mode . dired-omit-mode))
 
   (my-mode-line-visual-bell)
 
@@ -165,7 +216,21 @@
   ;; Prevent flickering issues
   (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
-  (set-frame-font "Input Mono-14" nil t)
+  (cond
+   ((find-font (font-spec :name "Input Mono"))
+    (set-frame-font "Input Mono-12" nil t))
+   ((find-font (font-spec :name "Jetbrains Mono"))
+    (set-frame-font "Jetbrains Mono-08"))
+   ;; ((find-font (font-spec :name "Cascadia Code"))
+   ;;  (set-frame-font "Cascadia Code-12"))
+   ;; ((find-font (font-spec :name "Menlo"))
+   ;;  (set-frame-font "Menlo-12"))
+   ;; ((find-font (font-spec :name "DejaVu Sans Mono"))
+   ;;  (set-frame-font "DejaVu Sans Mono-12"))
+   ;; ((find-font (font-spec :name "Inconsolata"))
+   ;;  (set-frame-font "Inconsolata-12"))
+   )
+
 
   (add-to-list 'exec-path "/usr/local/bin")
   (defun lt:reload-dir-locals-for-current-buffer ()
@@ -195,6 +260,7 @@
     "SPC fr" 'recover-this-file
     "SPC fR" 'recover-file
 
+    "SPC bC" 'clean-buffer-list
     "SPC bb" 'counsel-switch-buffer
     "SPC bi" 'ibuffer
     "SPC br" 'revert-buffer
@@ -311,9 +377,9 @@
   :hook (dired-mode . treemacs-icons-dired-enable-once)
   :ensure t)
 
-(use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
+;; (use-package treemacs-magit
+;;   :after (treemacs magit)
+;;   :ensure t)
 
 (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
   :after (treemacs persp-mode) ;;or perspective vs. persp-mode
@@ -415,7 +481,7 @@
 (use-package default-text-scale
   :ensure t
   :custom
-  (default-text-scale-amount 10)
+  (default-text-scale-amount 20)
   :general
   (:states '(normal visual)
     :prefix "SPC"
@@ -424,13 +490,14 @@
     "-" 'default-text-scale-decrease
     "R" 'default-text-scale-reset))
 
-(use-package gcmh
-  :ensure t
-  :delight
-  :custom
-  (gcmh-high-cons-threshold #x6000000000)
-  :init
-  (gcmh-mode 1))
+;; (use-package gcmh
+;;   :ensure t
+;;   :delight
+;;   :custom
+;;   (gcmh-high-cons-threshold most-positive-fixnum)
+;;   (gcmh-idle-delay (* 12 60 60))	; trigger gc only when I'm really not using emacs
+;;   :init
+;;   (gcmh-mode 1))
 
 (use-package memory-usage
   :ensure t)
@@ -505,10 +572,13 @@
   :delight '(:eval (concat " P:" (projectile-project-name)))
   :init (projectile-mode t)
   :custom
+  ;; Use lsp-clojure-create-test instead
+  ;; (projectile-create-missing-test-files t)
   (projectile-project-search-path '("~/projects/"))
   (projectile-sort-order 'recently-active)
   (projectile-enable-caching t)
   :config
+  (add-to-list 'projectile-globally-ignored-directories "^\\.shadow-cljs$")
   (use-package counsel-projectile
     :ensure t
     :init (counsel-projectile-mode t)
@@ -540,42 +610,50 @@
   ;; :quelpa (nano-theme
   ;;	   :fetcher github
   ;;	   :repo "rougier/nano-theme")
+  :custom
+  (hl-sexp-background-color "#3b4252")
+
+  (hl-sexp-foreground-color nil)
   :ensure t
   :load-path "themes"
   ;; :init
   ;; (setq darktooth-theme-kit t)
   :config
-  (use-package highlight-sexp
-    :delight
-    :quelpa
-    (highlight-sexp :repo "daimrod/highlight-sexp" :fetcher github :version original)
-    :hook
-    (lisp-mode . highlight-sexp-mode)
-    (emacs-lisp-mode . highlight-sexp-mode)
-    (clojure-mode . highlight-sexp-mode))
+  (defun lt:nord ()
+    (interactive)
+    (load-theme 'nord t)
+    (setq hl-sexp-background-color "#3b4252")
+    (hl-sexp-delete-overlay)
+    (hl-sexp-create-overlay)
+    (setq rainbow-identifiers-cie-l*a*b*-lightness 80)
+    (setq rainbow-identifiers-cie-l*a*b*-saturation 50)
+    (setq rainbow-identifiers-choose-face-function
+   #'rainbow-identifiers-cie-l*a*b*-choose-face))
+  (lt:nord))
 
-  (use-package rainbow-delimiters
-    :ensure t
-    :hook
-    (prog-mode . rainbow-delimiters-mode))
+(use-package highlight-sexp
+  :delight
+  :quelpa
+  (highlight-sexp :repo "daimrod/highlight-sexp" :fetcher github :version original)
+  :hook
+  (lisp-mode . highlight-sexp-mode)
+  (emacs-lisp-mode . highlight-sexp-mode)
+  (clojure-mode . highlight-sexp-mode))
 
-  (use-package rainbow-identifiers
-    :ensure t
-    :custom
-    (rainbow-identifiers-cie-l*a*b*-lightness 80)
-    (rainbow-identifiers-cie-l*a*b*-saturation 50)
-    (rainbow-identifiers-choose-face-function
-     #'rainbow-identifiers-cie-l*a*b*-choose-face)
-    :hook
-    (prog-mode . rainbow-identifiers-mode))
+(use-package rainbow-delimiters
+  :ensure t
+  :hook
+  (prog-mode . rainbow-delimiters-mode))
 
-  (use-package rainbow-mode
-    :ensure t
-    :delight
-    :hook '(prog-mode help-mode))
+(use-package rainbow-identifiers
+  :ensure t
+  :hook
+  (prog-mode . rainbow-identifiers-mode))
 
-
-  (load-theme 'nord t))
+(use-package rainbow-mode
+  :ensure t
+  :delight
+  :hook '(prog-mode help-mode))
 
 (use-package diff-hl
   :ensure t
@@ -674,16 +752,15 @@
 	  "gj" 'smerge-prev
 	  "gk" 'smerge-next))
 
-(use-package git-timemachine :ensure t)
+;; (use-package git-timemachine :ensure t)
 
 (use-package magit
   :ensure t
   :init (evil-collection-init 'magit)
-  :hook
-  (magit-pre-refresh diff-hl-magit-pre-refresh)
-  (magit-post-refresh diff-hl-magit-post-refresh)
   :custom
-  (magit-git-executable "/usr/local/bin/git")
+  (cond
+   ((eq system-type 'darwin)
+    (magit-git-executable "/usr/local/bin/git")))
   (magit-diff-paint-whitespace-lines 'all)
   (magit-display-buffer-function
    (lambda (buffer)
@@ -692,13 +769,13 @@
   (evil-set-initial-state 'magit-mode 'normal)
   :general
   (:states '(normal visual) :keymaps '(magit-mode-map)
-    "SPC" nil)
+	   "SPC" nil)
   (:states '(normal visual) :prefix "SPC" :infix "g"
-    "b" 'magit-checkout
-    "B" 'magit-blame
-    "g" 'magit-status
-    "f" 'magit-find-file
-    "l" 'magit-log-buffer-file))
+	   "b" 'magit-checkout
+	   "B" 'magit-blame
+	   "g" 'magit-status
+	   "f" 'magit-find-file
+	   "l" 'magit-log-buffer-file))
 
 ;;; Basic programming (not basic lang!!)
 (use-package company
@@ -846,11 +923,12 @@
     (cider-repl-result-prefix "\n;; => ")
     (cider-repl-buffer-size-limit 10000)
     (nrepl-log-messages t)
+    (nrepl-hide-special-buffers t)
+    (nrepl-use-ssh-fallback-for-remote-hosts t)
     (cider-repl-display-in-current-window t)
     (cider-repl-use-clojure-font-lock t)
     (cider-prompt-save-file-on-load 'always-save)
     (cider-font-lock-dynamically '(macro core deprecated))
-    (nrepl-hide-special-buffers t)
     (cider-overlays-use-font-lock t)
     (cider-repl-use-pretty-printing t)
     (cljr-magic-requires nil)
@@ -1040,6 +1118,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
  (:states '(normal visual)
     :prefix "SPC"
     :keymaps 'org-mode-map
+    "mx" 'org-export-dispatch
     "mst" 'org-set-tags-command
     "msp" 'org-set-property
     "msa" 'org-attach)
@@ -1447,16 +1526,20 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 		  :files (:defaults "contrib" "etc" "server" "Makefile"))
   :init
   (telega-mode-line-mode t)
+  (setq telega-use-images t)
   (evil-collection-init 'telega)
+  (defcustom telega-database-dir-base "~/.telega"
+    "telega base dir")
   :custom
+  (telega-server-libs-prefix "/usr/")
   (telega-chat-fill-column 80)
   (telega-accounts
    (list
-    (list "AlexanderUshanov" 'telega-database-dir telega-database-dir)
+    (list "AlexanderUshanov" 'telega-database-dir telega-database-dir-base)
     (list "flaw1322" 'telega-database-dir
-	  (expand-file-name "flaw1322" telega-database-dir))
+	  (expand-file-name "flaw1322" telega-database-dir-base))
     (list "C11H26NO2PS" 'telega-database-dir
-	  (expand-file-name "c11h26no2ps" telega-database-dir))))
+	  (expand-file-name "c11h26no2ps" telega-database-dir-base))))
   ;; (telega-filters-custom
   ;;  (("Main" . main)
   ;;   ("Important" . important)
