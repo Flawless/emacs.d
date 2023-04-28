@@ -47,9 +47,12 @@
 
 (use-package auto-package-update
    :ensure t
+   :custom
+   (auto-package-update-delete-old-versions t)
+   (auto-package-update-interval 365)
+   :hook
+   (after-init . auto-package-update-now)
    :config
-   (setq auto-package-update-delete-old-versions t
-	 auto-package-update-interval 4)
    (auto-package-update-maybe))
 
 (use-package system-packages
@@ -111,7 +114,7 @@
 	  'rainbow-identifiers-cie-l*a*b*-choose-face)
     (setq rainbow-identifiers-cie-l*a*b*-lightness 45)
     (setq rainbow-identifiers-cie-l*a*b*-saturation 45))
-  (make-backup-file-name-function 'my-backup-file-name)
+  (make-backup-file-name-function 'lt/backup-file-name)
   (mode-line-format
    ("%e"
     ;; mode-line-front-space
@@ -136,35 +139,35 @@
     "Return a new file path of a given file path.
 If the new path's directories does not exist, create them."
     (let* ((backupRootDir "~/.emacs.d/emacs-backup/")
-	   (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath )) ; remove Windows driver letter in path, ➢ for example: “C:”
-	   (backupFilePath (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~") )))
+	   (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath)) ; remove Windows driver letter in path, ➢ for example: “C:”
+	   (backupFilePath (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~"))))
       (make-directory (file-name-directory backupFilePath) (file-name-directory backupFilePath))
       backupFilePath))
 
- (defmacro measure-time (&rest body)
+  (defmacro measure-time (&rest body)
     "Measure the time it takes to evaluate BODY."
     `(let ((time (current-time)))
        ,@body
        (message "%.06f" (float-time (time-since time)))))
 
- (defcustom lt-prevent-gc nil
-   "Prevent custom gc call")
+  (defcustom lt-prevent-gc nil
+    "Prevent custom gc call")
 
- (defun lt/garbage-collect ()
-   "Run `garbage-collect' and print stats about memory usage."
-   (interactive)
-   (when (not lt-prevent-gc)
-     (let ((time (current-time)))
-       (message (concat (format-time-string "%Y-%m-%dT%H:%M:%S.%3N%z, " time)
-			(cl-loop for (type size used free) in (garbage-collect)
-				 for used = (* used size)
-				 for free = (* (or free 0) size)
-				 for total = (+ used free)
-				 for total_h = (file-size-human-readable total)
-				 for used_h = (file-size-human-readable used)
-				 for free_h = (file-size-human-readable free)
-				 concat (format "%s: %s + %s = %s, " type used free total))
-			(format "%.06f" (float-time (time-since time))))))))
+  (defun lt/garbage-collect ()
+    "Run `garbage-collect' and print stats about memory usage."
+    (interactive)
+    (when (not lt-prevent-gc)
+      (let ((time (current-time)))
+	(message (concat (format-time-string "%Y-%m-%dT%H:%M:%S.%3N%z, " time)
+			 (cl-loop for (type size used free) in (garbage-collect)
+				  for used = (* used size)
+				  for free = (* (or free 0) size)
+				  for total = (+ used free)
+				  for total_h = (file-size-human-readable total)
+				  for used_h = (file-size-human-readable used)
+				  for free_h = (file-size-human-readable free)
+				  concat (format "%s: %s + %s = %s, " type used free total))
+			 (format "%.06f" (float-time (time-since time))))))))
 
   (define-minor-mode ansi-color-mode
     "..."
@@ -458,25 +461,29 @@ If the new path's directories does not exist, create them."
 
 (use-package evil
   :ensure t
-  :init
-  (setq evil-want-keybinding nil)
   :custom
+  (evil-want-keybinding nil)
   (evil-want-C-u-scroll t)
   :config
-  (use-package evil-collection
-    :ensure t
-    :requires evil
-    :delight evil-collection-unimpaired-mode
-    :custom
-    (evil-collection-want-find-usages-bindings t))
-  (use-package evil-surround
-    :ensure t
-    :config (global-evil-surround-mode 1))
-  (use-package counsel-projectile
-    :ensure t
-    :init (counsel-projectile-mode t)
-    :after (counsel projectile))
   (evil-mode t))
+
+(use-package evil-collection
+  :ensure t
+  :after evil
+  :delight evil-collection-unimpaired-mode
+  :config (evil-collection-init)
+  :custom (evil-collection-want-find-usages-bindings t))
+
+(use-package evil-surround
+  :ensure t
+  :after evil
+  :config (global-evil-surround-mode 1))
+
+(use-package counsel-projectile
+  :ensure t
+  :after projectile
+  :init (counsel-projectile-mode t)
+  :after (counsel projectile))
 
 (use-package default-text-scale
   :ensure t
@@ -655,13 +662,15 @@ If the new path's directories does not exist, create them."
   :delight
   :hook '(prog-mode help-mode))
 
-(use-package diff-hl
-  :ensure t
-  :custom-face
-  (diff-hl-insert ((t (:background "#a6e22c" :foreground "#a6e22c"))))
-  (diff-hl-delete ((t (:background "#f83535" :foreground "#f83535"))))
-  (diff-hl-change ((t (:background "#e7db74" :foreground "#e7db74"))))
-  :hook (find-file . (lambda () (when (vc-backend (buffer-file-name)) (diff-hl-mode)))))
+;; (use-package diff-hl
+;;   :ensure t
+;;   :quelpa
+;;   (diff-hl :repo "dgutov/diff-hl" :fetcher github :version original :files ("diff-hl.el"))
+;;   :custom-face
+;;   (diff-hl-insert ((t (:background "#a6e22c" :foreground "#a6e22c"))))
+;;   (diff-hl-delete ((t (:background "#f83535" :foreground "#f83535"))))
+;;   (diff-hl-change ((t (:background "#e7db74" :foreground "#e7db74"))))
+;;   :hook (find-file . (lambda () (when (vc-backend (buffer-file-name)) (diff-hl-mode)))))
 
 (use-package shackle
   :ensure t
@@ -1185,12 +1194,23 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 		   ("urgent" . ?u)
 		   ("buy" . ?b)))
   (org-agenda-custom-commands
-   '(("b" "Backlog" ((todo "TODO")
+   '(("u" "Undated tasks" ((todo "TODO")
+			   (org-agenda-skip-function '(org-agenda-skip-entry-if
+						       'deadline 'scheduled 'timestamp))))
+     ("s" "Sprint" ((todo "TODO")
+		    (org-agenda-span (lt/days-to-next-sunday))))
+     ("b" "Backlog" ((todo "TODO")
 		     (tags-todo "-expense")))
      ("d" "Daily" ((org-agenda-ndays 60)))
      ("e" "Planned Expenses" tags-todo "+expense")
-     ("i" "Inbox"
-      (search ((org-agenda-files '("~/inbox.org")))))))
+     ("i" "Inbox" (search ((org-agenda-files '("~/inbox.org")))))
+     ("d" "Upcoming deadlines" agenda ""
+      ((org-agenda-entry-types '(:deadline))
+       ;; a slower way to do the same thing
+       ;; (org-agenda-skip-function '(org-agenda-skip-entry-if 'notdeadline))
+       (org-agenda-span 1)
+       (org-deadline-warning-days 60)
+       (org-agenda-time-grid nil)))))
 
   (org-capture-templates
    `(("a" "ARVL")
@@ -1242,6 +1262,14 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
    ((org-clock-in org-clock-out org-clock-cancel) . save-buffer))
 
   :config
+  (defun lt/days-to-next-sunday()
+    (let ((dayspan 0)
+	  (today (string-to-number (format-time-string "%u"))))
+      (cond
+       ((> today 0) ; from today till sunday, today included
+	(setq dayspan (- 8 today)))
+       ((= today 0) ; sunday to sunday
+	(setq dayspan 8)))))
   ;; ox-extra
   (require 'ox-extra)
   (ox-extras-activate '(latex-header-blocks ignore-headlines))
@@ -1461,6 +1489,9 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (interactive)
     (counsel-projectile-switch-project "~/org/")))
 
+(use-package ox-clip
+  :ensure t)
+
 (use-package org-duration
   :config
   (setq org-duration-units `(("min" . 1)
@@ -1528,7 +1559,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (telega-mode-line-mode t)
   (setq telega-use-images t)
   (evil-collection-init 'telega)
-  (defcustom telega-database-dir-base "~/.telega"
+  (defcustom telega-database-dir-base (expand-file-name "~/.telega")
     "telega base dir")
   :custom
   (telega-server-libs-prefix "/usr/")
