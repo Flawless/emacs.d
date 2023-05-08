@@ -45,15 +45,15 @@
   ;; (use-package-minimum-reported-time 0.005)
   (use-package-enable-imenu-support t))
 
-(use-package auto-package-update
-   :ensure t
-   :custom
-   (auto-package-update-delete-old-versions t)
-   (auto-package-update-interval 365)
-   :hook
-   (after-init . auto-package-update-now)
-   :config
-   (auto-package-update-maybe))
+;; (use-package auto-package-update
+;;   :ensure t
+;;   :custom
+;;   (auto-package-update-delete-old-versions t)
+;;   (auto-package-update-interval 365)
+;;   :hook
+;;   (after-init . auto-package-update-now)
+;;   :config
+;;   (auto-package-update-maybe))
 
 (use-package system-packages
   :ensure t
@@ -207,10 +207,6 @@ If the new path's directories does not exist, create them."
 	(invert-face 'header-line-highlight frame)
 	(invert-face 'mode-line frame)
 	(invert-face 'mode-line-inactive frame))))
-  (use-package dired
-    :init
-    (evil-collection-init 'dired)
-    :hook (dired-mode . dired-omit-mode))
 
   (my-mode-line-visual-bell)
 
@@ -288,6 +284,16 @@ If the new path's directories does not exist, create them."
     "SPC tt" 'toggle-truncate-lines
 
     "SPC qq" 'save-buffers-kill-emacs))
+
+(use-package dired
+    :init
+    (evil-collection-init 'dired)
+    :hook (dired-mode . dired-omit-mode))
+
+(use-package direnv
+  :ensure t
+  :config
+  (direnv-mode))
 
 (use-package treemacs
   :ensure t
@@ -1300,22 +1306,7 @@ clocked tasks in minutes."
 	(with-current-buffer (find-buffer-visiting file)
 	  (setq total (+ total (org-clock-sum-today)))))
       (format " Today's total: %s " (org-minutes-to-clocksum-string total))))
-  (use-package org-clock-today
-    :ensure t)
-  (use-package org-agenda
-    :custom
-    (org-agenda-window-setup 'current-window)
-    :general
-    (:state 'motion :keymaps 'org-agenda-mode-map
-	    "SPC" nil))
-  (use-package org-fancy-priorities
-    :delight
-    :ensure t
-    :hook
-    (org-mode . org-fancy-priorities-mode)
-    :config
-    (setq org-fancy-priorities-list '("⬆" " " "⬇")))
-  (evil-set-initial-state 'org-agenda-mode 'normal)
+ (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
   (defun lt:capture-comment-line (&optional line)
     (let ((c
@@ -1489,6 +1480,27 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (interactive)
     (counsel-projectile-switch-project "~/org/")))
 
+(use-package org-clock-today
+  :after org
+  :ensure t)
+
+(use-package org-agenda
+  :after org
+  :custom
+  (org-agenda-window-setup 'current-window)
+  :general
+  (:state 'motion :keymaps 'org-agenda-mode-map
+	  "SPC" nil))
+
+(use-package org-fancy-priorities
+  :after org
+  :delight
+  :ensure t
+  :hook
+  (org-mode . org-fancy-priorities-mode)
+  :config
+  (setq org-fancy-priorities-list '("⬆" " " "⬇")))
+
 (use-package ox-clip
   :ensure t)
 
@@ -1559,6 +1571,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (telega-mode-line-mode t)
   (setq telega-use-images t)
   (evil-collection-init 'telega)
+  :config
   (defcustom telega-database-dir-base (expand-file-name "~/.telega")
     "telega base dir")
   :custom
