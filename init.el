@@ -27,10 +27,7 @@
 (customize-set-variable 'package-archives
 			`(,@package-archives
 			  ("melpa" . "https://melpa.org/packages/")
-			  ("melpa-stable" . "https://stable.melpa.org/packages/")
-			  ;; ("org" . "https://orgmode.org/elpa/")
-			  ;; ("emacswiki" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/emacswiki/")
-			  ))
+			  ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -41,19 +38,7 @@
 
 (use-package use-package-core
   :custom
-  ;; (use-package-verbose t)
-  ;; (use-package-minimum-reported-time 0.005)
   (use-package-enable-imenu-support t))
-
-;; (use-package auto-package-update
-;;   :ensure t
-;;   :custom
-;;   (auto-package-update-delete-old-versions t)
-;;   (auto-package-update-interval 365)
-;;   :hook
-;;   (after-init . auto-package-update-now)
-;;   :config
-;;   (auto-package-update-maybe))
 
 (use-package system-packages
   :ensure t
@@ -104,37 +89,47 @@
   (auto-fill-function)
   (auto-revert-mode)
   :custom
+  (backup-directory-alist `((".*" . ,temporary-file-directory)))
+  (auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+  (make-backup-file-name-function 'lt/backup-file-name)
+  (mac-command-modifier 'meta)
+  (fill-column 120)
+
+  :config
+  (defun file-notify-rm-all-watches ()
+    "Remove all existing file notification watches from Emacs."
+    (interactive)
+    (maphash
+     (lambda (key _value)
+       (file-notify-rm-watch key))
+     file-notify-descriptors))
+  ;; hotfix error with image, remove after 29.1 release
+  ;; overriding image.el function image-type-available-p
+  (add-to-list 'image-types 'svg)
+  ;; end of hotfix
+
+  (defcustom telega-database-dir-base (expand-file-name "~/.telega")
+    "telega base dir")
+  ;; make fullscreen
+  (modify-frame-parameters nil `((fullscreen . fullboth) (fullscreen-restore . ,(frame-parameter nil 'fullscreen))))
+
+  (defun disable-all-themes ()
+    "disable all active themes."
+    (dolist (i custom-enabled-themes)
+      (disable-theme i)))
+
   (defun lt:whiteboard ()
     (interactive)
-    (load-theme 'whiteboard)
+    (disable-all-themes)
+    (load-theme 'almost-mono-white t)
     (setq hl-sexp-background-color "#eceff4")
     (hl-sexp-delete-overlay)
     (hl-sexp-create-overlay)
     (setq rainbow-identifiers-choose-face-function
 	  'rainbow-identifiers-cie-l*a*b*-choose-face)
-    (setq rainbow-identifiers-cie-l*a*b*-lightness 45)
-    (setq rainbow-identifiers-cie-l*a*b*-saturation 45))
-  (make-backup-file-name-function 'lt/backup-file-name)
-  (mode-line-format
-   ("%e"
-    ;; mode-line-front-space
-    ;; mode-line-mule-info
-    ;; mode-line-client
-    ;; mode-line-modified
-    ;; mode-line-remote
-    ;; mode-line-frame-identification
-    ;; mode-line-buffer-identification
-    ;; mode-line-position
-    ;; (vc-mode vc-mode)
-    ;; mode-line-modes
-    ;; mode-line-misc-info
-    (:eval
-     (lt:org-clock-todays-total))
-    mode-line-end-spaces))
-  (mac-command-modifier 'meta)
-  (fill-column 120)
+    (setq rainbow-identifiers-cie-l*a*b*-lightness 00)
+    (setq rainbow-identifiers-cie-l*a*b*-saturation 00))
 
-  :config
   (defun lt/backup-file-name (fpath)
     "Return a new file path of a given file path.
 If the new path's directories does not exist, create them."
@@ -144,46 +139,12 @@ If the new path's directories does not exist, create them."
       (make-directory (file-name-directory backupFilePath) (file-name-directory backupFilePath))
       backupFilePath))
 
-  (defmacro measure-time (&rest body)
-    "Measure the time it takes to evaluate BODY."
-    `(let ((time (current-time)))
-       ,@body
-       (message "%.06f" (float-time (time-since time)))))
-
-  (defcustom lt-prevent-gc nil
-    "Prevent custom gc call")
-
-  (defun lt/garbage-collect ()
-    "Run `garbage-collect' and print stats about memory usage."
-    (interactive)
-    (when (not lt-prevent-gc)
-      (let ((time (current-time)))
-	(message (concat (format-time-string "%Y-%m-%dT%H:%M:%S.%3N%z, " time)
-			 (cl-loop for (type size used free) in (garbage-collect)
-				  for used = (* used size)
-				  for free = (* (or free 0) size)
-				  for total = (+ used free)
-				  for total_h = (file-size-human-readable total)
-				  for used_h = (file-size-human-readable used)
-				  for free_h = (file-size-human-readable free)
-				  concat (format "%s: %s + %s = %s, " type used free total))
-			 (format "%.06f" (float-time (time-since time))))))))
-
   (define-minor-mode ansi-color-mode
     "..."
-    nil nil nil
+    :init-value nil
+    :lighter nil
+    :keymap nil
     (ansi-color-apply-on-region 1 (buffer-size)))
-  (use-package files
-    :hook
-    (before-save . whitespace-cleanup)
-    :custom
-    (require-final-newline t)
-    (backup-by-copying t)
-    (delete-old-versions t)
-    (version-control t)
-    (kept-new-versions 50)
-    (kept-old-versions 20)
-    (create-lockfiles nil))
 
   (defun my-mode-line-visual-bell ()
     (setq visible-bell nil)
@@ -219,16 +180,7 @@ If the new path's directories does not exist, create them."
    ((find-font (font-spec :name "Input Mono"))
     (set-frame-font "Input Mono-12" nil t))
    ((find-font (font-spec :name "Jetbrains Mono"))
-    (set-frame-font "Jetbrains Mono-08"))
-   ;; ((find-font (font-spec :name "Cascadia Code"))
-   ;;  (set-frame-font "Cascadia Code-12"))
-   ;; ((find-font (font-spec :name "Menlo"))
-   ;;  (set-frame-font "Menlo-12"))
-   ;; ((find-font (font-spec :name "DejaVu Sans Mono"))
-   ;;  (set-frame-font "DejaVu Sans Mono-12"))
-   ;; ((find-font (font-spec :name "Inconsolata"))
-   ;;  (set-frame-font "Inconsolata-12"))
-   )
+    (set-frame-font "Jetbrains Mono-08")))
 
 
   (add-to-list 'exec-path "/usr/local/bin")
@@ -285,135 +237,44 @@ If the new path's directories does not exist, create them."
 
     "SPC qq" 'save-buffers-kill-emacs))
 
+(use-package path-helper
+  :if (memq window-system '(mac ns))
+  :ensure t
+  :config
+  (path-helper-setenv-all))
+
+(use-package files
+    :hook
+    (before-save . whitespace-cleanup)
+    :custom
+    (require-final-newline t)
+    (backup-by-copying t)
+    (delete-old-versions t)
+    (version-control t)
+    (kept-new-versions 50)
+    (kept-old-versions 20)
+    (create-lockfiles nil))
+
 (use-package dired
+  :after evil
+  :init (evil-collection-init 'dired)
+  :hook (dired-mode . dired-omit-mode))
+
+(when (memq window-system '(mac ns x))
+  (use-package exec-path-from-shell
+    :ensure t
     :init
-    (evil-collection-init 'dired)
-    :hook (dired-mode . dired-omit-mode))
+    (exec-path-from-shell-initialize)))
 
 (use-package direnv
   :ensure t
   :config
   (direnv-mode))
 
-(use-package treemacs
-  :ensure t
-  :defer t
-  :init
-  (with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-  :config
-  (progn
-    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-	  treemacs-deferred-git-apply-delay        0.5
-	  treemacs-directory-name-transformer      #'identity
-	  treemacs-display-in-side-window          t
-	  treemacs-eldoc-display                   'simple
-	  treemacs-file-event-delay                2000
-	  treemacs-file-extension-regex            treemacs-last-period-regex-value
-	  treemacs-file-follow-delay               0.2
-	  treemacs-file-name-transformer           #'identity
-	  treemacs-follow-after-init               t
-	  treemacs-expand-after-init               t
-	  treemacs-find-workspace-method           'find-for-file-or-pick-first
-	  treemacs-git-command-pipe                ""
-	  treemacs-goto-tag-strategy               'refetch-index
-	  treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-	  treemacs-hide-dot-git-directory          t
-	  treemacs-indentation                     2
-	  treemacs-indentation-string              " "
-	  treemacs-is-never-other-window           nil
-	  treemacs-max-git-entries                 5000
-	  treemacs-missing-project-action          'ask
-	  treemacs-move-forward-on-expand          nil
-	  treemacs-no-png-images                   t
-	  treemacs-no-delete-other-windows         t
-	  treemacs-project-follow-cleanup          nil
-	  treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-	  treemacs-position                        'left
-	  treemacs-read-string-input               'from-child-frame
-	  treemacs-recenter-distance               0.1
-	  treemacs-recenter-after-file-follow      nil
-	  treemacs-recenter-after-tag-follow       nil
-	  treemacs-recenter-after-project-jump     'always
-	  treemacs-recenter-after-project-expand   'on-distance
-	  treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-	  treemacs-show-cursor                     nil
-	  treemacs-show-hidden-files               t
-	  treemacs-silent-filewatch                nil
-	  treemacs-silent-refresh                  nil
-	  treemacs-sorting                         'alphabetic-asc
-	  treemacs-select-when-already-in-treemacs 'move-back
-	  treemacs-space-between-root-nodes        t
-	  treemacs-tag-follow-cleanup              t
-	  treemacs-tag-follow-delay                1.5
-	  treemacs-text-scale                      nil
-	  treemacs-user-mode-line-format           nil
-	  treemacs-user-header-line-format         nil
-	  treemacs-wide-toggle-width               70
-	  treemacs-width                           35
-	  treemacs-width-increment                 1
-	  treemacs-width-is-initially-locked       t
-	  treemacs-workspace-switch-cleanup        nil)
-
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
-
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (treemacs-fringe-indicator-mode 'always)
-    (when treemacs-python-executable
-      (treemacs-git-commit-diff-mode t))
-
-    (pcase (cons (not (null (executable-find "git")))
-		 (not (null treemacs-python-executable)))
-      (`(t . t)
-       (treemacs-git-mode 'deferred))
-      (`(t . _)
-       (treemacs-git-mode 'simple)))
-
-    (treemacs-hide-gitignored-files-mode nil))
-
-(use-package treemacs-evil
-  :after (treemacs evil)
-  :ensure t)
-
-(use-package treemacs-projectile
-  :after (treemacs projectile)
-  :ensure t)
-
-(use-package treemacs-icons-dired
-  :hook (dired-mode . treemacs-icons-dired-enable-once)
-  :ensure t)
-
-;; (use-package treemacs-magit
-;;   :after (treemacs magit)
-;;   :ensure t)
-
-(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-  :ensure t
-  :config (treemacs-set-scope-type 'Perspectives))
-
-(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
-  :after (treemacs)
-  :ensure t
-  :config (treemacs-set-scope-type 'Tabs))
-
-  :bind
-  (:map global-map
-	("M-0"       . treemacs-select-window)
-	("C-x t 1"   . treemacs-delete-other-windows)
-	("C-x t t"   . treemacs)
-	("C-x t d"   . treemacs-select-directory)
-	("C-x t B"   . treemacs-bookmark)
-	("C-x t C-t" . treemacs-find-file)
-	("C-x t M-t" . treemacs-find-tag)))
-
 (use-package vterm
   :ensure t
-  :init
-  (evil-collection-init 'vterm)
+  :after evil
+  :init (evil-collection-init 'vterm)
   :config
   (use-package multi-vterm :ensure t)
   :general
@@ -444,15 +305,6 @@ If the new path's directories does not exist, create them."
     "SPC wz" 'winner-undo
     "SPC wx" 'winner-redo))
 
-;; (use-package balanced-windows
-;;   :config
-;;   (balanced-windows-mode))
-
-(use-package neotree
-  :ensure t
-  :custom
-  (neo-theme (if (display-graphic-p) 'icons 'arrow)))
-
 (use-package tramp
   :defer t
   :config
@@ -467,8 +319,9 @@ If the new path's directories does not exist, create them."
 
 (use-package evil
   :ensure t
+  :init
+  (setq evil-want-keybinding nil)
   :custom
-  (evil-want-keybinding nil)
   (evil-want-C-u-scroll t)
   :config
   (evil-mode t))
@@ -477,13 +330,39 @@ If the new path's directories does not exist, create them."
   :ensure t
   :after evil
   :delight evil-collection-unimpaired-mode
-  :config (evil-collection-init)
   :custom (evil-collection-want-find-usages-bindings t))
+
+(use-package evil-multiedit
+  :ensure t
+  :config
+  (evil-multiedit-default-keybinds))
 
 (use-package evil-surround
   :ensure t
   :after evil
   :config (global-evil-surround-mode 1))
+
+(use-package evil-commentary
+  :delight
+  :ensure t)
+
+(use-package evil-lispy
+  :delight
+  :ensure t
+  :hook
+  (lisp-mode . evil-lispy-mode)
+  (emacs-lisp-mode . evil-lispy-mode)
+  (clojure-mode . evil-lispy-mode)
+  :general
+  (:states '(normal visual) :keymaps '(lsp-mode-map)
+	   "SPC mjs" 'lispy-split))
+
+(use-package evil-org
+  :delight
+  :ensure t
+  :config
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
 
 (use-package counsel-projectile
   :ensure t
@@ -502,15 +381,6 @@ If the new path's directories does not exist, create them."
     "+" 'default-text-scale-increase
     "-" 'default-text-scale-decrease
     "R" 'default-text-scale-reset))
-
-;; (use-package gcmh
-;;   :ensure t
-;;   :delight
-;;   :custom
-;;   (gcmh-high-cons-threshold most-positive-fixnum)
-;;   (gcmh-idle-delay (* 12 60 60))	; trigger gc only when I'm really not using emacs
-;;   :init
-;;   (gcmh-mode 1))
 
 (use-package memory-usage
   :ensure t)
@@ -551,12 +421,7 @@ If the new path's directories does not exist, create them."
   :delight
   :hook prog-mode
   :custom
-  (ccm-vps-init (round (* 21 (window-text-height)) 34))
-  ;; :general
-  ;; ("zj" 'ccm-vpos-up)
-  ;; ("zh" 'ccm-vpos-down)
-  ;; ("zz" 'ccm-vpos-recenter)
-  )
+  (ccm-vps-init (round (* 21 (window-text-height)) 34)))
 
 (use-package yasnippet-snippets
   :ensure t)
@@ -610,14 +475,19 @@ If the new path's directories does not exist, create them."
     "f" 'counsel-projectile-find-file))
 
 ;; Visual
-(use-package minimap
-  :ensure t
-  :delight)
-
 (use-package delight
   :ensure t)
 
+(use-package almost-mono-themes
+  :config
+  ;; (load-theme 'almost-mono-black t)
+  ;; (load-theme 'almost-mono-gray t)
+  ;; (load-theme 'almost-mono-cream t)
+  ;; (load-theme 'almost-mono-white t)
+  )
+
 (use-package nord-theme
+  :after highlight-sexp
     ;; nano-theme
   ;; darktooth-theme
   ;; :quelpa (nano-theme
@@ -703,28 +573,9 @@ If the new path's directories does not exist, create them."
       :popup t
       :align bottom))))
 
-;; (use-package doom-modeline
-;;   :custom
-;;   (column-number-mode t)
-;;   (line-number-mode t)
-;;   :ensure t
-;;   :hook (after-init . doom-modeline-mode))
-
 (use-package idle-highlight-mode
   :ensure t
   :hook prog-mode)
-
-;; (use-package theme-changer
-;;   :custom
-;;   (calendar-location-name "Saint-Petersburg, Russia")
-;;   (calendar-latitude 59.85)
-;;   (calendar-longitude 30.18)
-;;   :ensure t
-;;   :config
-;;   (use-package almost-mono-themes
-;;     :ensure t
-;;     :load-path "themes")
-;;   (change-theme 'almost-mono-cream 'almost-mono-gray))
 
 ;; Text editing
 (use-package display-line-numbers-mode
@@ -733,33 +584,14 @@ If the new path's directories does not exist, create them."
 (use-package display-fill-column-indicator-mode
   :hook (text-mode prog-mode))
 
-(use-package evil-multiedit
-  :ensure t
-  :config
-  (evil-multiedit-default-keybinds))
-
-;; (use-package undo-tree
-;;   :ensure t
-;;   :delight
-;;   :custom
-;;   (evil-undo-system 'undo-tree)
-;;   (ad-return-value (concat ad-return-value ".gz"))
-;;   (undo-tree-auto-save-history t)
-;;   (undo-limit #x1000000)
-;;   :init (global-undo-tree-mode)
-;;   :general
-;;   (flawless-mode-def
-;;     "u" 'undo-tree-visualize))
 (use-package undo-fu
+  :after evil
   :ensure t
   :delight
   :custom
   (evil-undo-system 'undo-fu))
 
 ;; Programming
-;;; Doc
-(use-package devdocs :ensure)
-
 ;;; Git
 (use-package smerge
   :general
@@ -767,10 +599,11 @@ If the new path's directories does not exist, create them."
 	  "gj" 'smerge-prev
 	  "gk" 'smerge-next))
 
-;; (use-package git-timemachine :ensure t)
+(use-package git-timemachine :ensure t)
 
 (use-package magit
   :ensure t
+  :after evil
   :init (evil-collection-init 'magit)
   :custom
   (cond
@@ -803,14 +636,15 @@ If the new path's directories does not exist, create them."
   :ensure t
   :delight
   :hook
-  (prog-mode . flycheck-mode)
-  :config
-  (use-package flycheck-projectile
-    :ensure t
-    :general
-    (:states '(normal visual) :prefix "SPC" :infix "f"
-	     "p" 'flycheck-projectile-list-errors))
-  (use-package flycheck-clj-kondo :ensure t))
+  (prog-mode . flycheck-mode))
+
+(use-package flycheck-projectile
+  :ensure t
+  :general
+  (:states '(normal visual) :prefix "SPC" :infix "f"
+    "p" 'flycheck-projectile-list-errors))
+
+(use-package flycheck-clj-kondo :ensure t)
 
 (use-package highlight :ensure t)
 
@@ -824,12 +658,13 @@ If the new path's directories does not exist, create them."
   :custom
   (read-process-output-max (* 1024 1024))
   (lsp-auto-guess-root t)
+  (lsp-headerline-breadcrumb-enable nil)
   :general
   (:states '(normal visual) :keymaps '(lsp-mode-map)
 	   "gr" 'lsp-find-references
 	   ;; "gi" 'lsp-find-implementation
-	   ;; "gD" 'lsp-find-definition
-	   ;; "gd" 'xref-find-definitions
+	   "gd" 'lsp-find-definition
+	   "gD" 'evil-goto-definition
 	   "SPC mjrs" 'lsp-rename))
 
 (use-package lsp-treemacs
@@ -858,10 +693,6 @@ If the new path's directories does not exist, create them."
   (:states '(normal visual)
     "SPC mCa" 'mc/mark-all-dwim))
 
-(use-package evil-commentary
-  :delight
-  :ensure t)
-
 ;;; Lisps
 
 (use-package lisp-mode
@@ -879,14 +710,6 @@ If the new path's directories does not exist, create them."
   :config
   (use-package lispy :ensure t)
 
-  (use-package evil-lispy
-    :delight
-    :ensure t
-    :hook
-    (lisp-mode . evil-lispy-mode)
-    (emacs-lisp-mode . evil-lispy-mode)
-    (clojure-mode . evil-lispy-mode))
-
   (use-package lispyville
     :ensure t
     :delight
@@ -900,8 +723,6 @@ If the new path's directories does not exist, create them."
   (use-package smex :ensure t))
 
 ;;; Clojure
-(use-package neil :ensure t)
-
 (use-package clojure-mode
   :ensure t
   :mode (("\\.clj\\'" . clojure-mode)
@@ -917,6 +738,8 @@ If the new path's directories does not exist, create them."
   (use-package anakondo :ensure t)
 
   (use-package cider
+    :after evil
+    :init (evil-collection-init 'cider)
     :ensure t
     :defer t
     :delight
@@ -933,6 +756,8 @@ If the new path's directories does not exist, create them."
 					 (dedicated . t)))
 
     :custom
+    (cider-print-fn 'fipp)
+    (cider-merge-sessions 'project)
     (cider-save-file-on-load nil)
     (cider-repl-pop-to-buffer-on-connect t)
     (cider-repl-result-prefix "\n;; => ")
@@ -948,8 +773,6 @@ If the new path's directories does not exist, create them."
     (cider-repl-use-pretty-printing t)
     (cljr-magic-requires nil)
 
-    :init
-    (evil-collection-init 'cider)
 
     :hook
     (cider-mode . clj-refactor-mode)
@@ -1046,6 +869,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "tf" 'cljr-thread-first-all
     "tl" 'cljr-thread-last-all
     "tt" 'transpose-sexps
+    "aM" 'lsp-clojure-add-missing-libspec
     "am" 'cljr-add-missing-libspec
     "nc" 'cljr-clean-ns)
   (flawless-mode-def
@@ -1112,14 +936,14 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :mode "\\.ya?ml\\'")
 
 ;;; Beancount
-(use-package beancount
-  :ensure t
-  :quelpa (beancount :fetcher github :repo "beancount/beancount-mode" :files ("beancount.el" "COPYING"))
-  :mode ("\\.bean\\'" . beancount-mode)
-  :general
-  (:states '(normal visual) :keymaps 'beancount-mode-map
-	   "SPC mq" 'beancount-query
-	   "SPC mc" 'beancount-check))
+;; (use-package beancount
+;;   :ensure t
+;;   :quelpa (beancount :fetcher github :repo "beancount/beancount-mode" :files ("beancount.el" "COPYING"))
+;;   :mode ("\\.bean\\'" . beancount-mode)
+;;   :general
+;;   (:states '(normal visual) :keymaps 'beancount-mode-map
+;;	   "SPC mq" 'beancount-query
+;;	   "SPC mc" 'beancount-check))
 
 ;;; Org
 (use-package org
@@ -1480,6 +1304,27 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (interactive)
     (counsel-projectile-switch-project "~/org/")))
 
+(use-package outshine
+  :ensure t
+  :config
+  (defun lt:outshine-next-slide ()
+    (interactive)
+    (widen)
+    (outline-next-heading)
+    (outshine-narrow-to-subtree))
+
+  (defun lt:outshine-prev-slide ()
+    (interactive)
+    (widen)
+    (outline-previous-heading)
+    (outshine-narrow-to-subtree))
+  :general
+  (:states '(normal visual :keymap 'outshine-mode-map)
+    "SPC moj" 'lt:outshine-next-slide
+    "SPC mok" 'lt:outshine-prev-slide
+    "SPC mon" 'outshine-narrow-to-subtree
+    "SPC mow" 'widen))
+
 (use-package org-clock-today
   :after org
   :ensure t)
@@ -1526,13 +1371,6 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (org-pomodoro-short-break-format "%s")
   (org-pomodoro-long-break-format "%s"))
 
-(use-package evil-org
-  :delight
-  :ensure t
-  :config
-  (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
-
 ;;; Web
 (use-package css-mode
   :custom
@@ -1557,8 +1395,8 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 ;;; Mail
 (use-package notmuch
   :ensure t
-  :init
-  (evil-collection-init 'notmuch))
+  :after evil
+  :init (evil-collection-init 'notmuch))
 
 ;;; Telega
 (use-package telega
@@ -1567,15 +1405,12 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 		  :repo "zevlg/telega.el"
 		  :branch "master"
 		  :files (:defaults "contrib" "etc" "server" "Makefile"))
+  :after evil
   :init
   (telega-mode-line-mode t)
   (setq telega-use-images t)
   (evil-collection-init 'telega)
-  :config
-  (defcustom telega-database-dir-base (expand-file-name "~/.telega")
-    "telega base dir")
   :custom
-  (telega-server-libs-prefix "/usr/")
   (telega-chat-fill-column 80)
   (telega-accounts
    (list
@@ -1584,36 +1419,14 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 	  (expand-file-name "flaw1322" telega-database-dir-base))
     (list "C11H26NO2PS" 'telega-database-dir
 	  (expand-file-name "c11h26no2ps" telega-database-dir-base))))
-  ;; (telega-filters-custom
-  ;;  (("Main" . main)
-  ;;   ("Important" . important)
-  ;;   ("Online" and
-  ;;    (not saved-messages)
-  ;;    (user is-online))
-  ;;   ("lng_filters_type_groups" type basicgroup supergroup)
-  ;;   ("lng_filters_type_channels" type channel)
-  ;;   ("lng_filters_type_no_archived" . archive)))
+  :config
+  (when (eq system-type 'gnu/linux)
+    (setq telega-server-libs-prefix "/usr"))
   :general
   (:states '(normal visual) :prefix "SPC" :infix "c"
 	   "w" 'telega-chat-with
 	   "g" 'telega
 	   "A" 'telega-account-switch))
-
-;; (use-package sweeprolog
-;;   :ensure f
-;;   :config
-;;   (lsp-register-client
-;;    (make-lsp-client
-;;     :new-connection
-;;     (lsp-stdio-connection (list "swipl"
-;;				"-g" "use_module(library(lsp_server))."
-;;				"-g" "lsp_server:main"
-;;				"-t" "halt"
-;;				"--" "stdio"))
-;;     :major-modes '(prolog-mode)
-;;     :priority 1
-;;     :multi-root t
-;;     :server-id 'prolog-ls)))
 
 (use-package rustic
   :ensure t
@@ -1621,8 +1434,15 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (setq rustic-format-on-save t)
   :general
   (:states '(normal visual) :keymaps 'rustic-mode-map
+	   "SPC mhd" 'lsp-describe-thing-at-point
 	   "SPC mcC" 'rustic-compile
 	   "SPC mcc" 'rustic-cargo-comp
 	   "SPC mer" 'rustic-cargo-run))
 
-;;; init.el ends here
+(use-package web-mode
+  :ensure t
+  :mode (("\\.jsx?$" . web-mode)
+	 ("\\.mdx$" . web-mode))
+  :custom
+  (web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))))
+;; init.el ends here
