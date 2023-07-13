@@ -25,9 +25,9 @@
 (load custom-file t)
 
 (customize-set-variable 'package-archives
-			`(,@package-archives
-			  ("melpa" . "https://melpa.org/packages/")
-			  ("melpa-stable" . "https://stable.melpa.org/packages/")))
+                        `(,@package-archives
+                          ("melpa" . "https://melpa.org/packages/")
+                          ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -89,6 +89,7 @@
   (auto-fill-function)
   (auto-revert-mode)
   :custom
+  (indent-tabs-mode nil)
   (backup-directory-alist `((".*" . ,temporary-file-directory)))
   (auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
   (make-backup-file-name-function 'lt/backup-file-name)
@@ -126,7 +127,7 @@
     (hl-sexp-delete-overlay)
     (hl-sexp-create-overlay)
     (setq rainbow-identifiers-choose-face-function
-	  'rainbow-identifiers-cie-l*a*b*-choose-face)
+          'rainbow-identifiers-cie-l*a*b*-choose-face)
     (setq rainbow-identifiers-cie-l*a*b*-lightness 00)
     (setq rainbow-identifiers-cie-l*a*b*-saturation 00))
 
@@ -134,8 +135,8 @@
     "Return a new file path of a given file path.
 If the new path's directories does not exist, create them."
     (let* ((backupRootDir "~/.emacs.d/emacs-backup/")
-	   (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath)) ; remove Windows driver letter in path, ➢ for example: “C:”
-	   (backupFilePath (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~"))))
+           (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath)) ; remove Windows driver letter in path, ➢ for example: “C:”
+           (backupFilePath (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~"))))
       (make-directory (file-name-directory backupFilePath) (file-name-directory backupFilePath))
       backupFilePath))
 
@@ -155,19 +156,19 @@ If the new path's directories does not exist, create them."
       (run-with-timer
        0.1 nil
        #'(lambda (frame)
-	   (let ((inhibit-quit)
-		 (inhibit-redisplay t))
-	     (invert-face 'header-line frame)
-	     (invert-face 'header-line-highlight frame)
-	     (invert-face 'mode-line frame)
-	     (invert-face 'mode-line-inactive frame)))
+           (let ((inhibit-quit)
+                 (inhibit-redisplay t))
+             (invert-face 'header-line frame)
+             (invert-face 'header-line-highlight frame)
+             (invert-face 'mode-line frame)
+             (invert-face 'mode-line-inactive frame)))
        frame)
       (let ((inhibit-quit)
-	    (inhibit-redisplay t))
-	(invert-face 'header-line frame)
-	(invert-face 'header-line-highlight frame)
-	(invert-face 'mode-line frame)
-	(invert-face 'mode-line-inactive frame))))
+            (inhibit-redisplay t))
+        (invert-face 'header-line frame)
+        (invert-face 'header-line-highlight frame)
+        (invert-face 'mode-line frame)
+        (invert-face 'mode-line-inactive frame))))
 
   (my-mode-line-visual-bell)
 
@@ -355,7 +356,7 @@ If the new path's directories does not exist, create them."
   (clojure-mode . evil-lispy-mode)
   :general
   (:states '(normal visual) :keymaps '(lsp-mode-map)
-	   "SPC mjs" 'lispy-split))
+           "SPC mjs" 'lispy-split))
 
 (use-package evil-org
   :delight
@@ -596,8 +597,8 @@ If the new path's directories does not exist, create them."
 (use-package smerge
   :general
   (:states '(normal visual) :keymaps 'smerge-mode-map
-	  "gj" 'smerge-prev
-	  "gk" 'smerge-next))
+          "gj" 'smerge-prev
+          "gk" 'smerge-next))
 
 (use-package git-timemachine :ensure t)
 
@@ -617,13 +618,13 @@ If the new path's directories does not exist, create them."
   (evil-set-initial-state 'magit-mode 'normal)
   :general
   (:states '(normal visual) :keymaps '(magit-mode-map)
-	   "SPC" nil)
+           "SPC" nil)
   (:states '(normal visual) :prefix "SPC" :infix "g"
-	   "b" 'magit-checkout
-	   "B" 'magit-blame
-	   "g" 'magit-status
-	   "f" 'magit-find-file
-	   "l" 'magit-log-buffer-file))
+           "b" 'magit-checkout
+           "B" 'magit-blame
+           "g" 'magit-status
+           "f" 'magit-find-file
+           "l" 'magit-log-buffer-file))
 
 ;;; Basic programming (not basic lang!!)
 (use-package company
@@ -661,11 +662,11 @@ If the new path's directories does not exist, create them."
   (lsp-headerline-breadcrumb-enable nil)
   :general
   (:states '(normal visual) :keymaps '(lsp-mode-map)
-	   "gr" 'lsp-find-references
-	   ;; "gi" 'lsp-find-implementation
-	   "gd" 'lsp-find-definition
-	   "gD" 'evil-goto-definition
-	   "SPC mjrs" 'lsp-rename))
+           "gr" 'lsp-find-references
+           ;; "gi" 'lsp-find-implementation
+           "gd" 'lsp-find-definition
+           "gD" 'evil-goto-definition
+           "SPC mjrs" 'lsp-rename))
 
 (use-package lsp-treemacs
   :after (lsp-mode treemacs)
@@ -726,10 +727,10 @@ If the new path's directories does not exist, create them."
 (use-package clojure-mode
   :ensure t
   :mode (("\\.clj\\'" . clojure-mode)
-	 ("\\.bb\\'" . clojure-mode)
-	 ("\\.cljc\\'" . clojurec-mode)
-	 ("\\.cljs\\'" . clojurescript-mode)
-	 ("\\.edn\\'" . clojure-mode))
+         ("\\.bb\\'" . clojure-mode)
+         ("\\.cljc\\'" . clojurec-mode)
+         ("\\.cljs\\'" . clojurescript-mode)
+         ("\\.edn\\'" . clojure-mode))
   :config
   (use-package clj-refactor
     :ensure t
@@ -749,11 +750,11 @@ If the new path's directories does not exist, create them."
 
     :config
     (add-to-list 'display-buffer-alist '("\\*cider-error\\*"
-					 (display-buffer-in-side-window)
-					 (side . right)
-					 (slot . 3)
-					 (window-height . shrink-window-if-larger-than-buffer)
-					 (dedicated . t)))
+                                         (display-buffer-in-side-window)
+                                         (side . right)
+                                         (slot . 3)
+                                         (window-height . shrink-window-if-larger-than-buffer)
+                                         (dedicated . t)))
 
     :custom
     (cider-print-fn 'fipp)
@@ -772,7 +773,7 @@ If the new path's directories does not exist, create them."
     (cider-overlays-use-font-lock t)
     (cider-repl-use-pretty-printing t)
     (cljr-magic-requires nil)
-
+    (cljr-insert-newline-after-require nil)
 
     :hook
     (cider-mode . clj-refactor-mode)
@@ -816,13 +817,13 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     (interactive)
     (insert
      (format "#uuid \"%04x%04x-%04x-%04x-%04x-%06x%06x\""
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 4))
-	     (random (expt 16 6))
-	     (random (expt 16 6)))))
+             (random (expt 16 4))
+             (random (expt 16 4))
+             (random (expt 16 4))
+             (random (expt 16 4))
+             (random (expt 16 4))
+             (random (expt 16 6))
+             (random (expt 16 6)))))
   (require 'flycheck-clj-kondo)
 
   :hook
@@ -832,28 +833,28 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (clojure-mode . subword-mode)
   (clojure-mode . eldoc-mode)
   (clojure-mode . (lambda ()
-		    (auto-fill-mode 1)
-		    (set (make-local-variable 'fill-nobreak-predicate)
-			 (lambda ()
-			   (not (or (eq (get-text-property (point) 'face)
-					'font-lock-comment-face)
-				    (eq (get-text-property (point) 'face)
-					'font-lock-string-face (point) 'face)))))))
+                    (auto-fill-mode 1)
+                    (set (make-local-variable 'fill-nobreak-predicate)
+                         (lambda ()
+                           (not (or (eq (get-text-property (point) 'face)
+                                        'font-lock-comment-face)
+                                    (eq (get-text-property (point) 'face)
+                                        'font-lock-string-face (point) 'face)))))))
 
   :general
   (:states '(normal visual) :prefix "SPC mc" :keymaps 'clojure-mode-map
-	   "j" 'cider-jack-in
-	   "s" 'cider-jack-in-cljs
-	   "J" 'cider-jack-in-clj&cljs
-	   "c" 'cider-connect-clj
-	   "s" 'cider-connect-cljs
-	   "C" 'cider-connect-clj&cljs
-	   "S" 'cider-connect-sibling-cljs)
+           "j" 'cider-jack-in
+           "s" 'cider-jack-in-cljs
+           "J" 'cider-jack-in-clj&cljs
+           "c" 'cider-connect-clj
+           "s" 'cider-connect-cljs
+           "C" 'cider-connect-clj&cljs
+           "S" 'cider-connect-sibling-cljs)
   (:states '(normal visual) :prefix "SPC ms" :keymaps 'clojure-mode-map
-	   "b" 'sesman-link-with-buffer
-	   "s" 'sesman-link-session)
+           "b" 'sesman-link-with-buffer
+           "s" 'sesman-link-session)
   (:states '(normal visual) :prefix "SPC mm" :keymaps 'clojure-mode-map
-	   "e" 'cider-enlighten-mode)
+           "e" 'cider-enlighten-mode)
   (flawless-mode-def
     :infix "d"
     :keymaps 'clojure-mode-map
@@ -971,7 +972,6 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     :prefix "SPC m"
     :keymaps 'org-mode-map
     :infix "d"
-    "r" 'org-evaluate-time-range
     "d" 'org-deadline
     "s" 'org-schedule)
   (:states '(normal visual)
@@ -986,8 +986,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     :prefix "SPC m"
     :keymaps 'org-mode-map
     :infix "c"
+    "r" 'org-evaluate-time-range
     "o" 'org-open-at-point
-    "r" 'org-clock-report
     "i" 'org-clock-in
     "p" 'org-pomodoro
     "e" 'org-set-effort)
@@ -1019,18 +1019,20 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (org-superstar-headline-bullets-list '("⁖" "◉" "○" "✸" "✿"))
   (org-todo-keywords
    '((sequence "TODO(t!)" "WAIT(w@/!)" "RVIW(r)" "STRT(s!)" "CTRL(c!)" "HOLD(h!)" "TEST(q!)"
-	       "|" "DONE(d!)" "KILL(k@)")))
+               "|" "DONE(d!)" "KILL(k@)")))
   (org-tag-alist '(("important" . ?i)
-		   ("urgent" . ?u)
-		   ("buy" . ?b)))
+                   ("urgent" . ?u)
+                   ("buy" . ?b)))
+  ;; (org-agenda-category-icon-alist
+  ;;  '(("WORK" "~/.emacs.d/icons/person-digging-solid.svg" nil nil :ascent center :mask heuristic)))
   (org-agenda-custom-commands
    '(("u" "Undated tasks" ((todo "TODO")
-			   (org-agenda-skip-function '(org-agenda-skip-entry-if
-						       'deadline 'scheduled 'timestamp))))
+                           (org-agenda-skip-function '(org-agenda-skip-entry-if
+                                                       'deadline 'scheduled 'timestamp))))
      ("s" "Sprint" ((todo "TODO")
-		    (org-agenda-span (lt/days-to-next-sunday))))
+                    (org-agenda-span (lt/days-to-next-sunday))))
      ("b" "Backlog" ((todo "TODO")
-		     (tags-todo "-expense")))
+                     (tags-todo "-expense")))
      ("d" "Daily" ((org-agenda-ndays 60)))
      ("e" "Planned Expenses" tags-todo "+expense")
      ("i" "Inbox" (search ((org-agenda-files '("~/inbox.org")))))
@@ -1094,27 +1096,27 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :config
   (defun lt/days-to-next-sunday()
     (let ((dayspan 0)
-	  (today (string-to-number (format-time-string "%u"))))
+          (today (string-to-number (format-time-string "%u"))))
       (cond
        ((> today 0) ; from today till sunday, today included
-	(setq dayspan (- 8 today)))
+        (setq dayspan (- 8 today)))
        ((= today 0) ; sunday to sunday
-	(setq dayspan 8)))))
+        (setq dayspan 8)))))
   ;; ox-extra
   (require 'ox-extra)
   (ox-extras-activate '(latex-header-blocks ignore-headlines))
   ;; ox-latex
   (setq org-latex-pdf-process
-	'("pdflatex -interaction nonstopmode -output-directory %o %f"
-	  "bibtex %b"
-	  "pdflatex -interaction nonstopmode -output-directory %o %f"
-	  "pdflatex -interaction nonstopmode -output-directory %o %f"))
+        '("pdflatex -interaction nonstopmode -output-directory %o %f"
+          "bibtex %b"
+          "pdflatex -interaction nonstopmode -output-directory %o %f"
+          "pdflatex -interaction nonstopmode -output-directory %o %f"))
   (setq org-latex-with-hyperref nil) ;; stop org adding hypersetup{author..} to latex export
     ;; (setq org-latex-prefer-user-labels t)
 
     ;; deleted unwanted file extensions after latexMK
   (setq org-latex-logfiles-extensions
-	'("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl" "xmpi" "run.xml" "bcf" "acn" "acr" "alg" "glg" "gls" "ist"))
+        '("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl" "xmpi" "run.xml" "bcf" "acn" "acr" "alg" "glg" "gls" "ist"))
 
   (unless (boundp 'org-latex-classes)
     (setq org-latex-classes nil))
@@ -1124,77 +1126,77 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 clocked tasks in minutes."
     (interactive)
     (let ((files (org-agenda-files))
-	  (total 0))
+          (total 0))
       (org-agenda-prepare-buffers files)
       (dolist (file files)
-	(with-current-buffer (find-buffer-visiting file)
-	  (setq total (+ total (org-clock-sum-today)))))
+        (with-current-buffer (find-buffer-visiting file)
+          (setq total (+ total (org-clock-sum-today)))))
       (format " Today's total: %s " (org-minutes-to-clocksum-string total))))
  (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
   (defun lt:capture-comment-line (&optional line)
     (let ((c
-	   (save-excursion
-	     (save-window-excursion
-	       (switch-to-buffer (plist-get org-capture-plist :original-buffer))
-	       comment-start))))
+           (save-excursion
+             (save-window-excursion
+               (switch-to-buffer (plist-get org-capture-plist :original-buffer))
+               comment-start))))
       (while (string-prefix-p c line)
-	(setq line (string-remove-prefix c line)))
+        (setq line (string-remove-prefix c line)))
       (comment-string-strip line t t)))
   (defun lt:capture-issue (path issue-type)
     #'(lambda ()
-	(cl-case issue-type
-	  (:arvl-short
-	   (let ((issue-id (read-string "ID: " "RIGEL-")))
-	     (expand-file-name (format "%s.org" issue-id)path)))
-	  (:arvl
-	   (let ((issue-id (read-string "ID: " "RIGEL-"))
-		 (name (read-string "Name (camelCase prefix): ")))
-	     (expand-file-name (format "%s_%s.org"
-				       issue-id
-				       name) path))))))
+        (cl-case issue-type
+          (:arvl-short
+           (let ((issue-id (read-string "ID: " "RIGEL-")))
+             (expand-file-name (format "%s.org" issue-id)path)))
+          (:arvl
+           (let ((issue-id (read-string "ID: " "RIGEL-"))
+                 (name (read-string "Name (camelCase prefix): ")))
+             (expand-file-name (format "%s_%s.org"
+                                       issue-id
+                                       name) path))))))
   (defun lt:yank-org-link (text)
     (if (derived-mode-p 'org-mode)
-	(insert text)
+        (insert text)
       (string-match org-link-bracket-re text)
       (insert (substring text (match-beginning 1) (match-end 1)))))
 
   (defun lt:org-retrieve-url-from-point ()
     (let* ((link-info (assoc :link (org-context)))
-	   (text (when link-info
-		   ;; org-context seems to return nil if the current element
-		   ;; starts at buffer-start or ends at buffer-end
-		   (buffer-substring-no-properties (or (cadr link-info) (point-min))
-						   (or (caddr link-info) (point-max))))))
+           (text (when link-info
+                   ;; org-context seems to return nil if the current element
+                   ;; starts at buffer-start or ends at buffer-end
+                   (buffer-substring-no-properties (or (cadr link-info) (point-min))
+                                                   (or (caddr link-info) (point-max))))))
       (if (not text)
-	  (error "Not in org link")
-	(add-text-properties 0 (length text) '(yank-handler (my-yank-org-link)) text)
-	(kill-new text))))
+          (error "Not in org link")
+        (add-text-properties 0 (length text) '(yank-handler (my-yank-org-link)) text)
+        (kill-new text))))
 
   (defun lt:smarter-kill-ring-save ()
     (interactive)
     (if (region-active-p)
-	(call-interactively #'kill-ring-save)
+        (call-interactively #'kill-ring-save)
       (when (eq major-mode 'org-mode)
-	(call-interactively #'lt:org-retrieve-url-from-point))))
+        (call-interactively #'lt:org-retrieve-url-from-point))))
 
   (defun lt:sum-direct-children-org (level children)
     "Update the time LEVEL nodes recursively to be the sum of the times of its children.
 Used in `my-org-clocktable-formatter' to go from net times back to tatal times."
     (let ((subtrees (-partition-before-pred (lambda (it) (= level (car it))) children)))
       (-flatten-n 1
-		  (--map (let ((it-children (lt:sum-direct-children-org (1+ level)
-									(cdr it))))
-			   (cons (--update-at
-				  4 (+ it
-				       (-sum
-					(--map (nth 4 it)
-					       (--filter (= (1+ level)
-							    (car it))
-							 it-children))))
-				  (car it))
-				 it-children))
-			 subtrees))))
+                  (--map (let ((it-children (lt:sum-direct-children-org (1+ level)
+                                                                        (cdr it))))
+                           (cons (--update-at
+                                  4 (+ it
+                                       (-sum
+                                        (--map (nth 4 it)
+                                               (--filter (= (1+ level)
+                                                            (car it))
+                                                         it-children))))
+                                  (car it))
+                                 it-children))
+                         subtrees))))
   (defun lt:org-clocktable-formatter (ipos tables params)
     "Custom formatter for org-mode clocktables which groups by category rather than file.
 It uses `org-clock-clocktable-formatter' for the insertion of the
@@ -1204,84 +1206,84 @@ category property. Thus all parameters supported by
 sort a clocktable add `:properties (\"CATEGORY\") :formatter
 my-org-clocktable-formatter' to that clocktable's arguments."
     (let* ((tt (-flatten-n 1 (-map #'-last-item tables)))
-	   (formatter (or org-clock-clocktable-formatter
-			  'org-clocktable-write-default))
-	   (newprops (remove "CATEGORY" (plist-get params :properties)))
-	   (newparams (plist-put (plist-put params :multifile t) :properties newprops))
-	   newtables)
+           (formatter (or org-clock-clocktable-formatter
+                          'org-clocktable-write-default))
+           (newprops (remove "CATEGORY" (plist-get params :properties)))
+           (newparams (plist-put (plist-put params :multifile t) :properties newprops))
+           newtables)
 
       ;; Compute net clocked time for each item
       (setq tt
-	    (--map-indexed
-	     (let* ((it-level (car it))
-		    (it-time (nth 4 it))
-		    (it-subtree (--take-while (< it-level (car it))
-					      (-drop (1+ it-index) tt)))
-		    (it-children (--filter (= (1+ it-level) (car it))
-					   it-subtree)))
-	       (-replace-at 4 (- it-time (-sum (--map (nth 4 it) it-children)))
-			    it))
-	     tt))
+            (--map-indexed
+             (let* ((it-level (car it))
+                    (it-time (nth 4 it))
+                    (it-subtree (--take-while (< it-level (car it))
+                                              (-drop (1+ it-index) tt)))
+                    (it-children (--filter (= (1+ it-level) (car it))
+                                           it-subtree)))
+               (-replace-at 4 (- it-time (-sum (--map (nth 4 it) it-children)))
+                            it))
+             tt))
 
       ;; Add index (ie id) and indexes of parents (these are needed in the
       ;; sorting step). This can probably be written more functionally using --reduce?
       ;; At least without having to modify hist.
       (setq tt
-	    (let (hist)
-	      (--map-indexed (let* ((it-level (car it))
-				    (it-hist (-drop (- (length hist)
-						       it-level -1)
-						    hist)))
-			       (setq hist (cons it-index it-hist))
-			       (cons it-index (cons it-hist it)))
-			     tt)))
+            (let (hist)
+              (--map-indexed (let* ((it-level (car it))
+                                    (it-hist (-drop (- (length hist)
+                                                       it-level -1)
+                                                    hist)))
+                               (setq hist (cons it-index it-hist))
+                               (cons it-index (cons it-hist it)))
+                             tt)))
 
       ;; Now comes the important phase: sorting, where we copy items with >0 net time
       ;; into newtables based on their category, and we copy their parents when
       ;; appropriate.
       (--each tt (let* ((it-hist (nth 1 it))
-			(it-time (nth 6 it))
-			(it-prop (-last-item it))
-			(it-cat (alist-get "CATEGORY" it-prop nil nil #'string=))
-			;; Find the index of the table for category: it-cat or if
-			;; it doesn't yet exist add it to the start of newtables.
-			(cat-pos (or
-				  (--find-index (string= (car it) it-cat) newtables)
-				  (progn (push (list it-cat nil) newtables) 0)))
-			(cat-members (-map #'car (-last-item (nth cat-pos newtables))))
-			(it-parent
-			 (or (--find-index (member it
-						   cat-members)
-					   it-hist)
-			     (length it-hist)))
-			(hist-to-add
-			 ;; replace the time of copied parents with 0 since if a
-			 ;; parents is being copied and has time >0 then it has
-			 ;; already been placed in the table for a different
-			 ;; category. ie. We don't want time double counted.
-			 (--map (-replace-at 6 0 (nth it tt))
-				(-take it-parent it-hist))))
+                        (it-time (nth 6 it))
+                        (it-prop (-last-item it))
+                        (it-cat (alist-get "CATEGORY" it-prop nil nil #'string=))
+                        ;; Find the index of the table for category: it-cat or if
+                        ;; it doesn't yet exist add it to the start of newtables.
+                        (cat-pos (or
+                                  (--find-index (string= (car it) it-cat) newtables)
+                                  (progn (push (list it-cat nil) newtables) 0)))
+                        (cat-members (-map #'car (-last-item (nth cat-pos newtables))))
+                        (it-parent
+                         (or (--find-index (member it
+                                                   cat-members)
+                                           it-hist)
+                             (length it-hist)))
+                        (hist-to-add
+                         ;; replace the time of copied parents with 0 since if a
+                         ;; parents is being copied and has time >0 then it has
+                         ;; already been placed in the table for a different
+                         ;; category. ie. We don't want time double counted.
+                         (--map (-replace-at 6 0 (nth it tt))
+                                (-take it-parent it-hist))))
 
-		   (when (not (= 0 it-time))
-		     (setf (-last-item (nth cat-pos newtables))
-			   (append (cons it hist-to-add)
-				   (-last-item (nth cat-pos newtables)))))))
+                   (when (not (= 0 it-time))
+                     (setf (-last-item (nth cat-pos newtables))
+                           (append (cons it hist-to-add)
+                                   (-last-item (nth cat-pos newtables)))))))
 
       (--each newtables (setf (-last-item it) (reverse (-last-item it))))
       ;; Cleanup, remove ids and list of parents, as they are no longer needed.
       (setq newtables
-	    (--map (list (car it) 0 (--map (-drop 2 it) (-last-item it))) newtables))
+            (--map (list (car it) 0 (--map (-drop 2 it) (-last-item it))) newtables))
 
       ;; Recompute the total times for each node.
       ;; (replace this with --each and setf?)
       (setq newtables
-	    (--map (let* ((it-children (lt:sum-direct-children-org 1 (-last-item it)))
-			  (it-total-time (-sum
-					  (--map (nth 4 it)
-						 (--filter (= 1 (car it))
-							   it-children)))))
-		     (list (car it) it-total-time it-children))
-		   newtables))
+            (--map (let* ((it-children (lt:sum-direct-children-org 1 (-last-item it)))
+                          (it-total-time (-sum
+                                          (--map (nth 4 it)
+                                                 (--filter (= 1 (car it))
+                                                           it-children)))))
+                     (list (car it) it-total-time it-children))
+                   newtables))
       ;; Actually insert the clocktable now.
       (funcall formatter ipos newtables newparams)
       ;; Replace "File" with "Category" in the "file" column and "*File time*" with "*
@@ -1291,15 +1293,15 @@ my-org-clocktable-formatter' to that clocktable's arguments."
       (insert "Category")
       (org-table-align)
       (let ((n 2))
-	(while (org-table-goto-line n)
-	  (org-table-next-field)
-	  ;; This won't work if there are addition columns eg. Property column.
-	  ;; Instead look forward along each line to see if that regexp is matched?
-	  (when (looking-at "\\*File time\\* .*\| *\\*.*[0-9]:[0-9][0-9]\\*")
-	    (org-table-blank-field)
-	    (insert "*Category time*")
-	    (org-table-align))
-	  (cl-incf n)))))
+        (while (org-table-goto-line n)
+          (org-table-next-field)
+          ;; This won't work if there are addition columns eg. Property column.
+          ;; Instead look forward along each line to see if that regexp is matched?
+          (when (looking-at "\\*File time\\* .*\| *\\*.*[0-9]:[0-9][0-9]\\*")
+            (org-table-blank-field)
+            (insert "*Category time*")
+            (org-table-align))
+          (cl-incf n)))))
   (defun lt:counsel-projectile-swith-to-org ()
     (interactive)
     (counsel-projectile-switch-project "~/org/")))
@@ -1325,6 +1327,9 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     "SPC mon" 'outshine-narrow-to-subtree
     "SPC mow" 'widen))
 
+;; (use-package all-the-icons
+;;   :if (display-graphic-p))
+
 (use-package org-clock-today
   :after org
   :ensure t)
@@ -1335,7 +1340,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (org-agenda-window-setup 'current-window)
   :general
   (:state 'motion :keymaps 'org-agenda-mode-map
-	  "SPC" nil))
+          "SPC" nil))
 
 (use-package org-fancy-priorities
   :after org
@@ -1352,11 +1357,11 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 (use-package org-duration
   :config
   (setq org-duration-units `(("min" . 1)
-			     ("h" . 60)
-			     ("d" . ,(* 60 8))
-			     ("w" . ,(* 60 8 5))
-			     ("m" . ,(* 60 8 5 4))
-			     ("y" . ,(* 60 8 5 4 11))))
+                             ("h" . 60)
+                             ("d" . ,(* 60 8))
+                             ("w" . ,(* 60 8 5))
+                             ("m" . ,(* 60 8 5 4))
+                             ("y" . ,(* 60 8 5 4 11))))
   (org-duration-set-regexps))
 
 (use-package org-pomodoro
@@ -1374,7 +1379,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 ;;; Web
 (use-package css-mode
   :custom
-  (css-indent-offset 2))
+  (css-indent-offset 4))
 
 ;; TS
 (use-package tide
@@ -1402,9 +1407,9 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 (use-package telega
   :ensure t
   :quelpa (telega :fetcher github
-		  :repo "zevlg/telega.el"
-		  :branch "master"
-		  :files (:defaults "contrib" "etc" "server" "Makefile"))
+                  :repo "zevlg/telega.el"
+                  :branch "master"
+                  :files (:defaults "contrib" "etc" "server" "Makefile"))
   :after evil
   :init
   (telega-mode-line-mode t)
@@ -1416,17 +1421,17 @@ my-org-clocktable-formatter' to that clocktable's arguments."
    (list
     (list "AlexanderUshanov" 'telega-database-dir telega-database-dir-base)
     (list "flaw1322" 'telega-database-dir
-	  (expand-file-name "flaw1322" telega-database-dir-base))
+          (expand-file-name "flaw1322" telega-database-dir-base))
     (list "C11H26NO2PS" 'telega-database-dir
-	  (expand-file-name "c11h26no2ps" telega-database-dir-base))))
+          (expand-file-name "c11h26no2ps" telega-database-dir-base))))
   :config
   (when (eq system-type 'gnu/linux)
     (setq telega-server-libs-prefix "/usr"))
   :general
   (:states '(normal visual) :prefix "SPC" :infix "c"
-	   "w" 'telega-chat-with
-	   "g" 'telega
-	   "A" 'telega-account-switch))
+           "w" 'telega-chat-with
+           "g" 'telega
+           "A" 'telega-account-switch))
 
 (use-package rustic
   :ensure t
@@ -1434,15 +1439,15 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (setq rustic-format-on-save t)
   :general
   (:states '(normal visual) :keymaps 'rustic-mode-map
-	   "SPC mhd" 'lsp-describe-thing-at-point
-	   "SPC mcC" 'rustic-compile
-	   "SPC mcc" 'rustic-cargo-comp
-	   "SPC mer" 'rustic-cargo-run))
+           "SPC mhd" 'lsp-describe-thing-at-point
+           "SPC mcC" 'rustic-compile
+           "SPC mcc" 'rustic-cargo-comp
+           "SPC mer" 'rustic-cargo-run))
 
 (use-package web-mode
   :ensure t
   :mode (("\\.jsx?$" . web-mode)
-	 ("\\.mdx$" . web-mode))
+         ("\\.mdx$" . web-mode))
   :custom
   (web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))))
 ;; init.el ends here
