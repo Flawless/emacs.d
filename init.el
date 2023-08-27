@@ -97,7 +97,7 @@
   (fill-column 120)
 
   :config
-  (defun file-notify-rm-all-watches ()
+  (defun lt:file-notify-rm-all-watches ()
     "Remove all existing file notification watches from Emacs."
     (interactive)
     (maphash
@@ -233,6 +233,8 @@ If the new path's directories does not exist, create them."
     "SPC ww" 'ace-window
     "SPC wm" 'maximize-window
 
+    "SPC w=" 'balance-windows
+
     "SPC tF" 'toggle-frame-fullscreen
     "SPC tt" 'toggle-truncate-lines
 
@@ -314,6 +316,9 @@ If the new path's directories does not exist, create them."
   (tramp-backup-directory-alist backup-directory-alist)
   (tramp-default-method "ssh")
   (tramp-default-proxies-alist nil))
+
+(use-package vagrant-tramp
+  :ensure t)
 
 (use-package goto-last-change
   :ensure t)
@@ -757,6 +762,7 @@ If the new path's directories does not exist, create them."
                                          (dedicated . t)))
 
     :custom
+    ;; lsp
     (cider-print-fn 'fipp)
     (cider-merge-sessions 'project)
     (cider-save-file-on-load nil)
@@ -937,14 +943,15 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :mode "\\.ya?ml\\'")
 
 ;;; Beancount
-;; (use-package beancount
-;;   :ensure t
-;;   :quelpa (beancount :fetcher github :repo "beancount/beancount-mode" :files ("beancount.el" "COPYING"))
-;;   :mode ("\\.bean\\'" . beancount-mode)
-;;   :general
-;;   (:states '(normal visual) :keymaps 'beancount-mode-map
-;;	   "SPC mq" 'beancount-query
-;;	   "SPC mc" 'beancount-check))
+(use-package beancount
+  :ensure t
+  :quelpa (beancount :fetcher github :repo "beancount/beancount-mode" :files ("beancount.el" "COPYING"))
+  :mode ("\\.bean\\'" . beancount-mode)
+  :general
+  (:states '(normal visual) :keymaps 'beancount-mode-map
+           "gs" 'counsel-org-goto
+           "SPC mq" 'beancount-query
+           "SPC mc" 'beancount-check))
 
 ;;; Org
 (use-package org
@@ -1007,6 +1014,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     :infix "l"
     "l" 'org-insert-link
     "C" ''counsel-org-link)
+  (:states '(normal visual)
+    :keymaps 'org-mode-map
+    "gs" 'counsel-org-goto)
   :custom
   (org-attach-store-link-p 'attached)
   (org-log-reschedule 'time)
@@ -1450,4 +1460,5 @@ my-org-clocktable-formatter' to that clocktable's arguments."
          ("\\.mdx$" . web-mode))
   :custom
   (web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))))
-;; init.el ends here
+
+(use-package typescript-mode :ensure t)
