@@ -308,11 +308,17 @@ If the new path's directories does not exist, create them."
     "SPC wz" 'winner-undo
     "SPC wx" 'winner-redo))
 
+(use-package pass
+  :ensure t)
+
 (use-package tramp
   :defer t
   :config
-  (put 'temporary-file-directory 'standard-value `(,temporary-file-directory))
+  ;; Workaround a tramp-MacOS bug that dramatically slows completion
+  (put 'temporary-file-directory 'standard-value
+       (list temporary-file-directory))
   :custom
+  (tramp-use-ssh-controlmaster-options nil)
   (tramp-backup-directory-alist backup-directory-alist)
   (tramp-default-method "ssh")
   (tramp-default-proxies-alist nil))
@@ -932,6 +938,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "B" 'cider-format-buffer
     "u" '+/insert-random-uid))
 
+(use-package clj-decompiler
+  :ensure t)
+
 (use-package lsp-java
   :after (lsp-mode)
   :ensure t)
@@ -1462,3 +1471,9 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))))
 
 (use-package typescript-mode :ensure t)
+
+(use-package lua-mode
+  :ensure t
+  :defer 1)
+
+;;; init.el ends here
