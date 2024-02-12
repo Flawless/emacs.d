@@ -29,6 +29,7 @@
                           ("melpa" . "https://melpa.org/packages/")
                           ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
+
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -58,6 +59,13 @@
   :init
   (setq quelpa-use-package-inhibit-loading-quelpa t))
 
+(use-package paradox
+  :ensure t
+  :custom
+  (paradox-github-token t)
+  (paradox-execute-asynchronously t)
+  (paradox-automatically-star t))
+
 (use-package general
   :demand t
   :ensure t
@@ -84,6 +92,7 @@
   (general-evil-setup))
 
 (use-package emacs
+  :ensure nord-theme
   :delight
   (eldoc-mode)
   (auto-fill-function)
@@ -94,7 +103,28 @@
   (auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
   (make-backup-file-name-function 'lt/backup-file-name)
   (mac-command-modifier 'meta)
-  (fill-column 120)
+  (fill-column 100)
+
+  :init
+  (set-face-attribute 'mode-line nil  :height 100)
+  (set-face-attribute 'mode-line-inactive nil  :height 100)
+  ;; (setq
+  ;;  mode-line-format
+  ;;  '("%e" mode-line-front-space
+  ;;    (:propertize
+  ;;     (""
+  ;;      mode-line-mule-info mode-line-client mode-line-modified mode-line-remote)
+  ;;     display
+  ;;     (min-width (5.0)))
+  ;;    evil-mode-line-tag
+  ;;    mode-line-frame-identification
+  ;;    mode-line-buffer-identification
+  ;;    " "
+  ;;    mode-line-position
+  ;;    " "
+  ;;    mode-line-modes
+  ;;    mode-line-misc-info
+  ;;    mode-line-end-spaces))
 
   :config
   (defun lt:file-notify-rm-all-watches ()
@@ -417,6 +447,9 @@ If the new path's directories does not exist, create them."
 (use-package yasnippet
   :ensure t
   :delight yas-minor-mode
+  :general
+  (:states '(normal visual)
+    "SPC myi" 'yas-insert-snippet)
   :custom
   (yas-verbosity 1)
   (yas-wrap-around-region t)
@@ -603,6 +636,19 @@ If the new path's directories does not exist, create them."
   :custom
   (evil-undo-system 'undo-fu))
 
+(use-package langtool
+  :custom
+  (langtool-language-tool-jar "~/LanguageTool-6.3/languagetool-commandline.jar")
+  :ensure t)
+
+(use-package flycheck-languagetool
+  :ensure t
+  :hook (text-mode . flycheck-languagetool-setup)
+  :custom
+  (flycheck-languagetool-server-jar
+   "~/LanguageTool-6.3/languagetool-commandline.jar"))
+
+
 ;; Programming
 ;;; Git
 (use-package smerge
@@ -677,6 +723,7 @@ If the new path's directories does not exist, create them."
            ;; "gi" 'lsp-find-implementation
            "gd" 'lsp-find-definition
            "gD" 'evil-goto-definition
+           "gb" 'lsp-format-buffer
            "SPC mjrs" 'lsp-rename))
 
 (use-package lsp-treemacs
@@ -737,6 +784,7 @@ If the new path's directories does not exist, create them."
 ;;; Clojure
 (use-package clojure-mode
   :ensure t
+  :delight (clojure-mode "")
   :mode (("\\.clj\\'" . clojure-mode)
          ("\\.bb\\'" . clojure-mode)
          ("\\.cljc\\'" . clojurec-mode)
@@ -768,6 +816,7 @@ If the new path's directories does not exist, create them."
                                          (dedicated . t)))
 
     :custom
+    (cider-clojure-cli-alises ":user")
     ;; lsp
     (cider-print-fn 'fipp)
     (cider-merge-sessions 'project)
@@ -821,6 +870,15 @@ If the new path's directories does not exist, create them."
     (attempt-all 1)
     (try-all 1))
 
+  (defun lt/clerk-show ()
+    (interactive)
+    (when-let
+        ((filename
+          (buffer-file-name)))
+      (save-buffer)
+      (cider-interactive-eval
+       (concat "(nextjournal.clerk/show! \"" filename "\")"))))
+
   (defun +/insert-random-uuid ()
     "Insert a random UUID.
 Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
@@ -854,6 +912,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
                                         'font-lock-string-face (point) 'face)))))))
 
   :general
+  (:states '(normal visual) :prefix "SPC mC" :keymaps 'clojure-mode-map
+           "s" 'lt/clerk-show)
   (:states '(normal visual) :prefix "SPC mc" :keymaps 'clojure-mode-map
            "j" 'cider-jack-in
            "s" 'cider-jack-in-cljs
@@ -1461,13 +1521,15 @@ my-org-clocktable-formatter' to that clocktable's arguments."
            "SPC mhd" 'lsp-describe-thing-at-point
            "SPC mcC" 'rustic-compile
            "SPC mcc" 'rustic-cargo-comp
-           "SPC mer" 'rustic-cargo-run))
+           "SPC mer" 'rustic-cargo-run
+           "SPC mtt" 'rustic-cargo-test-run))
 
 (use-package web-mode
   :ensure t
   :mode (("\\.jsx?$" . web-mode)
          ("\\.mdx$" . web-mode))
   :custom
+  (web-mode-markup-indent-offset 2)
   (web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))))
 
 (use-package typescript-mode :ensure t)
@@ -1475,5 +1537,45 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 (use-package lua-mode
   :ensure t
   :defer 1)
+
+(use-package vue-mode
+  :ensure t
+  :defer 1)
+
+(use-package vue-mode
+  :ensure t
+  :defer 1)
+
+(use-package dockerfile-mode
+  :ensure t
+  :defer 1)
+
+(use-package wanderlust
+  :after semi
+  :ensure t
+  :general
+  (:states '(normal visual) :prefix "SPC" "wl" 'wl)
+  :custom
+  (wl-summary-line-format "%T%P%1@%1>%Y/%M/%D %21(%t%[%19(%c %f%)%]%) %#%~%s")
+  :init
+  (evil-set-initial-state 'wl-folder-mode 'emacs)
+  (evil-set-initial-state 'wl-summary-mode 'emacs))
+
+(use-package elfeed
+  :ensure t
+  :init (evil-collection-init 'elfeed)
+  :general (:states '(normal visual) :prefix "SPC" "elf" 'elfeed)
+  :custom
+  ;; https://github.com/remyhonig/elfeed-org
+  (elfeed-feeds
+   '(
+     ;; Reading
+     ("https://feeds2.feedburner.com/PatrickRothfuss" read)
+     ("https://hpmor.com/feed" read)
+
+     ;; Music
+     ("https://www.joshwcomeau.com/rss.xml" dev web)
+     ("https://www.youtube.com/@smyr-clj" dev clj)
+     ("https://clojure.org/feed.xml" dev clj))))
 
 ;;; init.el ends here
