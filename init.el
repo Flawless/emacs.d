@@ -998,12 +998,19 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "B" 'cider-format-buffer
     "u" '+/insert-random-uid))
 
-(use-package clj-decompiler
-  :ensure t)
+(use-package cider-storm :ensure t)
+(use-package clj-decompiler :ensure t)
 
 (use-package lsp-java
   :after (lsp-mode)
   :ensure t)
+
+;;; java
+(use-package java-mode :defer t
+  :hook (java-mode . lsp)
+  :general
+ (:states '(normal visual) :keymaps 'java-mode-map :prefix "SPC"
+           "mjam" 'lsp-java-add-import))
 
 ;;; YML
 
@@ -1575,7 +1582,13 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
      ;; Music
      ("https://www.joshwcomeau.com/rss.xml" dev web)
+
+     ;; Dev
+     ("https://andreyor.st/feed.xml" dev clj)
+     ("https://clojure-goes-fast.com/blog/atom.xml" dev clj)
      ("https://www.youtube.com/@smyr-clj" dev clj)
      ("https://clojure.org/feed.xml" dev clj))))
+
+(use-package terraform-mode :ensure t :defer 1)
 
 ;;; init.el ends here
