@@ -92,7 +92,6 @@
   (general-evil-setup))
 
 (use-package emacs
-  :ensure nord-theme
   :delight
   (eldoc-mode)
   (auto-fill-function)
@@ -108,23 +107,6 @@
   :init
   (set-face-attribute 'mode-line nil  :height 100)
   (set-face-attribute 'mode-line-inactive nil  :height 100)
-  ;; (setq
-  ;;  mode-line-format
-  ;;  '("%e" mode-line-front-space
-  ;;    (:propertize
-  ;;     (""
-  ;;      mode-line-mule-info mode-line-client mode-line-modified mode-line-remote)
-  ;;     display
-  ;;     (min-width (5.0)))
-  ;;    evil-mode-line-tag
-  ;;    mode-line-frame-identification
-  ;;    mode-line-buffer-identification
-  ;;    " "
-  ;;    mode-line-position
-  ;;    " "
-  ;;    mode-line-modes
-  ;;    mode-line-misc-info
-  ;;    mode-line-end-spaces))
 
   :config
   (defun lt:file-notify-rm-all-watches ()
@@ -234,6 +216,7 @@ If the new path's directories does not exist, create them."
   :general
   (:states '(normal visual)
     :keymaps 'override
+    "SPC xs" 'async-shell-command
     "SPC u" 'universal-argument
     "SPC fC" 'find-config-file
     "SPC ff" 'find-file
@@ -524,64 +507,76 @@ If the new path's directories does not exist, create them."
   :ensure t)
 
 (use-package almost-mono-themes
+  :ensure t
+  :load-path "themes"
+  :hook ('ns-system-appearance-change-functions . #'lt:apply-theme)
   :config
   ;; (load-theme 'almost-mono-black t)
   ;; (load-theme 'almost-mono-gray t)
   ;; (load-theme 'almost-mono-cream t)
   ;; (load-theme 'almost-mono-white t)
-  )
 
-(use-package nord-theme
-  :after highlight-sexp
-    ;; nano-theme
-  ;; darktooth-theme
-  ;; :quelpa (nano-theme
-  ;;	   :fetcher github
-  ;;	   :repo "rougier/nano-theme")
-  :custom
-  (hl-sexp-background-color "#3b4252")
+  (defun lt:apply-theme (appearance)
+    "Load theme, taking current system APPEARANCE into consideration."
+    (mapc #'disable-theme custom-enabled-themes)
+    (pcase appearance
+      ('light (load-theme 'almost-mono-white t))
+      ('dark (load-theme 'almost-mono-black t))))
 
-  (hl-sexp-foreground-color nil)
-  :ensure t
-  :load-path "themes"
-  ;; :init
-  ;; (setq darktooth-theme-kit t)
-  :config
-  (defun lt:nord ()
-    (interactive)
-    (load-theme 'nord t)
-    (setq hl-sexp-background-color "#3b4252")
-    (hl-sexp-delete-overlay)
-    (hl-sexp-create-overlay)
-    (setq rainbow-identifiers-cie-l*a*b*-lightness 80)
-    (setq rainbow-identifiers-cie-l*a*b*-saturation 50)
-    (setq rainbow-identifiers-choose-face-function
-   #'rainbow-identifiers-cie-l*a*b*-choose-face))
-  (lt:nord))
+  (lt:apply-theme ns-system-appearance))
 
-(use-package highlight-sexp
-  :delight
-  :quelpa
-  (highlight-sexp :repo "daimrod/highlight-sexp" :fetcher github :version original)
-  :hook
-  (lisp-mode . highlight-sexp-mode)
-  (emacs-lisp-mode . highlight-sexp-mode)
-  (clojure-mode . highlight-sexp-mode))
 
-(use-package rainbow-delimiters
-  :ensure t
-  :hook
-  (prog-mode . rainbow-delimiters-mode))
+;; (use-package nord-theme
+;;   :after highlight-sexp
+;;   ;; nano-theme
+;;   ;; darktooth-theme
+;;   ;; :quelpa (nano-theme
+;;   ;;	   :fetcher github
+;;   ;;	   :repo "rougier/nano-theme")
+;;   :custom
+;;   (hl-sexp-background-color "#3b4252")
 
-(use-package rainbow-identifiers
-  :ensure t
-  :hook
-  (prog-mode . rainbow-identifiers-mode))
+;;   (hl-sexp-foreground-color nil)
+;;   :ensure t
+;;   :load-path "themes"
+;;   ;; :init
+;;   ;; (setq darktooth-theme-kit t)
+;;   :config
+;;   (defun lt:nord ()
+;;     (interactive)
+;;     (load-theme 'nord t)
+;;     (setq hl-sexp-background-color "#3b4252")
+;;     (hl-sexp-delete-overlay)
+;;     (hl-sexp-create-overlay)
+;;     (setq rainbow-identifiers-cie-l*a*b*-lightness 80)
+;;     (setq rainbow-identifiers-cie-l*a*b*-saturation 50)
+;;     (setq rainbow-identifiers-choose-face-function
+;;           #'rainbow-identifiers-cie-l*a*b*-choose-face))
+;;   (lt:nord))
 
-(use-package rainbow-mode
-  :ensure t
-  :delight
-  :hook '(prog-mode help-mode))
+;; (use-package highlight-sexp
+;;   :delight
+;;   :quelpa
+;;   (highlight-sexp :repo "daimrod/highlight-sexp" :fetcher github :version original)
+;;   :hook
+;;   (lisp-mode . highlight-sexp-mode)
+;;   (emacs-lisp-mode . highlight-sexp-mode)
+;;   (clojure-mode . highlight-sexp-mode))
+
+;; (use-package rainbow-delimiters
+;;   :ensure t
+;;   :hook
+;;   (prog-mode . rainbow-delimiters-mode))
+
+;; (use-package rainbow-identifiers
+;;   :ensure t
+;;   :hook
+;;   (prog-mode . rainbow-identifiers-mode))
+
+;; (use-package rainbow-mode
+;;   :ensure t
+;;   :delight
+;;   :hook '(prog-mode help-mode))
 
 ;; (use-package diff-hl
 ;;   :ensure t
@@ -648,6 +643,8 @@ If the new path's directories does not exist, create them."
   (flycheck-languagetool-server-jar
    "~/LanguageTool-6.3/languagetool-commandline.jar"))
 
+(use-package compilation-mode
+  :hook (compilation-mode . next-error-follow-minor-mode))
 
 ;; Programming
 ;;; Git
@@ -998,7 +995,6 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
     "B" 'cider-format-buffer
     "u" '+/insert-random-uid))
 
-(use-package cider-storm :ensure t)
 (use-package clj-decompiler :ensure t)
 
 (use-package lsp-java
@@ -1581,9 +1577,11 @@ my-org-clocktable-formatter' to that clocktable's arguments."
      ("https://hpmor.com/feed" read)
 
      ;; Music
-     ("https://www.joshwcomeau.com/rss.xml" dev web)
+     ("https://www.youtube.com/feeds/videos.xml?channel_id=Shortparis" sound)
+     ("https://www.youtube.com/feeds/videos.xml?channel_id=aigelband" sound)
 
      ;; Dev
+     ("https://www.joshwcomeau.com/rss.xml" dev web)
      ("https://andreyor.st/feed.xml" dev clj)
      ("https://clojure-goes-fast.com/blog/atom.xml" dev clj)
      ("https://www.youtube.com/@smyr-clj" dev clj)
