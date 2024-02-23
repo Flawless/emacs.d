@@ -324,6 +324,26 @@ If the new path's directories does not exist, create them."
 (use-package pass
   :ensure t)
 
+(use-package babashka
+  :ensure t
+  :general
+  (:states '(normal visual)
+    "SPC xb" 'babashka-tasks)
+  :config
+  ;; override internal fn to support short task syntax
+  (defun babashka--tasks-to-annotated-names (tasks)
+  "Convert TASKS to annotated alist."
+  (let (results)
+    (maphash (lambda (key value)
+               (let ((task-name (symbol-name key)))
+                 (unless (string-prefix-p ":" task-name)
+                   (push (if (hash-table-p value)
+                             (cons task-name (gethash :doc value))
+                           task-name)
+                         results))))
+             tasks)
+    results)))
+
 (use-package tramp
   :defer t
   :config
@@ -509,7 +529,6 @@ If the new path's directories does not exist, create them."
 (use-package almost-mono-themes
   :ensure t
   :load-path "themes"
-  :hook ('ns-system-appearance-change-functions . #'lt:apply-theme)
   :config
   ;; (load-theme 'almost-mono-black t)
   ;; (load-theme 'almost-mono-gray t)
@@ -523,6 +542,7 @@ If the new path's directories does not exist, create them."
       ('light (load-theme 'almost-mono-white t))
       ('dark (load-theme 'almost-mono-black t))))
 
+  (add-hook 'ns-system-appearance-change-functions #'lt:apply-theme)
   (lt:apply-theme ns-system-appearance))
 
 
