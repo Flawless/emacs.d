@@ -1,4 +1,4 @@
-; init.el --- Description -*- lexical-binding: t; -*-
+                                        ; init.el --- Description -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2021 Alexander Ushanov
 ;;
@@ -48,16 +48,23 @@
 
 (use-package use-package-ensure-system-package :ensure t)
 
-(use-package quelpa
-  :ensure t
-  :defer t
-  :custom
-  (quelpa-update-melpa-p nil "Don't update the MELPA git repo."))
+(quelpa
+ '(quelpa-use-package
+   :fetcher git
+   :url "https://github.com/quelpa/quelpa-use-package.git"))
 
-(use-package quelpa-use-package
-  :ensure t
-  :init
-  (setq quelpa-use-package-inhibit-loading-quelpa t))
+(require 'quelpa-use-package)
+
+;; (use-package quelpa
+;;   :ensure t
+;;   :defer t
+;;   :custom
+;;   (quelpa-update-melpa-p nil "Don't update the MELPA git repo."))
+
+;; (use-package quelpa-use-package
+;;   :ensure t
+;;   :init
+;;   (setq quelpa-use-package-inhibit-loading-quelpa t))
 
 (use-package paradox
   :ensure t
@@ -109,6 +116,7 @@
   (set-face-attribute 'mode-line-inactive nil  :height 100)
 
   :config
+  (auth-source-pass-enable)
   (defun lt:file-notify-rm-all-watches ()
     "Remove all existing file notification watches from Emacs."
     (interactive)
@@ -253,6 +261,9 @@ If the new path's directories does not exist, create them."
 
     "SPC qq" 'save-buffers-kill-emacs))
 
+(use-package info
+  :init (evil-collection-init 'info))
+
 (use-package path-helper
   :if (memq window-system '(mac ns))
   :ensure t
@@ -369,7 +380,12 @@ If the new path's directories does not exist, create them."
   :custom
   (evil-want-C-u-scroll t)
   :config
-  (evil-mode t))
+  (evil-mode t)
+  :general
+  (:keymaps '(evil-motion-state-map)
+            "SPC" nil
+            "RET" nil
+            "TAB" nil))
 
 (use-package evil-collection
   :ensure t
@@ -390,17 +406,6 @@ If the new path's directories does not exist, create them."
 (use-package evil-commentary
   :delight
   :ensure t)
-
-(use-package evil-lispy
-  :delight
-  :ensure t
-  :hook
-  (lisp-mode . evil-lispy-mode)
-  (emacs-lisp-mode . evil-lispy-mode)
-  (clojure-mode . evil-lispy-mode)
-  :general
-  (:states '(normal visual) :keymaps '(lsp-mode-map)
-           "SPC mjs" 'lispy-split))
 
 (use-package evil-org
   :delight
@@ -483,6 +488,8 @@ If the new path's directories does not exist, create them."
     :keymaps 'override
     "SPC SPC" 'counsel-M-x))
 
+(use-package smex :ensure t)
+
 (use-package which-key
   :ensure t
   :delight
@@ -495,11 +502,13 @@ If the new path's directories does not exist, create them."
 
 (use-package projectile
   :ensure t
-  :delight '(:eval (concat " P:" (projectile-project-name)))
+  :delight " P"
   :init (projectile-mode t)
   :custom
   ;; Use lsp-clojure-create-test instead
   ;; (projectile-create-missing-test-files t)
+  (projectile-auto-update-cache nil)
+  (projectile-dynamic-mode-line nil)
   (projectile-project-search-path '("~/projects/"))
   (projectile-sort-order 'recently-active)
   (projectile-enable-caching t)
@@ -522,7 +531,7 @@ If the new path's directories does not exist, create them."
     "b" 'counsel-projectile-switch-to-buffer
     "f" 'counsel-projectile-find-file))
 
-;; Visual
+;; Visual Appearance
 (use-package delight
   :ensure t)
 
@@ -544,7 +553,6 @@ If the new path's directories does not exist, create them."
 
   (add-hook 'ns-system-appearance-change-functions #'lt:apply-theme)
   (lt:apply-theme ns-system-appearance))
-
 
 ;; (use-package nord-theme
 ;;   :after highlight-sexp
@@ -700,7 +708,20 @@ If the new path's directories does not exist, create them."
            "f" 'magit-find-file
            "l" 'magit-log-buffer-file))
 
-;;; Basic programming (not basic lang!!)
+(use-package forge
+  :ensure t)
+;; (use-package code-review
+;;   :ensure t
+;;   :quelpa (code-review :fetcher github
+;;                        :repo "phelrine/code-review"
+;;                        :branch "fix/closql-update"))
+
+;;; Basic programming stuff
+
+;; (use-package aggressive-indent
+;;   :ensure t
+;;   :hook (prog-mode . aggressive-indent-mode))
+
 (use-package company
   :ensure t
   :delight
@@ -732,6 +753,7 @@ If the new path's directories does not exist, create them."
   :ensure t
   :custom
   (read-process-output-max (* 1024 1024))
+  (lsp-enable-symbol-highlighting nil)
   (lsp-auto-guess-root t)
   (lsp-headerline-breadcrumb-enable nil)
   :general
@@ -752,8 +774,8 @@ If the new path's directories does not exist, create them."
   :ensure t
   :commands lsp-ui-mode
   :custom
-  (lsp-ui-peek-always-show t)
-  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-peek-always-show nil)
+  (lsp-ui-sideline-show-hover nil)
   (lsp-ui-doc-enable nil))
 
 (use-package dap-mode
@@ -776,87 +798,60 @@ If the new path's directories does not exist, create them."
   :general
   (:states '(normal visual)
     :keymaps 'emacs-lisp-mode-map
-    :prefix "SPC m"
-    :infix "e"
-    "e" 'eval-last-sexp
-    "b" 'eval-buffer
-    "d" 'eval-defun
-    "l" 'load-library
-    "r" 'eval-region)
-  :config
-  (use-package lispy :ensure t)
+    "SPC mee" 'eval-last-sexp
+    "SPC meb" 'eval-buffer
+    "SPC med" 'eval-defun
+    "SPC mel" 'load-library
+    "SPC mer" 'eval-region))
 
-  (use-package lispyville
-    :ensure t
-    :delight
-    :hook
-    (lisp-mode . lispyville-mode)
-    (emacs-lisp-mode . lispyville-mode)
-    (clojure-mode . lispyville-mode))
+;; evil paredit alternative
+(use-package lispy
+  :ensure t
+  :delight
+  :general
+  (:states '(normal visual)
+    :keymaps 'lispy-mode-map
+    "SPC mjs" 'lispy-split))
 
-  (use-package paredit :ensure t)
+(use-package evil-lispy
+  :delight
+  :ensure t
+  ;; FIXME: deal with not working lispy hook
+  :hook ((lisp-mode clojure-ts-mode) . evil-lispy-mode))
 
-  (use-package smex :ensure t))
+(use-package lispyville
+  :ensure t
+  :delight
+  ;; FIXME: deal with not working lispy hook
+  :hook ((lisp-mode clojure-ts-mode) . evil-lispy-mode))
 
 ;;; Clojure
+(use-package clojure-ts-mode
+  :delight (clojure-ts-mode "CLJ:TS ")
+  :ensure t
+  :mode (("\\.clj\\'" . clojure-ts-mode)
+         ("\\.bb\\'" . clojure-ts-mode)
+         ("\\.cljc\\'" . clojure-ts-mode)
+         ("\\.cljs\\'" . clojure-ts-mode)
+         ("\\.edn\\'" . clojure-ts-mode))
+  :custom
+  (clojure-ts-indent-style 'fixed)
+  :hook
+  (clojure-ts-mode . lispy-mode)
+  (clojure-ts-mode . cider-mode)
+  (clojure-ts-mode . lsp))
+
 (use-package clojure-mode
   :ensure t
-  :delight (clojure-mode "")
-  :mode (("\\.clj\\'" . clojure-mode)
-         ("\\.bb\\'" . clojure-mode)
-         ("\\.cljc\\'" . clojurec-mode)
-         ("\\.cljs\\'" . clojurescript-mode)
-         ("\\.edn\\'" . clojure-mode))
+  :delight
+  (clojure-mode "CLJ ")
+  (clojurescript-mode "CLJS ")
+  ;; :mode (("\\.clj\\'" . clojure-mode)
+  ;;        ("\\.bb\\'" . clojure-mode)
+  ;;        ("\\.cljc\\'" . clojurec-mode)
+  ;;        ("\\.cljs\\'" . clojurescript-mode)
+  ;;        ("\\.edn\\'" . clojure-mode))
   :config
-  (use-package clj-refactor
-    :ensure t
-    :delight)
-  (use-package clojure-snippets :ensure t :defer t)
-  (use-package anakondo :ensure t)
-
-  (use-package cider
-    :after evil
-    :init (evil-collection-init 'cider)
-    :ensure t
-    :defer t
-    :delight
-    (clojurescript-mode "")
-    (cider-auto-test-mode " t")
-    (cider-enlighten-mode " e")
-
-    :config
-    (add-to-list 'display-buffer-alist '("\\*cider-error\\*"
-                                         (display-buffer-in-side-window)
-                                         (side . right)
-                                         (slot . 3)
-                                         (window-height . shrink-window-if-larger-than-buffer)
-                                         (dedicated . t)))
-
-    :custom
-    (cider-clojure-cli-alises ":user")
-    ;; lsp
-    (cider-print-fn 'fipp)
-    (cider-merge-sessions 'project)
-    (cider-save-file-on-load nil)
-    (cider-repl-pop-to-buffer-on-connect t)
-    (cider-repl-result-prefix "\n;; => ")
-    (cider-repl-buffer-size-limit 10000)
-    (nrepl-log-messages t)
-    (nrepl-hide-special-buffers t)
-    (nrepl-use-ssh-fallback-for-remote-hosts t)
-    (cider-repl-display-in-current-window t)
-    (cider-repl-use-clojure-font-lock t)
-    (cider-prompt-save-file-on-load 'always-save)
-    (cider-font-lock-dynamically '(macro core deprecated))
-    (cider-overlays-use-font-lock t)
-    (cider-repl-use-pretty-printing t)
-    (cljr-magic-requires nil)
-    (cljr-insert-newline-after-require nil)
-
-    :hook
-    (cider-mode . clj-refactor-mode)
-    :delight)
-
   (define-clojure-indent
     (defroutes 'defun)
     (GET 2)
@@ -911,6 +906,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
              (random (expt 16 4))
              (random (expt 16 6))
              (random (expt 16 6)))))
+
   (require 'flycheck-clj-kondo)
 
   :hook
@@ -930,90 +926,118 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 
   :general
   (:states '(normal visual) :prefix "SPC mC" :keymaps 'clojure-mode-map
-           "s" 'lt/clerk-show)
-  (:states '(normal visual) :prefix "SPC mc" :keymaps 'clojure-mode-map
-           "j" 'cider-jack-in
-           "s" 'cider-jack-in-cljs
-           "J" 'cider-jack-in-clj&cljs
-           "c" 'cider-connect-clj
-           "s" 'cider-connect-cljs
-           "C" 'cider-connect-clj&cljs
-           "S" 'cider-connect-sibling-cljs)
-  (:states '(normal visual) :prefix "SPC ms" :keymaps 'clojure-mode-map
-           "b" 'sesman-link-with-buffer
-           "s" 'sesman-link-session)
-  (:states '(normal visual) :prefix "SPC mm" :keymaps 'clojure-mode-map
-           "e" 'cider-enlighten-mode)
-  (flawless-mode-def
-    :infix "d"
-    :keymaps 'clojure-mode-map
-    "e" 'cider-debug-defun-at-point)
-  (flawless-mode-def
-    :infix "j"
-    :keymaps 'clojure-mode-map
-    "ml" 'cljr-move-to-let
-    "xl" 'cljr-expand-let
-    "rs" 'cljr-rename-symbol
-    "uw" 'cljr-unwind
-    "uW" 'cljr-unwind-all
-    "tf" 'cljr-thread-first-all
-    "tl" 'cljr-thread-last-all
-    "tt" 'transpose-sexps
-    "aM" 'lsp-clojure-add-missing-libspec
-    "am" 'cljr-add-missing-libspec
-    "nc" 'cljr-clean-ns)
-  (flawless-mode-def
-    :infix "i"
-    :keymaps 'clojure-mode-map
-    "l" 'cider-inspect-last-result
-    "e" 'cider-inspect-last-sexp)
-  (flawless-mode-def
-    :keymaps 'cider-repl-mode-map
-    "q" 'cider-quit
-    "c" 'cider-repl-clear-buffer)
-  (flawless-mode-def
-    :infix "r"
-    :keymaps 'clojure-mode-map
-    "b" 'cider-switch-to-repl-buffer
-    "B" 'cider-switch-to-repl-on-insert)
-  (flawless-mode-def
-    :infix "h"
-    :keymaps 'clojure-mode-map
-    "d" 'cider-doc)
-  (flawless-mode-def
-    :infix "e"
-    :keymaps 'clojure-mode-map
-    "c" 'cider-pprint-eval-last-sexp-to-comment
-    "e" 'cider-eval-last-sexp
-    "d" 'cider-eval-defun-at-point
-    "b" 'cider-eval-buffer)
-  (flawless-mode-def
-    :infix "t"
-    :keymaps 'clojure-mode-map
-    "P" 'cider-test-run-project-tests
-    "t" 'cider-test-run-test
-    "f" 'cider-test-rerun-failed-tests
-    "n" 'cider-test-run-ns-tests)
-  (flawless-mode-def
-    :infix "P"
-    :keymaps 'clojure-mode-map
-    "t" 'cider-profile-toggle
-    "T" 'cider-profile-ns-toggle
-    "v" 'cider-profile-var-summary
-    "C" 'cider-profile-clear)
-  (flawless-mode-def
-    :infix "m"
-    :keymaps 'clojure-mode-map
-    "m" 'cider-macroexpand-1
-    "M" 'cider-macroexpand-all)
-  (flawless-mode-def
-    :infix "i"
-    :keymaps 'clojure-mode-map
-    "t" 'transpose-sexps
-    "s" 'indent-sexp
-    "r" 'indent-region
-    "B" 'cider-format-buffer
-    "u" '+/insert-random-uid))
+           "s" 'lt/clerk-show))
+
+(use-package cider
+  :ensure t :defer t
+  :delight
+  (cider-auto-test-mode " t")
+  (cider-enlighten-mode " e")
+  :after evil
+  :init (evil-collection-init 'cider)
+  :config
+  (add-to-list 'display-buffer-alist '("\\*cider-error\\*"
+                                       (display-buffer-in-side-window)
+                                       (side . right)
+                                       (slot . 3)
+                                       (window-height . shrink-window-if-larger-than-buffer)
+                                       (dedicated . t)))
+
+  :custom
+  (cider-clojure-cli-alises ":user")
+  ;; lsp
+  (cider-print-fn 'fipp)
+  (cider-merge-sessions 'project)
+  (cider-save-file-on-load nil)
+  (cider-repl-pop-to-buffer-on-connect t)
+  (cider-repl-result-prefix "\n;; => ")
+  (cider-repl-buffer-size-limit 10000)
+  (nrepl-log-messages t)
+  (nrepl-hide-special-buffers t)
+  (nrepl-use-ssh-fallback-for-remote-hosts t)
+  (cider-repl-display-in-current-window t)
+  (cider-repl-use-clojure-font-lock t)
+  (cider-prompt-save-file-on-load 'always-save)
+  (cider-font-lock-dynamically '(macro core deprecated))
+  (cider-overlays-use-font-lock t)
+  (cider-repl-use-pretty-printing t)
+
+  :hook
+  (cider-mode . clj-refactor-mode)
+  :general
+  (:states '(normal visual) :keymaps 'cider-repl-mode-map
+           "SPC mq" 'cider-quit
+           "SPC mc" 'cider-repl-clear-buffer)
+
+  (:states '(normal visual) :keymap 'cider-mode-map
+           "SPC mil" 'cider-inspect-last-result
+           "SPC mie" 'cider-inspect-last-sexp
+
+           "SPC mme" 'cider-enlighten-mode
+
+           "SPC msb" 'sesman-link-with-buffer
+           "SPC mss" 'sesman-link-session
+
+           "SPC mcj" 'cider-jack-in
+           "SPC mcs" 'cider-jack-in-cljs
+           "SPC mcJ" 'cider-jack-in-clj&cljs
+           "SPC mcc" 'cider-connect-clj
+           "SPC mcs" 'cider-connect-cljs
+           "SPC mcC" 'cider-connect-clj&cljs
+           "SPC mcS" 'cider-connect-sibling-cljs
+
+           "SPC mde" 'cider-debug-defun-at-point
+
+           "SPC mrb" 'cider-switch-to-repl-buffer
+           "SPC mrB" 'cider-switch-to-repl-on-insert
+           "SPC mhd" 'cider-doc
+
+           "SPC mec" 'cider-pprint-eval-last-sexp-to-comment
+           "SPC mee" 'cider-eval-last-sexp
+           "SPC med" 'cider-eval-defun-at-point
+           "SPC meb" 'cider-eval-buffer
+
+           "SPC mtP" 'cider-test-run-project-tests
+           "SPC mtt" 'cider-test-run-test
+           "SPC mtf" 'cider-test-rerun-failed-tests
+           "SPC mtn" 'cider-test-run-ns-tests
+
+           "SPC mPt" 'cider-profile-toggle
+           "SPC mPT" 'cider-profile-ns-toggle
+           "SPC mPv" 'cider-profile-var-summary
+           "SPC mPC" 'cider-profile-clear
+
+           "SPC mmm" 'cider-macroexpand-1
+           "SPC mmM" 'cider-macroexpand-all
+
+           "SPC mit" 'transpose-sexps
+           "SPC mis" 'cider-format-edn-last-sexp
+           "SPC mir" 'cider-format-region
+           "SPC miB" 'cider-format-buffer
+           "SPC mif" 'cider-format-defun
+           "SPC miu" '+/insert-random-uid))
+
+(use-package clj-refactor
+  :ensure t :delight
+  :custom
+  (cljr-magic-requires nil)
+  (cljr-insert-newline-after-require nil)
+  :general
+  (:states '(normal visual) :keymaps 'clj-refactor-map
+           "SPC mjml" 'cljr-move-to-let
+           "SPC mjxl" 'cljr-expand-let
+           "SPC mjuw" 'cljr-unwind
+           "SPC mjuW" 'cljr-unwind-all
+           "SPC mjtf" 'cljr-thread-first-all
+           "SPC mjtl" 'cljr-thread-last-all
+           "SPC mjtt" 'transpose-sexps
+           "SPC mjaM" 'lsp-clojure-add-missing-libspec
+           "SPC mjam" 'cljr-add-missing-libspec
+           "SPC mjnc" 'cljr-clean-ns))
+
+(use-package clojure-snippets :ensure t :defer t)
+
+(use-package anakondo :ensure t)
 
 (use-package clj-decompiler :ensure t)
 
@@ -1565,47 +1589,49 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :ensure t
   :defer 1)
 
-(use-package vue-mode
-  :ensure t
-  :defer 1)
-
 (use-package dockerfile-mode
   :ensure t
   :defer 1)
 
-(use-package wanderlust
-  :after semi
-  :ensure t
+(use-package eww
+  :after elfeed-org
   :general
-  (:states '(normal visual) :prefix "SPC" "wl" 'wl)
-  :custom
-  (wl-summary-line-format "%T%P%1@%1>%Y/%M/%D %21(%t%[%19(%c %f%)%]%) %#%~%s")
-  :init
-  (evil-set-initial-state 'wl-folder-mode 'emacs)
-  (evil-set-initial-state 'wl-summary-mode 'emacs))
+  (:states '(normal visual)
+    "SPC eww" 'eww))
 
 (use-package elfeed
   :ensure t
+  :after elfeed-org
   :init (evil-collection-init 'elfeed)
-  :general (:states '(normal visual) :prefix "SPC" "elf" 'elfeed)
+  :general
+  (:states '(normal visual)
+    "SPC elf" 'elfeed)
+  :hook
+  (elfeed-show-mode . lt:ajust-to-read)
   :custom
-  ;; https://github.com/remyhonig/elfeed-org
-  (elfeed-feeds
-   '(
-     ;; Reading
-     ("https://feeds2.feedburner.com/PatrickRothfuss" read)
-     ("https://hpmor.com/feed" read)
+  (elfeed-db-directory "~/.emacs.d")
+  :config
+  (elfeed-org)
+  (defun lt:ajust-to-read ()
+    (buffer-face-set 'variable-pitch nil
+                     :family "American Typewriter"
+                     :height 1.3)))
 
-     ;; Music
-     ("https://www.youtube.com/feeds/videos.xml?channel_id=Shortparis" sound)
-     ("https://www.youtube.com/feeds/videos.xml?channel_id=aigelband" sound)
+(use-package elfeed-org
+  :after org
+  :ensure t
+  :custom
+  (rmh-elfeed-org-files
+   (list (concat org-directory "feed.org")))
+  :config
+  (elfeed-org))
 
-     ;; Dev
-     ("https://www.joshwcomeau.com/rss.xml" dev web)
-     ("https://andreyor.st/feed.xml" dev clj)
-     ("https://clojure-goes-fast.com/blog/atom.xml" dev clj)
-     ("https://www.youtube.com/@smyr-clj" dev clj)
-     ("https://clojure.org/feed.xml" dev clj))))
+(use-package chatgpt-shell
+  :ensure t
+  :custom
+  ((chatgpt-shell-openai-key
+    (lambda ()
+      (auth-source-pass-get 'secret "openai-key")))))
 
 (use-package terraform-mode :ensure t :defer 1)
 
