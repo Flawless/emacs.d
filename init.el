@@ -48,23 +48,23 @@
 
 (use-package use-package-ensure-system-package :ensure t)
 
+(use-package quelpa
+  :ensure t
+  :defer t
+  :custom
+  (quelpa-update-melpa-p nil "Don't update the MELPA git repo."))
+
+(use-package quelpa-use-package
+  :ensure t
+  :init
+  (setq quelpa-use-package-inhibit-loading-quelpa t))
+
 (quelpa
  '(quelpa-use-package
    :fetcher git
    :url "https://github.com/quelpa/quelpa-use-package.git"))
 
 (require 'quelpa-use-package)
-
-;; (use-package quelpa
-;;   :ensure t
-;;   :defer t
-;;   :custom
-;;   (quelpa-update-melpa-p nil "Don't update the MELPA git repo."))
-
-;; (use-package quelpa-use-package
-;;   :ensure t
-;;   :init
-;;   (setq quelpa-use-package-inhibit-loading-quelpa t))
 
 (use-package paradox
   :ensure t
@@ -1610,6 +1610,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (elfeed-show-mode . lt:ajust-to-read)
   :custom
   (elfeed-db-directory "~/.emacs.d")
+  (browse-url-browser-function 'eww-browse-url)
   :config
   (elfeed-org)
   (defun lt:ajust-to-read ()
