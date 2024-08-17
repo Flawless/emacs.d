@@ -37,6 +37,23 @@
 (eval-when-compile
   (require 'use-package))
 
+;; bootstrap straight
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+;; use use-package
+(straight-use-package 'use-package)
+
 (use-package use-package-core
   :custom
   (use-package-enable-imenu-support t))
@@ -104,6 +121,7 @@
   (auto-fill-function)
   (auto-revert-mode)
   :custom
+  (warning-minimum-level :error)
   (indent-tabs-mode nil)
   (backup-directory-alist `((".*" . ,temporary-file-directory)))
   (auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
@@ -672,7 +690,9 @@ If the new path's directories does not exist, create them."
    "~/LanguageTool-6.3/languagetool-commandline.jar"))
 
 (use-package compilation-mode
-  :hook (compilation-mode . next-error-follow-minor-mode))
+  :init (evil-collection-init 'compile)
+  :hook ((compilation-mode . next-error-follow-minor-mode)
+         (compilation-filter . ansi-color-compilation-filter)))
 
 ;; Programming
 ;;; Git
@@ -708,8 +728,8 @@ If the new path's directories does not exist, create them."
            "f" 'magit-find-file
            "l" 'magit-log-buffer-file))
 
-(use-package forge
-  :ensure t)
+;; (use-package forge
+;;   :ensure t)
 ;; (use-package code-review
 ;;   :ensure t
 ;;   :quelpa (code-review :fetcher github
@@ -740,7 +760,7 @@ If the new path's directories does not exist, create them."
   (:states '(normal visual) :prefix "SPC" :infix "f"
     "p" 'flycheck-projectile-list-errors))
 
-(use-package flycheck-clj-kondo :ensure t)
+;; (use-package flycheck-clj-kondo :ensure t)
 
 (use-package highlight :ensure t)
 
@@ -763,7 +783,46 @@ If the new path's directories does not exist, create them."
            "gd" 'lsp-find-definition
            "gD" 'evil-goto-definition
            "gb" 'lsp-format-buffer
-           "SPC mjrs" 'lsp-rename))
+           "SPC mjrs" 'lsp-rename
+           "SPC mhd" 'lsp-describe-thing-at-point)
+  :config
+  (defun lsp-tramp-connection-over-ssh-port-forwarding (command)
+  "Like lsp-tcp-connection, but uses SSH portforwarding."
+  (list
+   :connect (lambda (filter sentinel name environment-fn)
+              (let* ((host "localhost")
+                     (lsp-port (lsp--find-available-port host (cl-incf lsp--tcp-port)))
+                     (command (with-parsed-tramp-file-name buffer-file-name nil
+                                (message "[tcp/ssh hack] running LSP %s on %s / %s" command host localname)
+                                (let* ((unix-socket (format "/tmp/lsp-ssh-portforward-%s.sock" lsp-port))
+                                       (command (list
+                                                 "ssh"
+                                                 ;; "-vvv"
+                                                 "-L" (format "%s:%s" lsp-port unix-socket)
+                                                 host
+                                                 "socat"
+                                                 (format "unix-listen:%s" unix-socket)
+                                                 (format "system:'\"cd %s && %s\"'" (file-name-directory localname) command)
+                                                 )))
+                                  (message "using local command %s" command)
+                                  command)))
+                     (final-command (if (consp command) command (list command)))
+                     (_ (unless (executable-find (cl-first final-command))
+                          (user-error (format "Couldn't find executable %s" (cl-first final-command)))))
+                     (process-environment
+                      (lsp--compute-process-environment environment-fn))
+                     (proc (make-process :name name :connection-type 'pipe :coding 'no-conversion
+                                         :command final-command :sentinel sentinel :stderr (format "*%s::stderr*" name) :noquery t))
+                     (tcp-proc (progn
+                                 (sleep-for 1) ; prevent a connection before SSH has run socat. Ugh.
+                                 (lsp--open-network-stream host lsp-port (concat name "::tcp")))))
+
+                ;; TODO: Same :noquery issue (see above)
+                (set-process-query-on-exit-flag proc nil)
+                (set-process-query-on-exit-flag tcp-proc nil)
+                (set-process-filter tcp-proc filter)
+                (cons tcp-proc proc)))
+   :test? (lambda () t))))
 
 (use-package lsp-treemacs
   :after (lsp-mode treemacs)
@@ -789,6 +848,8 @@ If the new path's directories does not exist, create them."
   (evil-commentary-mode t)
   :general
   (:states '(normal visual)
+    "g==" 'align
+    "g=r" 'align-regexp
     "SPC mCa" 'mc/mark-all-dwim))
 
 ;;; Lisps
@@ -836,10 +897,16 @@ If the new path's directories does not exist, create them."
          ("\\.edn\\'" . clojure-ts-mode))
   :custom
   (clojure-ts-indent-style 'fixed)
+  :preface
+  (defun lt/clts-lsp-start()
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t)
+    (lsp-deferred))
   :hook
+  (clojure-ts-mode . lispyville-mode)
   (clojure-ts-mode . lispy-mode)
   (clojure-ts-mode . cider-mode)
-  (clojure-ts-mode . lsp))
+  (clojure-ts-mode . lt/clts-lsp-start))
 
 (use-package clojure-mode
   :ensure t
@@ -851,6 +918,9 @@ If the new path's directories does not exist, create them."
   ;;        ("\\.cljc\\'" . clojurec-mode)
   ;;        ("\\.cljs\\'" . clojurescript-mode)
   ;;        ("\\.edn\\'" . clojure-mode))
+  :custom
+  (clojure-indent-style 'always-indent)
+
   :config
   (define-clojure-indent
     (defroutes 'defun)
@@ -907,7 +977,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
              (random (expt 16 6))
              (random (expt 16 6)))))
 
-  (require 'flycheck-clj-kondo)
+  ;; (require 'flycheck-clj-kondo)
 
   :hook
   (clojure-mode . lsp)
@@ -990,7 +1060,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 
            "SPC mrb" 'cider-switch-to-repl-buffer
            "SPC mrB" 'cider-switch-to-repl-on-insert
-           "SPC mhd" 'cider-doc
+           ;; "SPC mhd" 'cider-doc
 
            "SPC mec" 'cider-pprint-eval-last-sexp-to-comment
            "SPC mee" 'cider-eval-last-sexp
@@ -1634,6 +1704,187 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (lambda ()
       (auth-source-pass-get 'secret "openai-key")))))
 
-(use-package terraform-mode :ensure t :defer 1)
+(use-package terraform-mode
+  :ensure t
+  :defer 1
+  :hook (terraform-mode . lsp-deferred)
+  :custom
+  (terraform-format-on-save t))
+
+(use-package esxml
+ :straight (esxml :type git :host nil :repo "https://github.com/tali713/esxml.git"))
+
+(use-package nov
+  :after esxml elfeed
+  :mode (("\\.epub\\'" . nov-mode))
+  :hook
+  (nov-mode . lt:ajust-to-read)
+  :custom
+  (nov-text-width 80)
+  :config
+  :straight (nov :type git :host nil :repo "https://depp.brause.cc/nov.el.git"))
+
+
+(use-package kubernetes :ensure t)
+
+(use-package go-mode
+  :ensure t
+  :mode ("\\.go\\'" . go-ts-mode)
+  :preface
+  (defun lt/go-lsp-start()
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t)
+    (lsp-deferred))
+  :hook
+  (go-ts-mode . lt/go-lsp-start)
+  :config
+  (add-to-list 'exec-path "~/.local/bin")
+  (setq lsp-go-analyses '((nilness . t)
+                          (shadow . t)
+                          (unusedwrite . t)
+                          (fieldalignment . t))
+        lsp-go-codelenses '((test . t)
+                            (tidy . t)
+                            (upgrade_dependency . t)
+                            (vendor . t)
+                            (run_govulncheck . t))))
+
+(use-package go-tag
+  :ensure t)
+
+(use-package godoctor
+  :ensure t)
+
+(use-package nginx-mode
+  :ensure t
+  :commands nginx-mode)
+
+;; Python
+(use-package python
+  :hook (python-mode . lsp-deffered)
+
+(use-package conda
+  :straight t
+  :after python
+  :config
+  ;; taken from doom
+  ;; The location of your anaconda home will be guessed from a list of common
+  ;; possibilities, starting with `conda-anaconda-home''s default value (which
+  ;; will consult a ANACONDA_HOME envvar, if it exists).
+  ;;
+  ;; If none of these work for you, `conda-anaconda-home' must be set
+  ;; explicitly. Afterwards, run M-x `conda-env-activate' to switch between
+  ;; environments
+  (or (cl-loop for dir in (list conda-anaconda-home
+                                "~/.anaconda"
+                                "~/.miniconda"
+                                "~/.miniconda3"
+                                "~/.miniforge3"
+                                "~/anaconda3"
+                                "~/miniconda3"
+                                "~/miniforge3"
+                                "~/opt/miniconda3"
+                                "/usr/bin/anaconda3"
+                                "/usr/local/anaconda3"
+                                "/usr/local/miniconda3"
+                                "/usr/local/Caskroom/miniconda/base"
+                                "~/.conda")
+               if (file-directory-p dir)
+               return (setq conda-anaconda-home (expand-file-name dir)
+                            conda-env-home-directory (expand-file-name dir)))
+      (message "Cannot find Anaconda installation"))
+  ;; integration with term/eshell
+  (conda-env-initialize-interactive-shells)
+  (add-to-list 'global-mode-string
+               '(conda-env-current-name (" conda:" conda-env-current-name " "))
+               'append))
+
+;;; pyvenv
+;; To hopefully work better with virtual environments over tramp
+;; to test if works with conda (and tramp really)
+(use-package pyvenv
+  :straight t
+  :after python
+  :config
+  (add-hook 'python-mode-local-vars-hook #'pyvenv-track-virtualenv)
+  (add-to-list 'global-mode-string
+               '(pyvenv-virtual-env-name (" venv:" pyvenv-virtual-env-name " "))
+               'append))
+
+;;; numpydoc
+(use-package numpydoc
+  ;; use main repo and not emacsmirror as is a bit behind
+  ;; as of 07/10/23
+  :straight (numpydoc
+             :type git
+             :host github
+             :repo "douglasdavis/numpydoc.el")
+  :defer t
+  :config
+  (setq numpydoc-insertion-style 'yas ;; use yasnippet style prompt
+        numpydoc-insert-examples-block nil ;; no examples block
+        numpydoc-insert-return-without-typehint nil ;; as it says
+        numpydoc-auto-fill-paragraphs t)) ;; autofill my docs
+
+;;; lsp-pyright
+;; (use-package lsp-pyright
+;;   :straight t
+;;   :init (setq lsp-pyright-multi-root nil)
+;;   :config
+;;   (lsp-register-custom-settings
+;;    '(("python.pythonPath" ljosa-lsp-pyright-locate-python)))
+;;   :hook (python-mode . (lambda ()
+;;                          (require 'lsp-pyright)
+;;                          (lsp-deferred))))
+
+;;; apheleia for formatting
+(use-package apheleia
+  :straight (apheleia
+             :type git
+             :host github
+             :repo "radian-software/apheleia"))
+
+(use-package python-black
+  :ensure t
+  :demand t
+  :after python
+  :hook (python-mode . python-black-on-save-mode))
+
+(use-package python-isort
+  :ensure t
+  :demand t
+  :after python
+  :hook (python-mode . python-isort-on-save-mode))
+
+(use-package ruff-format
+  :ensure t
+  :demand t
+  :after python
+  :hook (python-mode . ruff-format-on-save-mode))
+
+(use-package elpy
+  :ensure t
+  :hook (elpy-mode . flycheck-mode)
+  :preface
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  :config
+  (lsp-register-client
+    (make-lsp-client :new-connection (lsp-tramp-connection "pyls")
+                     :major-modes '(python-mode)
+                     :remote? t
+                     :server-id 'pyls-remote))
+  :init (elpy-enable))
+
+(use-package poetry
+ :ensure t)
+
+(use-package pet
+  :straight (pet
+             :type git
+             :host github
+             :repo "wyuenho/emacs-pet")
+  :ensure t
+  :config
+  (add-hook 'python-base-mode-hook 'pet-mode -10))
 
 ;;; init.el ends here
