@@ -897,6 +897,10 @@ If the new path's directories does not exist, create them."
          ("\\.edn\\'" . clojure-ts-mode))
   :custom
   (clojure-ts-indent-style 'fixed)
+  :config
+  (defun lt/clj-reload ()
+    (interactive)
+    (cider-interactive-eval "(require 'clj-reload.core) (clj-reload.core/reload)"))
   :preface
   (defun lt/clts-lsp-start()
     (add-hook 'before-save-hook #'lsp-format-buffer t t)
@@ -906,7 +910,11 @@ If the new path's directories does not exist, create them."
   (clojure-ts-mode . lispyville-mode)
   (clojure-ts-mode . lispy-mode)
   (clojure-ts-mode . cider-mode)
-  (clojure-ts-mode . lt/clts-lsp-start))
+  (clojure-ts-mode . lt/clts-lsp-start)
+  (after-save . lt/clj-reload)
+  :general
+  (:states '(normal visual) :keymaps 'clojure-ts-mode-map
+           "SPC mjR" 'lt/clj-reload))
 
 (use-package clojure-mode
   :ensure t
@@ -1761,7 +1769,13 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
 ;; Python
 (use-package python
-  :hook (python-mode . lsp-deffered)
+  :hook
+  ((python-mode . lsp-deferred)
+   (python-mode . lt/python-flycheck))
+  :config
+  (defun lt/python-flycheck ()
+    (flycheck-select-checker 'python-ruff)
+    (flycheck-mode 1)))
 
 (use-package conda
   :straight t
@@ -1860,20 +1874,61 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :ensure t
   :demand t
   :after python
-  :hook (python-mode . ruff-format-on-save-mode))
+  :hook
+  ((python-mode . ruff-format-on-save-mode)
+   (python-mode . lt/flycheck-python))
+  :config
+  (flycheck-define-checker python-ruff
+    "A Python syntax and style checker using the ruff utility. To override the path to the ruff
+    executable, set `flycheck-python-ruff-executable'.
+    See URL `http://pypi.python.org/pypi/ruff'."
+    :command ("ruff"
+              "--format=text"
+              (eval (when buffer-file-name
+                      (concat "--stdin-filename=" buffer-file-name)))
+              "-")
+    :standard-input t
+    :error-filter (lambda (errors)
+                    (let ((errors (flycheck-sanitize-errors errors)))
+                      (seq-map #'flycheck-flake8-fix-error-level errors)))
+    :error-patterns
+    ((warning line-start
+              (file-name) ":" line ":" (optional column ":") " "
+              (id (one-or-more (any alpha)) (one-or-more digit)) " "
+              (message (one-or-more not-newline))
+              line-end))
+    :modes python-mode)
+  (defun lt/flycheck-python()
+    (setq-local flycheck-checkers '(python-ruff))
+    (add-to-list 'flycheck-disabled-checkers 'python-flake8)
+    (add-to-list 'flycheck-disabled-checkers 'lsp)
+    (flycheck-add-next-checker 'lsp 'python-ruff))
 
 (use-package elpy
   :ensure t
-  :hook (elpy-mode . flycheck-mode)
-  :preface
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  :after poetry
+  :hook
+  ((python-mode . elpy-mode)
+   (elpy-mode . flycheck-mode)
+   (elpy-mode . poetry-tracking-mode))
   :config
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
   (lsp-register-client
     (make-lsp-client :new-connection (lsp-tramp-connection "pyls")
                      :major-modes '(python-mode)
                      :remote? t
                      :server-id 'pyls-remote))
   :init (elpy-enable))
+
+(use-package flycheck-pycheckers
+  :after flycheck
+  :ensure t
+  :init
+  (with-eval-after-load 'flycheck
+    (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup))
+  (setq flycheck-pycheckers-checkers
+    '(mypy3 pyflakes)))
+
 
 (use-package poetry
  :ensure t)
@@ -1886,5 +1941,20 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :ensure t
   :config
   (add-hook 'python-base-mode-hook 'pet-mode -10))
+
+;; Copilot
+(use-package gptel
+  :straight t
+  :ensure t
+  :custom
+  (gptel-model "gpt-4o-mini")
+  :config
+  (defun gptel-api-key ()
+    (string-trim (shell-command-to-string "pass /flawless/gpt-copilot")))
+  :general
+  (:states '(normal visual)
+    "SPC !" 'gptel
+    "g!" 'gptel-send))
+
 
 ;;; init.el ends here
