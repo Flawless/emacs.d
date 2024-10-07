@@ -18,7 +18,6 @@
 ;;  Description
 ;;
 ;;; Code:
-
 (require 'package)
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -215,11 +214,17 @@ If the new path's directories does not exist, create them."
   ;; Prevent flickering issues
   (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
+
   (cond
-   ((find-font (font-spec :name "Input Mono"))
-    (set-frame-font "Input Mono-12" nil t))
    ((find-font (font-spec :name "Jetbrains Mono"))
-    (set-frame-font "Jetbrains Mono-08")))
+    (custom-set-faces
+     '(default ((t (:inherit nil :font "Jetbrains Mono" :size 16))))))
+   ((find-font (font-spec :name "Monaspace Neon"))
+    (custom-set-faces
+     '(default ((t (:inherit nil :font "Monaspace Neon" :size 16))))))
+   ((find-font (font-spec :name "Input Mono"))
+    (custom-set-faces
+     '(default ((t (:inherit nil :font "Input Mono" :size 16)))))))
 
 
   (add-to-list 'exec-path "/usr/local/bin")
@@ -289,16 +294,16 @@ If the new path's directories does not exist, create them."
   (path-helper-setenv-all))
 
 (use-package files
-    :hook
-    (before-save . whitespace-cleanup)
-    :custom
-    (require-final-newline t)
-    (backup-by-copying t)
-    (delete-old-versions t)
-    (version-control t)
-    (kept-new-versions 50)
-    (kept-old-versions 20)
-    (create-lockfiles nil))
+  :hook
+  (before-save . whitespace-cleanup)
+  :custom
+  (require-final-newline t)
+  (backup-by-copying t)
+  (delete-old-versions t)
+  (version-control t)
+  (kept-new-versions 50)
+  (kept-old-versions 20)
+  (create-lockfiles nil))
 
 (use-package dired
   :after evil
@@ -361,17 +366,17 @@ If the new path's directories does not exist, create them."
   :config
   ;; override internal fn to support short task syntax
   (defun babashka--tasks-to-annotated-names (tasks)
-  "Convert TASKS to annotated alist."
-  (let (results)
-    (maphash (lambda (key value)
-               (let ((task-name (symbol-name key)))
-                 (unless (string-prefix-p ":" task-name)
-                   (push (if (hash-table-p value)
-                             (cons task-name (gethash :doc value))
-                           task-name)
-                         results))))
-             tasks)
-    results)))
+    "Convert TASKS to annotated alist."
+    (let (results)
+      (maphash (lambda (key value)
+                 (let ((task-name (symbol-name key)))
+                   (unless (string-prefix-p ":" task-name)
+                     (push (if (hash-table-p value)
+                               (cons task-name (gethash :doc value))
+                             task-name)
+                           results))))
+               tasks)
+      results)))
 
 (use-package tramp
   :defer t
@@ -380,6 +385,8 @@ If the new path's directories does not exist, create them."
   (put 'temporary-file-directory 'standard-value
        (list temporary-file-directory))
   :custom
+  (remote-file-name-inhibit-cache nil)
+  (tramp-chunksize 2000)
   (tramp-use-ssh-controlmaster-options nil)
   (tramp-backup-directory-alist backup-directory-alist)
   (tramp-default-method "ssh")
@@ -536,6 +543,8 @@ If the new path's directories does not exist, create them."
     :ensure t
     :init (counsel-projectile-mode t)
     :after (counsel projectile))
+  (defadvice projectile-project-root (around ignore-remote first activate)
+    (unless (file-remote-p default-directory) ad-do-it))
   :general
   (flawless-def
     :infix "p"
@@ -695,12 +704,26 @@ If the new path's directories does not exist, create them."
          (compilation-filter . ansi-color-compilation-filter)))
 
 ;; Programming
+;;; Tree sitter
+(use-package tree-sitter
+  :straight (tree-sitter :type git
+                         :host github
+                         :repo "ubolonton/emacs-tree-sitter"
+                         :files ("lisp/*.el")))
+
+(use-package tree-sitter-langs
+  :straight (tree-sitter-langs :type git
+                               :host github
+                               :repo "ubolonton/emacs-tree-sitter"
+                               :files ("langs/*.el" "langs/queries"))
+  :after tree-sitter)
+
 ;;; Git
 (use-package smerge
   :general
   (:states '(normal visual) :keymaps 'smerge-mode-map
-          "gj" 'smerge-prev
-          "gk" 'smerge-next))
+           "gj" 'smerge-prev
+           "gk" 'smerge-next))
 
 (use-package git-timemachine :ensure t)
 
@@ -752,13 +775,19 @@ If the new path's directories does not exist, create them."
   :ensure t
   :delight
   :hook
-  (prog-mode . flycheck-mode))
+  ((flycheck-mode . lt/disable-flycheck-for-remote-files)
+   (prog-mode . flycheck-mode))
+  :config
+  (defun lt/disable-flycheck-for-remote-files ()
+    "Disable flycheck-mode for remote files opened via TRAMP."
+    (when (file-remote-p default-directory)
+      (flycheck-mode -1))))
 
 (use-package flycheck-projectile
   :ensure t
   :general
   (:states '(normal visual) :prefix "SPC" :infix "f"
-    "p" 'flycheck-projectile-list-errors))
+           "p" 'flycheck-projectile-list-errors))
 
 ;; (use-package flycheck-clj-kondo :ensure t)
 
@@ -787,46 +816,51 @@ If the new path's directories does not exist, create them."
            "SPC mhd" 'lsp-describe-thing-at-point)
   :config
   (defun lsp-tramp-connection-over-ssh-port-forwarding (command)
-  "Like lsp-tcp-connection, but uses SSH portforwarding."
-  (list
-   :connect (lambda (filter sentinel name environment-fn)
-              (let* ((host "localhost")
-                     (lsp-port (lsp--find-available-port host (cl-incf lsp--tcp-port)))
-                     (command (with-parsed-tramp-file-name buffer-file-name nil
-                                (message "[tcp/ssh hack] running LSP %s on %s / %s" command host localname)
-                                (let* ((unix-socket (format "/tmp/lsp-ssh-portforward-%s.sock" lsp-port))
-                                       (command (list
-                                                 "ssh"
-                                                 ;; "-vvv"
-                                                 "-L" (format "%s:%s" lsp-port unix-socket)
-                                                 host
-                                                 "socat"
-                                                 (format "unix-listen:%s" unix-socket)
-                                                 (format "system:'\"cd %s && %s\"'" (file-name-directory localname) command)
-                                                 )))
-                                  (message "using local command %s" command)
-                                  command)))
-                     (final-command (if (consp command) command (list command)))
-                     (_ (unless (executable-find (cl-first final-command))
-                          (user-error (format "Couldn't find executable %s" (cl-first final-command)))))
-                     (process-environment
-                      (lsp--compute-process-environment environment-fn))
-                     (proc (make-process :name name :connection-type 'pipe :coding 'no-conversion
-                                         :command final-command :sentinel sentinel :stderr (format "*%s::stderr*" name) :noquery t))
-                     (tcp-proc (progn
-                                 (sleep-for 1) ; prevent a connection before SSH has run socat. Ugh.
-                                 (lsp--open-network-stream host lsp-port (concat name "::tcp")))))
+    "Like lsp-tcp-connection, but uses SSH portforwarding."
+    (list
+     :connect (lambda (filter sentinel name environment-fn)
+                (let* ((host "localhost")
+                       (lsp-port (lsp--find-available-port host (cl-incf lsp--tcp-port)))
+                       (command (with-parsed-tramp-file-name buffer-file-name nil
+                                  (message "[tcp/ssh hack] running LSP %s on %s / %s" command host localname)
+                                  (let* ((unix-socket (format "/tmp/lsp-ssh-portforward-%s.sock" lsp-port))
+                                         (command (list
+                                                   "ssh"
+                                                   ;; "-vvv"
+                                                   "-L" (format "%s:%s" lsp-port unix-socket)
+                                                   host
+                                                   "socat"
+                                                   (format "unix-listen:%s" unix-socket)
+                                                   (format "system:'\"cd %s && %s\"'" (file-name-directory localname) command)
+                                                   )))
+                                    (message "using local command %s" command)
+                                    command)))
+                       (final-command (if (consp command) command (list command)))
+                       (_ (unless (executable-find (cl-first final-command))
+                            (user-error (format "Couldn't find executable %s" (cl-first final-command)))))
+                       (process-environment
+                        (lsp--compute-process-environment environment-fn))
+                       (proc (make-process :name name :connection-type 'pipe :coding 'no-conversion
+                                           :command final-command :sentinel sentinel :stderr (format "*%s::stderr*" name) :noquery t))
+                       (tcp-proc (progn
+                                   (sleep-for 1) ; prevent a connection before SSH has run socat. Ugh.
+                                   (lsp--open-network-stream host lsp-port (concat name "::tcp")))))
 
-                ;; TODO: Same :noquery issue (see above)
-                (set-process-query-on-exit-flag proc nil)
-                (set-process-query-on-exit-flag tcp-proc nil)
-                (set-process-filter tcp-proc filter)
-                (cons tcp-proc proc)))
-   :test? (lambda () t))))
+                  ;; TODO: Same :noquery issue (see above)
+                  (set-process-query-on-exit-flag proc nil)
+                  (set-process-query-on-exit-flag tcp-proc nil)
+                  (set-process-filter tcp-proc filter)
+                  (cons tcp-proc proc)))
+     :test? (lambda () t))))
 
 (use-package lsp-treemacs
   :after (lsp-mode treemacs)
   :ensure t)
+
+(use-package treemacs-nerd-icons
+  :ensure t
+  :config
+  (treemacs-load-theme "nerd-icons"))
 
 (use-package lsp-ui
   :after (lsp-mode)
@@ -875,32 +909,33 @@ If the new path's directories does not exist, create them."
     "SPC mjs" 'lispy-split))
 
 (use-package evil-lispy
-  :delight
   :ensure t
-  ;; FIXME: deal with not working lispy hook
-  :hook ((lisp-mode clojure-ts-mode) . evil-lispy-mode))
+  :delight)
 
 (use-package lispyville
   :ensure t
-  :delight
-  ;; FIXME: deal with not working lispy hook
-  :hook ((lisp-mode clojure-ts-mode) . evil-lispy-mode))
-
+  :delight)
 ;;; Clojure
 (use-package clojure-ts-mode
   :delight (clojure-ts-mode "CLJ:TS ")
   :ensure t
-  :mode (("\\.clj\\'" . clojure-ts-mode)
-         ("\\.bb\\'" . clojure-ts-mode)
-         ("\\.cljc\\'" . clojure-ts-mode)
-         ("\\.cljs\\'" . clojure-ts-mode)
-         ("\\.edn\\'" . clojure-ts-mode))
+  ;; :mode (("\\.clj\\'" . clojure-ts-mode)
+  ;;        ("\\.bb\\'" . clojure-ts-mode)
+  ;;        ("\\.cljc\\'" . clojure-ts-mode)
+  ;;        ("\\.cljs\\'" . clojure-ts-mode)
+  ;;        ("\\.edn\\'" . clojure-ts-mode))
   :custom
   (clojure-ts-indent-style 'fixed)
   :config
   (defun lt/clj-reload ()
     (interactive)
-    (cider-interactive-eval "(require 'clj-reload.core) (clj-reload.core/reload)"))
+    (cider-interactive-eval
+     "
+    (try
+      (require ' [clj-reload.core :refer [reload]])
+      ((eval 'reload))
+      (catch Exception _ (println :clj-reload-is-not-available)))
+    "))
   :preface
   (defun lt/clts-lsp-start()
     (add-hook 'before-save-hook #'lsp-format-buffer t t)
@@ -921,45 +956,15 @@ If the new path's directories does not exist, create them."
   :delight
   (clojure-mode "CLJ ")
   (clojurescript-mode "CLJS ")
-  ;; :mode (("\\.clj\\'" . clojure-mode)
-  ;;        ("\\.bb\\'" . clojure-mode)
-  ;;        ("\\.cljc\\'" . clojurec-mode)
-  ;;        ("\\.cljs\\'" . clojurescript-mode)
-  ;;        ("\\.edn\\'" . clojure-mode))
+  :mode (("\\.clj\\'" . clojure-mode)
+         ("\\.bb\\'" . clojure-mode)
+         ("\\.cljc\\'" . clojurec-mode)
+         ("\\.cljs\\'" . clojurescript-mode)
+         ("\\.edn\\'" . clojure-mode))
   :custom
   (clojure-indent-style 'always-indent)
 
-  :config
-  (define-clojure-indent
-    (defroutes 'defun)
-    (GET 2)
-    (POST 2)
-    (PUT 2)
-    (DELETE 2)
-    (HEAD 2)
-    (ANY 2)
-    (OPTIONS 2)
-    (PATCH 2)
-    (rfn 2)
-    (let-routes 1)
-    (context 2)
-    (re-frame.core/reg-event-fx 1)
-    (re-frame.core/reg-fx 1)
-    (re-frame.core/reg-cofx 1)
-    (rf/reg-event-fx 1)
-    (rf/reg-fx 1)
-    (re-frame.core/reg-event-db 1)
-    (re-frame.core/reg-db 1)
-    (rf/reg-event-db 1)
-    (rf/reg-db 1)
-    (re-frame.core/reg-sub 1)
-    (rf/reg-sub 1)
-    (component-style-def 1)
-    (reg-view 1)
-    (reg-modal 1)
-    (attempt-all 1)
-    (try-all 1))
-
+  :preface
   (defun lt/clerk-show ()
     (interactive)
     (when-let
@@ -969,6 +974,11 @@ If the new path's directories does not exist, create them."
       (cider-interactive-eval
        (concat "(nextjournal.clerk/show! \"" filename "\")"))))
 
+  :config
+  (defun lt/clj-lsp-start()
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t)
+    (lsp-deferred))
   (defun +/insert-random-uuid ()
     "Insert a random UUID.
 Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
@@ -988,8 +998,11 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   ;; (require 'flycheck-clj-kondo)
 
   :hook
-  (clojure-mode . lsp)
-  (clojure-mode . lsp-ui-mode)
+  (clojure-mode . lispyville-mode)
+  (clojure-mode . evil-lispy-mode)
+  (clojure-mode . cider-mode)
+  (clojure-mode . lt/clj-lsp-start)
+  (after-save . lt/clj-reload)
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
   (clojure-mode . eldoc-mode)
@@ -1003,8 +1016,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
                                         'font-lock-string-face (point) 'face)))))))
 
   :general
-  (:states '(normal visual) :prefix "SPC mC" :keymaps 'clojure-mode-map
-           "s" 'lt/clerk-show))
+  (:states '(normal visual) :keymaps 'clojure-mode-map
+           "SPC mjR" 'lt/clj-reload
+           "SPC mCs" 'lt/clerk-show))
 
 (use-package cider
   :ensure t :defer t
@@ -1022,7 +1036,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
                                        (dedicated . t)))
 
   :custom
-  (cider-clojure-cli-alises ":user")
+  (cider-clojure-cli-aliases ":user")
   ;; lsp
   (cider-print-fn 'fipp)
   (cider-merge-sessions 'project)
@@ -1078,6 +1092,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
            "SPC mtP" 'cider-test-run-project-tests
            "SPC mtt" 'cider-test-run-test
            "SPC mtf" 'cider-test-rerun-failed-tests
+           "SPC mtr" 'cider-test-rerun-test
            "SPC mtn" 'cider-test-run-ns-tests
 
            "SPC mPt" 'cider-profile-toggle
@@ -1124,17 +1139,20 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :ensure t)
 
 ;;; java
-(use-package java-mode :defer t
-  :hook (java-mode . lsp)
+(use-package java-mode
+  :defer t
+  :hook ((java-mode . lsp)
+         (java-mode . tree-sitter-hl-mode))
   :general
- (:states '(normal visual) :keymaps 'java-mode-map :prefix "SPC"
+  (:states '(normal visual) :keymaps 'java-mode-map :prefix "SPC"
            "mjam" 'lsp-java-add-import))
 
 ;;; YML
 
 (use-package yaml-mode
   :ensure t
-  :mode "\\.ya?ml\\'")
+  :mode "\\.ya?ml\\'"
+  :hook (yaml-mode . tree-sitter-hl-mode))
 
 ;;; Beancount
 (use-package beancount
@@ -1151,12 +1169,12 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
 (use-package org
   :ensure org-contrib
   :general
- (:states '(normal visual) :keymap 'outline-mode-map
-    ;; "gh" 'org-next-visible-heading
-    ;; "gl" 'org-previous-visible-heading
-    "gj" 'outline-forward-same-level
-    "gk" 'outline-backward-same-level)
- (:states '(normal visual)
+  (:states '(normal visual) :keymap 'outline-mode-map
+           ;; "gh" 'org-next-visible-heading
+           ;; "gl" 'org-previous-visible-heading
+           "gj" 'outline-forward-same-level
+           "gk" 'outline-backward-same-level)
+  (:states '(normal visual)
     :prefix "SPC"
     :keymaps 'org-mode-map
     "mx" 'org-export-dispatch
@@ -1316,9 +1334,9 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
           "pdflatex -interaction nonstopmode -output-directory %o %f"
           "pdflatex -interaction nonstopmode -output-directory %o %f"))
   (setq org-latex-with-hyperref nil) ;; stop org adding hypersetup{author..} to latex export
-    ;; (setq org-latex-prefer-user-labels t)
+  ;; (setq org-latex-prefer-user-labels t)
 
-    ;; deleted unwanted file extensions after latexMK
+  ;; deleted unwanted file extensions after latexMK
   (setq org-latex-logfiles-extensions
         '("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl" "xmpi" "run.xml" "bcf" "acn" "acr" "alg" "glg" "gls" "ist"))
 
@@ -1336,7 +1354,7 @@ clocked tasks in minutes."
         (with-current-buffer (find-buffer-visiting file)
           (setq total (+ total (org-clock-sum-today)))))
       (format " Today's total: %s " (org-minutes-to-clocksum-string total))))
- (evil-set-initial-state 'org-agenda-mode 'normal)
+  (evil-set-initial-state 'org-agenda-mode 'normal)
   (org-clock-persistence-insinuate)
   (defun lt:capture-comment-line (&optional line)
     (let ((c
@@ -1637,10 +1655,25 @@ my-org-clocktable-formatter' to that clocktable's arguments."
            "g" 'telega
            "A" 'telega-account-switch))
 
+(use-package elisp-mode
+  :defer t
+  :hook ((emacs-lisp-mode . flycheck-mode) ; Enable Flycheck for linting
+         (emacs-lisp-mode . lispy-mode) ; Enable Lispy for structured editing
+         (emacs-lisp-mode . lispyville-mode) ; Enable Lispyville for Evil users
+         (emacs-lisp-mode . eldoc-mode) ; Enable Eldoc for inline help
+         (emacs-lisp-mode . subword-mode) ; Navigate through subwords
+         (before-save . lt/elisp-indent-buffer)) ; Automatically indent the buffer before saving
+  :config
+  (defun lt/elisp-indent-buffer ()
+    "Indent the entire buffer when saving Emacs Lisp code."
+    (when (eq major-mode 'emacs-lisp-mode)
+      (indent-region (point-min) (point-max)))))
+
 (use-package rustic
   :ensure t
   :config
   (setq rustic-format-on-save t)
+  :hook (rustic-mode . tree-sitter-hl-mode)
   :general
   (:states '(normal visual) :keymaps 'rustic-mode-map
            "SPC mhd" 'lsp-describe-thing-at-point
@@ -1653,11 +1686,14 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :ensure t
   :mode (("\\.jsx?$" . web-mode)
          ("\\.mdx$" . web-mode))
+  :hook (web-mode . tree-sitter-hl-mode)
   :custom
   (web-mode-markup-indent-offset 2)
   (web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))))
 
-(use-package typescript-mode :ensure t)
+(use-package typescript-mode
+  :ensure t
+  :hook (typescript-mode . tree-sitter-hl-mode))
 
 (use-package lua-mode
   :ensure t
@@ -1720,7 +1756,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (terraform-format-on-save t))
 
 (use-package esxml
- :straight (esxml :type git :host nil :repo "https://github.com/tali713/esxml.git"))
+  :straight (esxml :type git :host nil :repo "https://github.com/tali713/esxml.git"))
 
 (use-package nov
   :after esxml elfeed
@@ -1744,7 +1780,8 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (add-hook 'before-save-hook #'lsp-organize-imports t t)
     (lsp-deferred))
   :hook
-  (go-ts-mode . lt/go-lsp-start)
+  ((go-ts-mode . lt/go-lsp-start)
+   (go-ts-mode . tree-sitter-hl-mode))
   :config
   (add-to-list 'exec-path "~/.local/bin")
   (setq lsp-go-analyses '((nilness . t)
@@ -1769,13 +1806,25 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
 ;; Python
 (use-package python
+  :ensure t
   :hook
   ((python-mode . lsp-deferred)
-   (python-mode . lt/python-flycheck))
+   (python-mode . lt/disable-venv-checks-for-remote-files)
+   ;; (python-mode . lt/python-flycheck)
+   )
   :config
+  (defun lt/disable-venv-checks-for-remote-files ()
+    "Disable virtual environment checks for remote files."
+    (when (file-remote-p default-directory)
+      (setq-local pet-use-poetry-p nil)
+      (setq-local pet-use-pipenv-p nil)
+      (setq-local pet-use-conda-p nil)))
+
   (defun lt/python-flycheck ()
     (flycheck-select-checker 'python-ruff)
     (flycheck-mode 1)))
+
+(use-package python-pytest :ensure t)
 
 (use-package conda
   :straight t
@@ -1876,62 +1925,68 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :after python
   :hook
   ((python-mode . ruff-format-on-save-mode)
-   (python-mode . lt/flycheck-python))
-  :config
-  (flycheck-define-checker python-ruff
-    "A Python syntax and style checker using the ruff utility. To override the path to the ruff
-    executable, set `flycheck-python-ruff-executable'.
-    See URL `http://pypi.python.org/pypi/ruff'."
-    :command ("ruff"
-              "--format=text"
-              (eval (when buffer-file-name
-                      (concat "--stdin-filename=" buffer-file-name)))
-              "-")
-    :standard-input t
-    :error-filter (lambda (errors)
-                    (let ((errors (flycheck-sanitize-errors errors)))
-                      (seq-map #'flycheck-flake8-fix-error-level errors)))
-    :error-patterns
-    ((warning line-start
-              (file-name) ":" line ":" (optional column ":") " "
-              (id (one-or-more (any alpha)) (one-or-more digit)) " "
-              (message (one-or-more not-newline))
-              line-end))
-    :modes python-mode)
-  (defun lt/flycheck-python()
-    (setq-local flycheck-checkers '(python-ruff))
-    (add-to-list 'flycheck-disabled-checkers 'python-flake8)
-    (add-to-list 'flycheck-disabled-checkers 'lsp)
-    (flycheck-add-next-checker 'lsp 'python-ruff))
+   ;; (python-mode . lt/flycheck-python)
+   )
+  ;; :config
+  ;;   (flycheck-define-checker python-ruff
+  ;;     "A Python syntax and style checker using the ruff utility.
+  ;; To override the path to the ruff executable, set
+  ;; `flycheck-python-ruff-executable'.
+  ;; See URL `http://pypi.python.org/pypi/ruff'."
+  ;;     :command ("ruff"
+  ;;               "check"
+  ;;               "--output-format=full"
+  ;;               (eval (when buffer-file-name
+  ;;                       (concat "--stdin-filename=" buffer-file-name)))
+  ;;               "-")
+  ;;     :standard-input t
+  ;;     :error-filter (lambda (errors)
+  ;;                     (let ((errors (flycheck-sanitize-errors errors)))
+  ;;                       (seq-map #'flycheck-flake8-fix-error-level errors)))
+  ;;     :error-patterns
+  ;;     ((warning line-start
+  ;;               (file-name) ":" line ":" (optional column ":") " "
+  ;;               (id (one-or-more (any alpha)) (one-or-more digit)) " "
+  ;;               (message (one-or-more not-newline))
+  ;;               line-end))
+  ;;     :modes python-mode)
+
+  ;; (defun lt/flycheck-python()
+  ;;   (setq-local flycheck-checkers '(python-ruff))
+  ;;   (add-to-list 'flycheck-disabled-checkers 'python-flake8)
+  ;;   (add-to-list 'flycheck-disabled-checkers 'lsp)
+  ;;   (flycheck-add-next-checker 'lsp 'python-ruff))
+  )
 
 (use-package elpy
   :ensure t
-  :after poetry
+  :after poetry lsp
   :hook
   ((python-mode . elpy-mode)
    (elpy-mode . flycheck-mode)
    (elpy-mode . poetry-tracking-mode))
   :config
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (flycheck-add-next-checker 'lsp '(t . python-ruff))
   (lsp-register-client
-    (make-lsp-client :new-connection (lsp-tramp-connection "pyls")
-                     :major-modes '(python-mode)
-                     :remote? t
-                     :server-id 'pyls-remote))
-  :init (elpy-enable))
-
-(use-package flycheck-pycheckers
-  :after flycheck
-  :ensure t
+   (make-lsp-client :new-connection (lsp-tramp-connection "pyls")
+                    :major-modes '(python-mode)
+                    :remote? t
+                    :server-id 'pyls-remote))
   :init
-  (with-eval-after-load 'flycheck
-    (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup))
-  (setq flycheck-pycheckers-checkers
-    '(mypy3 pyflakes)))
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (elpy-enable))
 
+;; (use-package flycheck-pycheckers
+;;   :after flycheck
+;;   :ensure t
+;;   :custom
+;;   (flycheck-pycheckers-checkers '(mypy3 pyflakes))
+;;   :init
+;;   (with-eval-after-load 'flycheck
+;;     (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
 
 (use-package poetry
- :ensure t)
+  :ensure t)
 
 (use-package pet
   :straight (pet
@@ -1939,7 +1994,12 @@ my-org-clocktable-formatter' to that clocktable's arguments."
              :host github
              :repo "wyuenho/emacs-pet")
   :ensure t
+  :hook ((pet-mode . lt/disable-pet-mode-for-remote-files))
   :config
+  (defun lt/disable-pet-mode-for-remote-files ()
+    "Disable pet-mode's heavy operations for remote files."
+    (when (file-remote-p default-directory)
+      (setq-local pet-mode nil)))
   (add-hook 'python-base-mode-hook 'pet-mode -10))
 
 ;; Copilot
@@ -1948,13 +2008,26 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :ensure t
   :custom
   (gptel-model "gpt-4o-mini")
+  (gptel-default-mode 'org-mode)
+  (gptel-fill-column 80) ;; Set the desired fill column
   :config
+  (defun enable-visual-line-mode-in-chatgpt ()
+    "Enable visual-line-mode in *ChatGPT* buffer."
+    (when (string= (buffer-name) "*ChatGPT*")
+      (visual-line-mode 1)))
+  (defun clean-gpt-buffer (&rest _)
+    (with-current-buffer "*ChatGPT*"
+      (fill-region (point-min) (point-max))))
   (defun gptel-api-key ()
     (string-trim (shell-command-to-string "pass /flawless/gpt-copilot")))
   :general
   (:states '(normal visual)
-    "SPC !" 'gptel
-    "g!" 'gptel-send))
-
+    "SPC 1c" 'gptel
+    "SPC 11" 'gptel-menu
+    "SPC 1a" 'gptel-add)
+  :init
+  ;; (add-hook 'gptel-post-response-functions 'clean-gpt-buffer)
+  (add-hook 'gptel-post-response-functions 'enable-visual-line-mode-in-chatgpt)
+  (add-hook 'gptel-post-response-functions 'gptel-end-of-response))
 
 ;;; init.el ends here
