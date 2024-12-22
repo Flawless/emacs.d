@@ -120,6 +120,9 @@
   (auto-fill-function)
   (auto-revert-mode)
   :custom
+  (use-dialog-box nil)
+  (tooltip-mode nil)
+  (savehist-mode 1)
   (warning-minimum-level :error)
   (indent-tabs-mode nil)
   (backup-directory-alist `((".*" . ,temporary-file-directory)))
@@ -247,6 +250,7 @@ If the new path's directories does not exist, create them."
   :general
   (:states '(normal visual)
     :keymaps 'override
+    "SPC xp" 'projectile-run-async-shell-command-in-root
     "SPC xs" 'async-shell-command
     "SPC u" 'universal-argument
     "SPC fC" 'find-config-file
@@ -283,6 +287,13 @@ If the new path's directories does not exist, create them."
     "SPC tt" 'toggle-truncate-lines
 
     "SPC qq" 'save-buffers-kill-emacs))
+
+(use-package exec-path-from-shell
+  :ensure t
+  :if (memq window-system '(mac ns x))  ; Ensure it runs only on graphical Emacs
+  :config
+  (when (memq window-system '(mac ns))
+    (exec-path-from-shell-initialize)))
 
 (use-package info
   :init (evil-collection-init 'info))
@@ -398,10 +409,9 @@ If the new path's directories does not exist, create them."
 (use-package goto-last-change
   :ensure t)
 
+(setq evil-want-keybinding nil)
 (use-package evil
   :ensure t
-  :init
-  (setq evil-want-keybinding nil)
   :custom
   (evil-want-C-u-scroll t)
   :config
@@ -425,8 +435,39 @@ If the new path's directories does not exist, create them."
 
 (use-package evil-surround
   :ensure t
-  :after evil
-  :config (global-evil-surround-mode 1))
+  :hook ((text-mode prog-mode) . evil-surround-mode)
+  :config
+  (add-to-list 'evil-surround-pairs-alist
+               '(?c . ("<!-- " . " -->")))
+
+  (defun evil-surround-get-active-pair (beg end)
+    "Get the active surround pair between BEG and END."
+    (let ((text (buffer-substring-no-properties beg end)))
+      (cl-loop for (key . (open . close)) in evil-surround-pairs-alist
+               when (and (string-prefix-p open text)
+                         (string-suffix-p close text))
+               return (cons open close))))
+
+  (defun toggle-comment-on-html-tag ()
+    "Toggle HTML comment on the current HTML tag."
+    (interactive)
+    (require 'web-mode)
+    (save-excursion
+      (when (derived-mode-p 'web-mode)
+        (web-mode-element-select)
+        (let ((beg (region-beginning))
+              (end (region-end))
+              (surround-pair (evil-surround-get-active-pair beg end)))
+          (if (and surround-pair
+                   (string= (car surround-pair) "<!-- ")
+                   (string= (cdr surround-pair) " -->"))
+              ;; Remove the surround
+              (evil-surround-delete beg end 'inclusive ?c)
+            ;; Add the surround
+            (evil-surround-region beg end 'inclusive ?c))))))
+
+  (evil-define-key 'normal web-mode-map
+    (kbd "g c") 'toggle-comment-on-html-tag))
 
 (use-package evil-commentary
   :delight
@@ -801,6 +842,7 @@ If the new path's directories does not exist, create them."
   (lsp-lens-mode "")
   :ensure t
   :custom
+  (lsp-prefer-flymake nil)
   (read-process-output-max (* 1024 1024))
   (lsp-enable-symbol-highlighting nil)
   (lsp-auto-guess-root t)
@@ -910,20 +952,28 @@ If the new path's directories does not exist, create them."
 
 (use-package evil-lispy
   :ensure t
+  :hook
+  ((elisp-mode clojure-mode clojure-ts-mode) . evil-lispy-mode)
   :delight)
 
 (use-package lispyville
   :ensure t
+  :hook
+  ((elisp-mode clojure-mode clojure-ts-mode) . lispyville-mode)
   :delight)
+
 ;;; Clojure
 (use-package clojure-ts-mode
-  :delight (clojure-ts-mode "CLJ:TS ")
+  :delight
+  (clojure-ts-mode "CLJ:TS ")
+  (clojure-ts-clojurescript-mode "CLJS:TS ")
+  (clojure-ts-clojurec-mode "CLJC:TS ")
   :ensure t
-  ;; :mode (("\\.clj\\'" . clojure-ts-mode)
-  ;;        ("\\.bb\\'" . clojure-ts-mode)
-  ;;        ("\\.cljc\\'" . clojure-ts-mode)
-  ;;        ("\\.cljs\\'" . clojure-ts-mode)
-  ;;        ("\\.edn\\'" . clojure-ts-mode))
+  :mode (("\\.clj\\'" . clojure-ts-mode)
+         ("\\.bb\\'" . clojure-ts-mode)
+         ("\\.cljc\\'" . clojure-ts-clojurec-mode)
+         ("\\.cljs\\'" . clojure-ts-clojurescript-mode)
+         ("\\.edn\\'" . clojure-ts-mode))
   :custom
   (clojure-ts-indent-style 'fixed)
   :config
@@ -942,8 +992,6 @@ If the new path's directories does not exist, create them."
     (add-hook 'before-save-hook #'lsp-organize-imports t t)
     (lsp-deferred))
   :hook
-  (clojure-ts-mode . lispyville-mode)
-  (clojure-ts-mode . lispy-mode)
   (clojure-ts-mode . cider-mode)
   (clojure-ts-mode . lt/clts-lsp-start)
   (after-save . lt/clj-reload)
@@ -956,11 +1004,11 @@ If the new path's directories does not exist, create them."
   :delight
   (clojure-mode "CLJ ")
   (clojurescript-mode "CLJS ")
-  :mode (("\\.clj\\'" . clojure-mode)
-         ("\\.bb\\'" . clojure-mode)
-         ("\\.cljc\\'" . clojurec-mode)
-         ("\\.cljs\\'" . clojurescript-mode)
-         ("\\.edn\\'" . clojure-mode))
+  ;; :mode (("\\.clj\\'" . clojure-mode)
+  ;;        ("\\.bb\\'" . clojure-mode)
+  ;;        ("\\.cljc\\'" . clojurec-mode)
+  ;;        ("\\.cljs\\'" . clojurescript-mode)
+  ;;        ("\\.edn\\'" . clojure-mode))
   :custom
   (clojure-indent-style 'always-indent)
 
@@ -998,8 +1046,6 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   ;; (require 'flycheck-clj-kondo)
 
   :hook
-  (clojure-mode . lispyville-mode)
-  (clojure-mode . evil-lispy-mode)
   (clojure-mode . cider-mode)
   (clojure-mode . lt/clj-lsp-start)
   (after-save . lt/clj-reload)
@@ -1055,6 +1101,8 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   (cider-repl-use-pretty-printing t)
 
   :hook
+  ((clojure-mode clojure-ts-mode) . cider-mode)
+  (cider-mode . clj-refactor-mode)
   (cider-mode . clj-refactor-mode)
   :general
   (:states '(normal visual) :keymaps 'cider-repl-mode-map
@@ -1662,7 +1710,8 @@ my-org-clocktable-formatter' to that clocktable's arguments."
          (emacs-lisp-mode . lispyville-mode) ; Enable Lispyville for Evil users
          (emacs-lisp-mode . eldoc-mode) ; Enable Eldoc for inline help
          (emacs-lisp-mode . subword-mode) ; Navigate through subwords
-         (before-save . lt/elisp-indent-buffer)) ; Automatically indent the buffer before saving
+         (emacs-lisp-mode . (lambda () ; Automatically indent the buffer before saving
+                              (add-hook 'before-save-hook #'lt/elisp-indent-buffer nil t))))
   :config
   (defun lt/elisp-indent-buffer ()
     "Indent the entire buffer when saving Emacs Lisp code."
@@ -1684,10 +1733,11 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
 (use-package web-mode
   :ensure t
-  :mode (("\\.jsx?$" . web-mode)
-         ("\\.mdx$" . web-mode))
+  :mode ("\\.jsx?$" "\\.mdx$" "\\.j2$" "\\.html$")
   :hook (web-mode . tree-sitter-hl-mode)
   :custom
+  (web-mode-enable-engine-detection t)
+  (web-mode-engines-alist '(("jinja2" . "\\.j2$\\'")))
   (web-mode-markup-indent-offset 2)
   (web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))))
 
@@ -1724,7 +1774,6 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (elfeed-show-mode . lt:ajust-to-read)
   :custom
   (elfeed-db-directory "~/.emacs.d")
-  (browse-url-browser-function 'eww-browse-url)
   :config
   (elfeed-org)
   (defun lt:ajust-to-read ()
@@ -1889,7 +1938,13 @@ my-org-clocktable-formatter' to that clocktable's arguments."
         numpydoc-insert-return-without-typehint nil ;; as it says
         numpydoc-auto-fill-paragraphs t)) ;; autofill my docs
 
-;;; lsp-pyright
+(use-package lsp-pyright
+  :straight t
+  :custom (lsp-pyright-langserver-command "pyright")
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         (lsp-deferred))))
+
 ;; (use-package lsp-pyright
 ;;   :straight t
 ;;   :init (setq lsp-pyright-multi-root nil)
@@ -2007,9 +2062,18 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :straight t
   :ensure t
   :custom
-  (gptel-model "gpt-4o-mini")
+  (gptel-model "gpt-4o")
   (gptel-default-mode 'org-mode)
   (gptel-fill-column 80) ;; Set the desired fill column
+  (gptel-directives
+   '((default
+      . "You are a large language model living in Emacs and a helpful assistant. Respond concisely.")
+     (programming
+      . "You are a large language model and a careful programmer. Provide code and only code as output without any additional text, prompt or note.")
+     (programming-apply
+      . "You are a large language model and a careful programmer. Apply changes from context related to given code in git merge conflicts format so user can review it easyly with standard tools and apply. Do not add anything not directly related to code like notes, text, markup languages quotation or other syntax and keep code that you were given since your reply will replace original content. Use code pieces from chat as basis if provided.")
+     (writing . "You are a large language model and a writing assistant. Respond concisely.")
+     (chat . "You are a large language model and a conversation partner. Respond concisely.")) )
   :config
   (defun enable-visual-line-mode-in-chatgpt ()
     "Enable visual-line-mode in *ChatGPT* buffer."
@@ -2022,12 +2086,32 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (string-trim (shell-command-to-string "pass /flawless/gpt-copilot")))
   :general
   (:states '(normal visual)
-    "SPC 1c" 'gptel
-    "SPC 11" 'gptel-menu
-    "SPC 1a" 'gptel-add)
+    "SPC lG" 'gptel
+    "SPC lg" 'gptel-menu
+    "SPC la" 'gptel-add)
   :init
   ;; (add-hook 'gptel-post-response-functions 'clean-gpt-buffer)
   (add-hook 'gptel-post-response-functions 'enable-visual-line-mode-in-chatgpt)
   (add-hook 'gptel-post-response-functions 'gptel-end-of-response))
+
+;; GraphQL
+(use-package graphql-mode
+  :ensure t
+  :mode "\\.graphql\\'"
+  :hook
+  (graphql-mode . lsp)
+  (graphql-mode . (lambda ()
+                    (add-hook 'before-save-hook #'prettier-prettify nil t)))
+  :config
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("graphql-lsp" "server" "--method" "stream"))
+    :major-modes '(graphql-mode)
+    :server-id 'graphql-lsp))
+  (setq graphql-indent-level 2))
+
+(use-package prettier
+  :ensure t)
+
 
 ;;; init.el ends here
