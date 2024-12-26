@@ -856,6 +856,10 @@ If the new path's directories does not exist, create them."
            "gb" 'lsp-format-buffer
            "SPC mjrs" 'lsp-rename
            "SPC mhd" 'lsp-describe-thing-at-point)
+  :init
+  (let ((lsp-session-file (expand-file-name ".lsp-session-v1" user-emacs-directory)))
+    (when (file-exists-p lsp-session-file)
+      (delete-file lsp-session-file)))
   :config
   (defun lsp-tramp-connection-over-ssh-port-forwarding (command)
     "Like lsp-tcp-connection, but uses SSH portforwarding."
@@ -1081,11 +1085,88 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
                                        (window-height . shrink-window-if-larger-than-buffer)
                                        (dedicated . t)))
 
+  (defun polylith-project-p ()
+    (let* ((root (projectile-project-root))
+           (deps (expand-file-name "deps.edn" root))
+           (workspace (expand-file-name "workspace.edn" root)))
+      (and (projectile-project-p)
+           (file-exists-p deps)
+           (file-exists-p workspace))))
+
+  (defun my-extract-poly-profiles (deps-file)
+    "Extract aliases starting with :+ from the deps.edn file.
+Returns a list of alias strings without the leading colon, e.g., '+default'."
+    (with-temp-buffer
+      (insert-file-contents deps-file)
+      (goto-char (point-min))
+      (let (aliases)
+        ;; Regex explanation:
+        ;; :\+       => Matches the literal characters :+
+        ;; \([-a-zA-Z0-9_]+\) => Captures one or more allowed characters in the alias name
+        (while (re-search-forward ":\\+\\([-a-zA-Z0-9_]+\\)" nil t)
+          (push (concat "+" (match-string 1)) aliases))
+        (delete-dups aliases))))
+
+  (defun my-toggle-selection (choices &optional initial-selected)
+    "Allow toggling of multiple CHOICES interactively.
+INITIAL-SELECTED is a list of initially selected items."
+    (let ((selected (or initial-selected '())))
+      (catch 'finish-selection
+        (while t
+          (let ((choice (completing-read
+                         (format "Selected: [%s] Toggle (RET to finish): "
+                                 (string-join selected ", "))
+                         choices nil nil nil nil ""))) ;; Allow empty input to finish
+            (if (string-empty-p choice)
+                (throw 'finish-selection selected)
+              (if (member choice selected)
+                  (setq selected (remove choice selected))
+                (push choice selected))))))))
+
+  (defun my-cider-prepare-aliases ()
+    "Prompt for aliases to use when starting CIDER. Only works for Polylith projects.
+Returns a list of selected aliases or nil."
+    (if (polylith-project-p)
+        (let* ((root (projectile-project-root))
+               (deps (expand-file-name "deps.edn" root))
+               (aliases (my-extract-poly-profiles deps)))
+          (if (and aliases (> (length aliases) 0))
+              (let* (;; (default-alias (if (member "+default" aliases) "+default" nil))
+                     ;; (initial-selected (if default-alias (list "+default") nil))
+                     (chosen (my-toggle-selection aliases)))
+                chosen) ;; Return the list of chosen aliases
+            (progn
+              (message "No :+aliases found in deps.edn.")
+              nil)))
+      (progn
+        (message "Non-Polylith project detected. No aliases prompt.")
+        nil)))
+
+  (defun my-cider-jack-in-with-aliases (orig-fun &rest args)
+    "Advice to set CIDER aliases before running `cider-jack-in`."
+    (let ((selected-aliases (my-cider-prepare-aliases)))
+      (if selected-aliases
+          (let* ((new-aliases (string-join selected-aliases ":"))
+                 (existing-aliases cider-clojure-cli-aliases)
+                 ;; Prepend selected aliases to existing ones
+                 (cider-clojure-cli-aliases
+                  (if existing-aliases
+                      (concat new-aliases ":" existing-aliases)
+                    new-aliases)) )
+            ;; Call the original `cider-jack-in` with modified aliases
+            (setq cider-session-name-template (concat "%J:%h:" new-aliases ":%p"))
+            (apply orig-fun args))
+        ;; If no aliases selected, proceed normally
+        (setq cider-session-name-template "%J:%h:%p")
+        (apply orig-fun args))))
+
+  (advice-add 'cider-jack-in :around #'my-cider-jack-in-with-aliases)
+
   :custom
   (cider-clojure-cli-aliases ":user")
   ;; lsp
   (cider-print-fn 'fipp)
-  (cider-merge-sessions 'project)
+  ;; (cider-merge-sessions 'project)
   (cider-save-file-on-load nil)
   (cider-repl-pop-to-buffer-on-connect t)
   (cider-repl-result-prefix "\n;; => ")
@@ -1940,7 +2021,8 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
 (use-package lsp-pyright
   :straight t
-  :custom (lsp-pyright-langserver-command "pyright")
+  :custom
+  (lsp-pyright-langserver-command "pyright")
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          (lsp-deferred))))
