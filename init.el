@@ -1093,6 +1093,12 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
            (file-exists-p deps)
            (file-exists-p workspace))))
 
+  (defcustom my-cider-last-selected-aliases nil
+    "List of last selected CIDER aliases.
+This variable is used to remember the user's alias selections across Emacs sessions."
+    :type '(repeat string)
+    :group 'my-cider)
+
   (defun my-extract-poly-profiles (deps-file)
     "Extract aliases starting with :+ from the deps.edn file.
 Returns a list of alias strings without the leading colon, e.g., '+default'."
@@ -1123,42 +1129,40 @@ INITIAL-SELECTED is a list of initially selected items."
                   (setq selected (remove choice selected))
                 (push choice selected))))))))
 
-  (defun my-cider-prepare-aliases ()
+  (defun my-poly-profiles-prompt (root)
     "Prompt for aliases to use when starting CIDER. Only works for Polylith projects.
 Returns a list of selected aliases or nil."
-    (if (polylith-project-p)
-        (let* ((root (projectile-project-root))
-               (deps (expand-file-name "deps.edn" root))
-               (aliases (my-extract-poly-profiles deps)))
-          (if (and aliases (> (length aliases) 0))
-              (let* (;; (default-alias (if (member "+default" aliases) "+default" nil))
-                     ;; (initial-selected (if default-alias (list "+default") nil))
-                     (chosen (my-toggle-selection aliases)))
-                chosen) ;; Return the list of chosen aliases
-            (progn
-              (message "No :+aliases found in deps.edn.")
-              nil)))
-      (progn
-        (message "Non-Polylith project detected. No aliases prompt.")
-        nil)))
+    (let* ((deps (expand-file-name "deps.edn" root))
+           (aliases (my-extract-poly-profiles deps)))
+      (if (and aliases (> (length aliases) 0))
+          (let* ((default-alias (if (member "+default" aliases) "+default" nil))
+                 (initial-selected (or my-cider-last-selected-aliases
+                                       (and default-alias (list "+default"))))
+                 (chosen (my-toggle-selection aliases initial-selected)))
+            (setq my-cider-last-selected-aliases chosen)
+            chosen) ;; Return the list of chosen aliases
+        (progn
+          (message "No :+aliases found in deps.edn.")
+          nil))))
 
-  (defun my-cider-jack-in-with-aliases (orig-fun &rest args)
-    "Advice to set CIDER aliases before running `cider-jack-in`."
-    (let ((selected-aliases (my-cider-prepare-aliases)))
-      (if selected-aliases
-          (let* ((new-aliases (string-join selected-aliases ":"))
-                 (existing-aliases cider-clojure-cli-aliases)
-                 ;; Prepend selected aliases to existing ones
-                 (cider-clojure-cli-aliases
-                  (if existing-aliases
-                      (concat new-aliases ":" existing-aliases)
-                    new-aliases)) )
-            ;; Call the original `cider-jack-in` with modified aliases
-            (setq cider-session-name-template (concat "%J:%h:" new-aliases ":%p"))
-            (apply orig-fun args))
-        ;; If no aliases selected, proceed normally
-        (setq cider-session-name-template "%J:%h:%p")
-        (apply orig-fun args))))
+  (defun my-cider-jack-in-with-aliases (orig-fun args)
+    "Advice around `cider-jack-in` to set aliases and start REPL in main root."
+    (if (polylith-project-p)
+        (let* ((poly-root (projectile-project-root))
+               (aliases (my-poly-profiles-prompt poly-root))
+               (alias-string (when aliases (string-join aliases ":")))
+               (existing-aliases cider-clojure-cli-aliases)
+               (cider-clojure-cli-aliases (if existing-aliases
+                                              (concat alias-string ":" existing-aliases)
+                                            alias-string)))
+          (when alias-string
+            (setq cider-session-name-template (format "%%J:%%h:%s:%%p" alias-string)))
+          ;; Temporarily set `default-directory` to poly-root
+          (progn
+            (message poly-root)
+            (funcall orig-fun (plist-put args :project-dir poly-root))))
+      ;; Non-Polylith projects proceed normally
+      (funcall orig-fun args)))
 
   (advice-add 'cider-jack-in :around #'my-cider-jack-in-with-aliases)
 
