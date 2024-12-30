@@ -741,8 +741,7 @@ If the new path's directories does not exist, create them."
 
 (use-package compilation-mode
   :init (evil-collection-init 'compile)
-  :hook ((compilation-mode . next-error-follow-minor-mode)
-         (compilation-filter . ansi-color-compilation-filter)))
+  :hook ((compilation-filter . ansi-color-compilation-filter)))
 
 ;; Programming
 ;;; Tree sitter
@@ -1136,7 +1135,10 @@ Returns a list of selected aliases or nil."
            (aliases (my-extract-poly-profiles deps)))
       (if (and aliases (> (length aliases) 0))
           (let* ((default-alias (if (member "+default" aliases) "+default" nil))
-                 (initial-selected (or my-cider-last-selected-aliases
+                 (last-selected-aliases (cl-remove-if (lambda (x)
+                                                        (not (member x aliases)))
+                                                      my-cider-last-selected-aliases))
+                 (initial-selected (or last-selected-aliases
                                        (and default-alias (list "+default"))))
                  (chosen (my-toggle-selection aliases initial-selected)))
             (setq my-cider-last-selected-aliases chosen)
@@ -1162,6 +1164,7 @@ Returns a list of selected aliases or nil."
             (message poly-root)
             (funcall orig-fun (plist-put args :project-dir poly-root))))
       ;; Non-Polylith projects proceed normally
+      (setq cider-session-name-template "%J:%h:%p")
       (funcall orig-fun args)))
 
   (advice-add 'cider-jack-in :around #'my-cider-jack-in-with-aliases)
@@ -2197,6 +2200,8 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (setq graphql-indent-level 2))
 
 (use-package prettier
+  :config
+  (setenv "NODE_PATH" "/usr/local/lib/node_modules")
   :ensure t)
 
 
