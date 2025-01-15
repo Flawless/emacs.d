@@ -980,15 +980,23 @@ If the new path's directories does not exist, create them."
   :custom
   (clojure-ts-indent-style 'fixed)
   :config
+  (define-minor-mode clj-auto-reload-mode
+    "Toggle automatic reload of Clojure code after save.
+When enabled, runs reload function after saving Clojure files."
+    :init-value nil
+    :lighter " CLJ-Reload"
+    :global t)
+
   (defun lt/clj-reload ()
     (interactive)
-    (cider-interactive-eval
-     "
+    (if clj-auto-reload-mode
+        (cider-interactive-eval
+         "
     (try
       (require ' [clj-reload.core :refer [reload]])
       ((eval 'reload))
       (catch Exception _ (println :clj-reload-is-not-available)))
-    "))
+    ")))
   :preface
   (defun lt/clts-lsp-start()
     (add-hook 'before-save-hook #'lsp-format-buffer t t)
@@ -1000,7 +1008,8 @@ If the new path's directories does not exist, create them."
   (after-save . lt/clj-reload)
   :general
   (:states '(normal visual) :keymaps 'clojure-ts-mode-map
-           "SPC mjR" 'lt/clj-reload))
+           "SPC mjrR" 'clj-auto-reload-mode
+           "SPC mjrr" 'lt/clj-reload))
 
 (use-package clojure-mode
   :ensure t
