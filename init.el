@@ -573,8 +573,10 @@ If the new path's directories does not exist, create them."
   :custom
   ;; Use lsp-clojure-create-test instead
   ;; (projectile-create-missing-test-files t)
-  (projectile-auto-update-cache nil)
-  (projectile-dynamic-mode-line nil)
+  ;; (projectile-auto-update-cache nil) why?
+  ;; (projectile-dynamic-mode-line nil) why?
+  (projectile-auto-update-cache t)      ; i'm tired manually update its cache
+  (projectile-dynamic-mode-line t)      ; just interesting, whats that - feel free to disable
   (projectile-project-search-path '("~/projects/"))
   (projectile-sort-order 'recently-active)
   (projectile-enable-caching t)
@@ -837,7 +839,7 @@ If the new path's directories does not exist, create them."
 
 (use-package lsp-mode
   :delight
-  (lsp-mode "LSP")
+  (lsp-mode "⎈")
   (lsp-lens-mode "")
   :ensure t
   :custom
@@ -984,19 +986,22 @@ If the new path's directories does not exist, create them."
     "Toggle automatic reload of Clojure code after save.
 When enabled, runs reload function after saving Clojure files."
     :init-value nil
-    :lighter " CLJ-Reload"
-    :global t)
+    :lighter "⟳"
+    :global t
+    :keymap nil
+    (if clj-auto-reload-mode
+        (add-hook 'after-save-hook #'lt/clj-reload nil t)
+      (remove-hook 'after-save-hook #'lt/clj-reload t)) )
 
   (defun lt/clj-reload ()
     (interactive)
-    (if clj-auto-reload-mode
-        (cider-interactive-eval
-         "
+    (cider-interactive-eval
+     "
     (try
       (require ' [clj-reload.core :refer [reload]])
       ((eval 'reload))
       (catch Exception _ (println :clj-reload-is-not-available)))
-    ")))
+    "))
   :preface
   (defun lt/clts-lsp-start()
     (add-hook 'before-save-hook #'lsp-format-buffer t t)
@@ -1005,7 +1010,6 @@ When enabled, runs reload function after saving Clojure files."
   :hook
   (clojure-ts-mode . cider-mode)
   (clojure-ts-mode . lt/clts-lsp-start)
-  (after-save . lt/clj-reload)
   :general
   (:states '(normal visual) :keymaps 'clojure-ts-mode-map
            "SPC mjrR" 'clj-auto-reload-mode
@@ -1060,7 +1064,7 @@ WARNING: this is a simple implementation. The chance of generating the same UUID
   :hook
   (clojure-mode . cider-mode)
   (clojure-mode . lt/clj-lsp-start)
-  (after-save . lt/clj-reload)
+  ;; (after-save . lt/clj-reload)
   (clojure-mode . yas-minor-mode)
   (clojure-mode . subword-mode)
   (clojure-mode . eldoc-mode)
