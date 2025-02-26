@@ -337,7 +337,7 @@ Returns a list of selected aliases or nil."
 
 (use-package clj-decompiler)
 
-(use-package zprint-mode :hook (clojure-ts-mode . zprint-mode))
+(use-package zprint-mode :hook ((clojure-mode clojure-ts-mode) . zprint-mode))
 
 (use-package lsp-java :after (lsp-mode))
 

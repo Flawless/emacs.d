@@ -57,8 +57,8 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file t)
 
-(use-package straight
-  :straight (:type git :host github :repo "flawless/straight.el"))
+;; (use-package straight
+;;   :straight (:type git :host github :repo "flawless/straight.el"))
 
 ;;; here goes config modules
 (use-package
@@ -82,7 +82,7 @@
   :after core
   :config (message "Langs loaded"))
 
-(put 'magit-clean 'disabled nil)
 
 (provide 'init)
 ;;; init.el ends here
+(put 'magit-clean 'disabled nil)

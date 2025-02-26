@@ -907,7 +907,6 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
 (use-package
   chatgpt-shell
-
   :custom ((chatgpt-shell-openai-key (lambda () (auth-source-pass-get 'secret "openai-key")))))
 
 (use-package
