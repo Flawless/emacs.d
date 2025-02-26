@@ -399,8 +399,7 @@
 ;;   (highlight-sexp :repo "daimrod/highlight-sexp" :fetcher github :version original)
 ;;   :hook
 ;;   (lisp-mode . highlight-sexp-mode)
-;;   (emacs-lisp-mode . highlight-sexp-mode)
-;;   (clojure-mode . highlight-sexp-mode))
+;;   (emacs-lisp-mode . highlight-sexp-mode))
 
 ;; (use-package rainbow-delimiters
 ;;   :ensure t

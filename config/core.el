@@ -4,12 +4,10 @@
 ;;  Description
 ;;
 ;;; Code:
-
-
 (use-package system-packages :custom (system-packages-noconfirm t))
 
 (use-package
-    general
+  general
   :demand t
   :commands (general-define-key general-override-mode general-evil-setup general--simulate-keys)
   :custom
@@ -21,23 +19,20 @@
 
 (setq evil-want-keybinding nil)
 (use-package
-    evil
+  evil
   :custom
   (evil-want-C-u-scroll t)
   (evil-search-module 'evil-search)
-  :config
-  (evil-mode t)
-  ;; :general (:keymaps '(evil-motion-state-map) "SPC" nil "RET" nil "TAB" nil)
-  )
+  :config (evil-mode t))
 
 (use-package
-    evil-collection
+  evil-collection
   :after evil
   :delight evil-collection-unimpaired-mode
   :custom (evil-collection-want-find-usages-bindings t))
 
 (use-package
-    emacs
+  emacs
   :ensure nil
   :delight
   (eldoc-mode)
@@ -75,8 +70,8 @@
 
   ;; make fullscreen
   (modify-frame-parameters
-   nil
-   `((fullscreen . fullboth) (fullscreen-restore . ,(frame-parameter nil 'fullscreen))))
+    nil
+    `((fullscreen . fullboth) (fullscreen-restore . ,(frame-parameter nil 'fullscreen))))
 
   (defun disable-all-themes ()
     "disable all active themes."
@@ -98,10 +93,11 @@
     "Return a new file path of a given file path.
 If the new path's directories does not exist, create them."
     (let*
-        (
-         (backupRootDir "~/.emacs.d/emacs-backup/")
-         (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath)) ; remove Windows driver letter in path, ➢ for example: “C:”
-         (backupFilePath (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~"))))
+      (
+        (backupRootDir "~/.emacs.d/emacs-backup/")
+        (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath)) ; remove Windows driver letter in path, ➢ for example: “C:”
+        (backupFilePath
+          (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~"))))
       (make-directory (file-name-directory backupFilePath) (file-name-directory backupFilePath))
       backupFilePath))
 
@@ -120,21 +116,21 @@ If the new path's directories does not exist, create them."
   (defun my-mode-line-visual-bell--flash ()
     (let ((frame (selected-frame)))
       (run-with-timer 0.1 nil
-                      #'
-                      (lambda (frame)
-                        (let
-                            (
-                             (inhibit-quit)
-                             (inhibit-redisplay t))
-                          (invert-face 'header-line frame)
-                          (invert-face 'header-line-highlight frame)
-                          (invert-face 'mode-line frame)
-                          (invert-face 'mode-line-inactive frame)))
-                      frame)
+        #'
+        (lambda (frame)
+          (let
+            (
+              (inhibit-quit)
+              (inhibit-redisplay t))
+            (invert-face 'header-line frame)
+            (invert-face 'header-line-highlight frame)
+            (invert-face 'mode-line frame)
+            (invert-face 'mode-line-inactive frame)))
+        frame)
       (let
-          (
-           (inhibit-quit)
-           (inhibit-redisplay t))
+        (
+          (inhibit-quit)
+          (inhibit-redisplay t))
         (invert-face 'header-line frame)
         (invert-face 'header-line-highlight frame)
         (invert-face 'mode-line frame)
@@ -149,12 +145,12 @@ If the new path's directories does not exist, create them."
 
 
   (cond
-   ((find-font (font-spec :name "Jetbrains Mono"))
-    (custom-set-faces '(default ((t (:inherit nil :font "Jetbrains Mono" :size 16))))))
-   ((find-font (font-spec :name "Monaspace Neon"))
-    (custom-set-faces '(default ((t (:inherit nil :font "Monaspace Neon" :size 16))))))
-   ((find-font (font-spec :name "Input Mono"))
-    (custom-set-faces '(default ((t (:inherit nil :font "Input Mono" :size 16)))))))
+    ((find-font (font-spec :name "Jetbrains Mono"))
+      (custom-set-faces '(default ((t (:inherit nil :font "Jetbrains Mono" :size 16))))))
+    ((find-font (font-spec :name "Monaspace Neon"))
+      (custom-set-faces '(default ((t (:inherit nil :font "Monaspace Neon" :size 16))))))
+    ((find-font (font-spec :name "Input Mono"))
+      (custom-set-faces '(default ((t (:inherit nil :font "Input Mono" :size 16)))))))
 
 
   (add-to-list 'exec-path "/usr/local/bin")
@@ -176,7 +172,7 @@ If the new path's directories does not exist, create them."
     (find-file user-init-file))
   :general
   (:states
-      '(normal visual)
+    '(normal visual)
     :keymaps
     'override
     "SPC xs"

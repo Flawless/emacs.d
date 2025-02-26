@@ -26,22 +26,23 @@
   (require 'use-package))
 
 (defvar bootstrap-version)
+(defvar straight-repository-user "flawless")
 
 (let
-    ((bootstrap-file
+  (
+    (bootstrap-file
       (expand-file-name "straight/repos/straight.el/bootstrap.el"
-                        (or (bound-and-true-p straight-base-dir) user-emacs-directory)))
-     (bootstrap-version 7))
+        (or (bound-and-true-p straight-base-dir) user-emacs-directory)))
+    (bootstrap-version 7))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent
-         'inhibit-cookies)
+      (url-retrieve-synchronously
+        "https://raw.githubusercontent.com/flawless/straight.el/develop/install.el"
+        'silent
+        'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
-
 
 ;; Package `use-package' provides a handy macro by the same name which
 ;; is essentially a wrapper around `with-eval-after-load' with a lot
@@ -56,28 +57,32 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file t)
 
-;;; here goes config modules
+(use-package straight
+  :straight (:type git :host github :repo "flawless/straight.el"))
 
+;;; here goes config modules
 (use-package
-    core
+  core
   :straight (:type built-in)
   :load-path "config"
   :config (message "Core loaded"))
 
 (use-package
-    editing
+  editing
   :after core
   :straight (:type built-in)
   :load-path "config"
   :config (message "Editing loaded"))
 
 (use-package
-    langs
+  langs
   :after editing
   :straight (:type built-in)
   :load-path "config"
   :after core
   :config (message "Langs loaded"))
+
+(put 'magit-clean 'disabled nil)
 
 (provide 'init)
 ;;; init.el ends here

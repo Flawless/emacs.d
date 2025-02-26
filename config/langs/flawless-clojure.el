@@ -4,95 +4,84 @@
 ;;  Description
 ;;
 ;;; Code:
-(use-package clojure-mode
-  :ensure t
+(use-package
+  clojure-ts-mode
   :delight
-  (clojure-mode "CLJ ")
-  (clojurescript-mode "CLJS ")
-  ;; :mode (("\\.clj\\'" . clojure-mode)
-  ;;        ("\\.bb\\'" . clojure-mode)
-  ;;        ("\\.cljc\\'" . clojurec-mode)
-  ;;        ("\\.cljs\\'" . clojurescript-mode)
-  ;;        ("\\.edn\\'" . clojure-mode))
-  :custom
-  (clojure-indent-style 'always-indent)
-
-  :preface
-  (defun lt/clerk-show ()
-    (interactive)
-    (when-let
-        ((filename
-          (buffer-file-name)))
-      (save-buffer)
-      (cider-interactive-eval
-       (concat "(nextjournal.clerk/show! \"" filename "\")"))))
-
+  (clojure-ts-mode "CLJ:TS ")
+  (clojure-ts-clojurescript-mode "CLJS:TS ")
+  (clojure-ts-clojurec-mode "CLJC:TS ")
+  :ensure t
+  :mode
+  (("\\.clj\\'" . clojure-ts-mode)
+    ("\\.bb\\'" . clojure-ts-mode)
+    ("\\.cljc\\'" . clojure-ts-clojurec-mode)
+    ("\\.cljs\\'" . clojure-ts-clojurescript-mode)
+    ("\\.edn\\'" . clojure-ts-mode))
+  :custom (clojure-ts-indent-style 'fixed)
   :config
-  (defun lt/clj-lsp-start()
-    ;; (add-hook 'before-save-hook #'lsp-format-buffer t t)
-    ;; (add-hook 'before-save-hook #'lsp-organize-imports t t)
-    (lsp-deferred))
-  (defun +/insert-random-uuid ()
-    "Insert a random UUID.
-Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
+  (define-minor-mode clj-auto-reload-mode
+    "Toggle automatic reload of Clojure code after save.
+When enabled, runs reload function after saving Clojure files."
+    :init-value nil
+    :lighter "⟳"
+    :global t
+    :keymap
+    nil
+    (if clj-auto-reload-mode
+      (add-hook 'after-save-hook #'lt/clj-reload nil t)
+      (remove-hook 'after-save-hook #'lt/clj-reload t)))
 
-WARNING: this is a simple implementation. The chance of generating the same UUID is much higher than a robust algorithm.."
+  (defun lt/clj-reload ()
     (interactive)
-    (insert
-     (format "#uuid \"%04x%04x-%04x-%04x-%04x-%06x%06x\""
-             (random (expt 16 4))
-             (random (expt 16 4))
-             (random (expt 16 4))
-             (random (expt 16 4))
-             (random (expt 16 4))
-             (random (expt 16 6))
-             (random (expt 16 6)))))
-
-  ;; (require 'flycheck-clj-kondo)
-
+    (cider-interactive-eval "
+    (try
+      (require ' [clj-reload.core :refer [reload]])
+      ((eval 'reload))
+      (catch Exception _ (println :clj-reload-is-not-available)))
+    "))
+  :preface
+  (defun lt/clts-lsp-start ()
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t)
+    (lsp-deferred))
   :hook
-  (clojure-mode . cider-mode)
-  (clojure-mode . lt/clj-lsp-start)
-  ;; (after-save . lt/clj-reload)
-  (clojure-mode . yas-minor-mode)
-  (clojure-mode . subword-mode)
-  (clojure-mode . eldoc-mode)
-  (clojure-mode . (lambda ()
-                    (auto-fill-mode 1)
-                    (set (make-local-variable 'fill-nobreak-predicate)
-                         (lambda ()
-                           (not (or (eq (get-text-property (point) 'face)
-                                        'font-lock-comment-face)
-                                    (eq (get-text-property (point) 'face)
-                                        'font-lock-string-face (point) 'face)))))))
-
+  (clojure-ts-mode . cider-mode)
+  (clojure-ts-mode . lt/clts-lsp-start)
   :general
-  (:states '(normal visual) :keymaps 'clojure-mode-map
-           "SPC mjR" 'lt/clj-reload
-           "SPC mCs" 'lt/clerk-show))
+  (:states
+    '(normal visual)
+    :keymaps
+    'clojure-ts-mode-map
+    "SPC mjrR"
+    'clj-auto-reload-mode
+    "SPC mjrr"
+    'lt/clj-reload))
 
-(use-package cider
-  :ensure t :defer t
+(use-package
+  cider
   :delight
   (cider-auto-test-mode " t")
   (cider-enlighten-mode " e")
   :after evil
   :init (evil-collection-init 'cider)
   :config
-  (add-to-list 'display-buffer-alist '("\\*cider-error\\*"
-                                       (display-buffer-in-side-window)
-                                       (side . right)
-                                       (slot . 3)
-                                       (window-height . shrink-window-if-larger-than-buffer)
-                                       (dedicated . t)))
+  (add-to-list
+    'display-buffer-alist
+    '
+    ("\\*cider-error\\*"
+      (display-buffer-in-side-window)
+      (side . right)
+      (slot . 3)
+      (window-height . shrink-window-if-larger-than-buffer)
+      (dedicated . t)))
 
   (defun polylith-project-p ()
-    (let* ((root (projectile-project-root))
-           (deps (expand-file-name "deps.edn" root))
-           (workspace (expand-file-name "workspace.edn" root)))
-      (and (projectile-project-p)
-           (file-exists-p deps)
-           (file-exists-p workspace))))
+    (let*
+      (
+        (root (projectile-project-root))
+        (deps (expand-file-name "deps.edn" root))
+        (workspace (expand-file-name "workspace.edn" root)))
+      (and (projectile-project-p) (file-exists-p deps) (file-exists-p workspace))))
 
   (defcustom my-cider-last-selected-aliases nil
     "List of last selected CIDER aliases.
@@ -120,31 +109,45 @@ INITIAL-SELECTED is a list of initially selected items."
     (let ((selected (or initial-selected '())))
       (catch 'finish-selection
         (while t
-          (let ((choice (completing-read
-                         (format "Selected: [%s] Toggle (RET to finish): "
-                                 (string-join selected ", "))
-                         choices nil nil nil nil ""))) ;; Allow empty input to finish
+          (let
+            (
+              (choice
+                (completing-read
+                  (format "Selected: [%s] Toggle (RET to finish): " (string-join selected ", "))
+                  choices
+                  nil
+                  nil
+                  nil
+                  nil
+                  ""))) ;; Allow empty input to finish
             (if (string-empty-p choice)
-                (throw 'finish-selection selected)
+              (throw 'finish-selection selected)
               (if (member choice selected)
-                  (setq selected (remove choice selected))
+                (setq selected (remove choice selected))
                 (push choice selected))))))))
 
   (defun my-poly-profiles-prompt (root)
     "Prompt for aliases to use when starting CIDER. Only works for Polylith projects.
 Returns a list of selected aliases or nil."
-    (let* ((deps (expand-file-name "deps.edn" root))
-           (aliases (my-extract-poly-profiles deps)))
+    (let*
+      (
+        (deps (expand-file-name "deps.edn" root))
+        (aliases (my-extract-poly-profiles deps)))
       (if (and aliases (> (length aliases) 0))
-          (let* ((default-alias (if (member "+default" aliases) "+default" nil))
-                 (last-selected-aliases (cl-remove-if (lambda (x)
-                                                        (not (member x aliases)))
-                                                      my-cider-last-selected-aliases))
-                 (initial-selected (or last-selected-aliases
-                                       (and default-alias (list "+default"))))
-                 (chosen (my-toggle-selection aliases initial-selected)))
-            (setq my-cider-last-selected-aliases chosen)
-            chosen) ;; Return the list of chosen aliases
+        (let*
+          (
+            (default-alias
+              (if (member "+default" aliases)
+                "+default"
+                nil))
+            (last-selected-aliases
+              (cl-remove-if
+                (lambda (x) (not (member x aliases)))
+                my-cider-last-selected-aliases))
+            (initial-selected (or last-selected-aliases (and default-alias (list "+default"))))
+            (chosen (my-toggle-selection aliases initial-selected)))
+          (setq my-cider-last-selected-aliases chosen)
+          chosen) ;; Return the list of chosen aliases
         (progn
           (message "No :+aliases found in deps.edn.")
           nil))))
@@ -152,27 +155,31 @@ Returns a list of selected aliases or nil."
   (defun my-cider-jack-in-with-aliases (orig-fun args)
     "Advice around `cider-jack-in` to set aliases and start REPL in main root."
     (if (polylith-project-p)
-        (let* ((poly-root (projectile-project-root))
-               (aliases (my-poly-profiles-prompt poly-root))
-               (alias-string (when aliases (string-join aliases ":")))
-               (existing-aliases cider-clojure-cli-aliases)
-               (cider-clojure-cli-aliases (if existing-aliases
-                                              (concat alias-string ":" existing-aliases)
-                                            alias-string)))
-          (when alias-string
-            (setq cider-session-name-template (format "%%J:%%h:%s:%%p" alias-string)))
-          ;; Temporarily set `default-directory` to poly-root
-          (progn
-            (message poly-root)
-            (funcall orig-fun (plist-put args :project-dir poly-root))))
+      (let*
+        (
+          (poly-root (projectile-project-root))
+          (aliases (my-poly-profiles-prompt poly-root))
+          (alias-string
+            (when aliases
+              (string-join aliases ":")))
+          (existing-aliases cider-clojure-cli-aliases)
+          (cider-clojure-cli-aliases
+            (if existing-aliases
+              (concat alias-string ":" existing-aliases)
+              alias-string)))
+        (when alias-string
+          (setq cider-session-name-template (format "%%J:%%h:%s:%%p" alias-string)))
+        ;; Temporarily set `default-directory` to poly-root
+        (progn
+          (message poly-root)
+          (funcall orig-fun (plist-put args :project-dir poly-root))))
       ;; Non-Polylith projects proceed normally
       (setq cider-session-name-template "%J:%h:%p")
       (funcall orig-fun args)))
 
   (advice-add 'cider-jack-in :around #'my-cider-jack-in-with-aliases)
 
-  :custom
-  (cider-clojure-cli-aliases ":user")
+  :custom (cider-clojure-cli-aliases ":user")
   ;; lsp
   (cider-print-fn 'fipp)
   ;; (cider-merge-sessions 'project)
@@ -191,90 +198,148 @@ Returns a list of selected aliases or nil."
   (cider-repl-use-pretty-printing t)
 
   :hook
-  ((clojure-mode clojure-ts-mode) . cider-mode)
+  (clojure-ts-mode . cider-mode)
   (cider-mode . clj-refactor-mode)
   (cider-mode . clj-refactor-mode)
   :general
-  (:states '(normal visual) :keymaps 'cider-repl-mode-map
-           "SPC mq" 'cider-quit
-           "SPC mc" 'cider-repl-clear-buffer)
+  (:states
+    '(normal visual)
+    :keymaps
+    'cider-repl-mode-map
+    "SPC mq"
+    'cider-quit
+    "SPC mc"
+    'cider-repl-clear-buffer)
 
-  (:states '(normal visual) :keymap 'cider-mode-map
-           "SPC mil" 'cider-inspect-last-result
-           "SPC mie" 'cider-inspect-last-sexp
+  (:states
+    '(normal visual)
+    :keymap
+    'cider-mode-map
+    "SPC mil"
+    'cider-inspect-last-result
+    "SPC mie"
+    'cider-inspect-last-sexp
 
-           "SPC mme" 'cider-enlighten-mode
+    "SPC mme"
+    'cider-enlighten-mode
 
-           "SPC msb" 'sesman-link-with-buffer
-           "SPC mss" 'sesman-link-session
+    "SPC msb"
+    'sesman-link-with-buffer
+    "SPC mss"
+    'sesman-link-session
 
-           "SPC mcj" 'cider-jack-in
-           "SPC mcs" 'cider-jack-in-cljs
-           "SPC mcJ" 'cider-jack-in-clj&cljs
-           "SPC mcc" 'cider-connect-clj
-           "SPC mcs" 'cider-connect-cljs
-           "SPC mcC" 'cider-connect-clj&cljs
-           "SPC mcS" 'cider-connect-sibling-cljs
+    "SPC mcj"
+    'cider-jack-in
+    "SPC mcs"
+    'cider-jack-in-cljs
+    "SPC mcJ"
+    'cider-jack-in-clj&cljs
+    "SPC mcc"
+    'cider-connect-clj
+    "SPC mcs"
+    'cider-connect-cljs
+    "SPC mcC"
+    'cider-connect-clj&cljs
+    "SPC mcS"
+    'cider-connect-sibling-cljs
 
-           "SPC mde" 'cider-debug-defun-at-point
+    "SPC mde"
+    'cider-debug-defun-at-point
 
-           "SPC mrb" 'cider-switch-to-repl-buffer
-           "SPC mrB" 'cider-switch-to-repl-on-insert
-           ;; "SPC mhd" 'cider-doc
+    "SPC mrb"
+    'cider-switch-to-repl-buffer
+    "SPC mrB"
+    'cider-switch-to-repl-on-insert
+    ;; "SPC mhd" 'cider-doc
 
-           "SPC mec" 'cider-pprint-eval-last-sexp-to-comment
-           "SPC mee" 'cider-eval-last-sexp
-           "SPC med" 'cider-eval-defun-at-point
-           "SPC meb" 'cider-eval-buffer
+    "SPC mec"
+    'cider-pprint-eval-last-sexp-to-comment
+    "SPC mee"
+    'cider-eval-last-sexp
+    "SPC med"
+    'cider-eval-defun-at-point
+    "SPC meb"
+    'cider-eval-buffer
 
-           "SPC mtP" 'cider-test-run-project-tests
-           "SPC mtt" 'cider-test-run-test
-           "SPC mtf" 'cider-test-rerun-failed-tests
-           "SPC mtr" 'cider-test-rerun-test
-           "SPC mtn" 'cider-test-run-ns-tests
+    "SPC mtP"
+    'cider-test-run-project-tests
+    "SPC mtt"
+    'cider-test-run-test
+    "SPC mtf"
+    'cider-test-rerun-failed-tests
+    "SPC mtr"
+    'cider-test-rerun-test
+    "SPC mtn"
+    'cider-test-run-ns-tests
 
-           "SPC mPt" 'cider-profile-toggle
-           "SPC mPT" 'cider-profile-ns-toggle
-           "SPC mPv" 'cider-profile-var-summary
-           "SPC mPC" 'cider-profile-clear
+    "SPC mPt"
+    'cider-profile-toggle
+    "SPC mPT"
+    'cider-profile-ns-toggle
+    "SPC mPv"
+    'cider-profile-var-summary
+    "SPC mPC"
+    'cider-profile-clear
 
-           "SPC mmm" 'cider-macroexpand-1
-           "SPC mmM" 'cider-macroexpand-all
+    "SPC mmm"
+    'cider-macroexpand-1
+    "SPC mmM"
+    'cider-macroexpand-all
 
-           "SPC mit" 'transpose-sexps
-           "SPC mis" 'cider-format-edn-last-sexp
-           "SPC mir" 'cider-format-region
-           "SPC miB" 'cider-format-buffer
-           "SPC mif" 'cider-format-defun
-           "SPC miu" '+/insert-random-uid))
+    "SPC mit"
+    'transpose-sexps
+    "SPC mis"
+    'cider-format-edn-last-sexp
+    "SPC mir"
+    'cider-format-region
+    "SPC miB"
+    'cider-format-buffer
+    "SPC mif"
+    'cider-format-defun
+    "SPC miu"
+    '+/insert-random-uid))
 
-(use-package clj-refactor
-  :ensure t :delight
+(use-package
+  clj-refactor
+  :delight
   :custom
   (cljr-magic-requires nil)
   (cljr-insert-newline-after-require nil)
   :general
-  (:states '(normal visual) :keymaps 'clj-refactor-map
-           "SPC mjml" 'cljr-move-to-let
-           "SPC mjxl" 'cljr-expand-let
-           "SPC mjuw" 'cljr-unwind
-           "SPC mjuW" 'cljr-unwind-all
-           "SPC mjtf" 'cljr-thread-first-all
-           "SPC mjtl" 'cljr-thread-last-all
-           "SPC mjtt" 'transpose-sexps
-           "SPC mjaM" 'lsp-clojure-add-missing-libspec
-           "SPC mjam" 'cljr-add-missing-libspec
-           "SPC mjnc" 'cljr-clean-ns))
+  (:states
+    '(normal visual)
+    :keymaps
+    'clj-refactor-map
+    "SPC mjml"
+    'cljr-move-to-let
+    "SPC mjxl"
+    'cljr-expand-let
+    "SPC mjuw"
+    'cljr-unwind
+    "SPC mjuW"
+    'cljr-unwind-all
+    "SPC mjtf"
+    'cljr-thread-first-all
+    "SPC mjtl"
+    'cljr-thread-last-all
+    "SPC mjtt"
+    'transpose-sexps
+    "SPC mjaM"
+    'lsp-clojure-add-missing-libspec
+    "SPC mjam"
+    'cljr-add-missing-libspec
+    "SPC mjnc"
+    'cljr-clean-ns))
 
-(use-package clojure-snippets :ensure t :defer t)
+(use-package clojure-snippets :defer t)
 
-(use-package anakondo :ensure t)
+(use-package anakondo)
 
-(use-package clj-decompiler :ensure t)
+(use-package clj-decompiler)
 
-(use-package lsp-java
-  :after (lsp-mode)
-  :ensure t)
+(use-package zprint-mode :hook (clojure-ts-mode . zprint-mode))
+
+(use-package lsp-java :after (lsp-mode))
 
 (provide 'flawless-clojure)
 ;;; flawless-clojure.el ends here

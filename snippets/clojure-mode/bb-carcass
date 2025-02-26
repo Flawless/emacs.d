@@ -1,0 +1,12 @@
+# contributor: flawless <quantum-discharge@protonmail.com>
+# name: bb-carcass
+# --
+{:min-bb-version "0.9.159"
+ :paths ["."]
+ :deps {}
+ :tasks
+ {:requires ()
+  :init ()
+  simple (println "hi")
+  some-task {:doc "Describe me"
+             :task (pirintln "Hello world!")}}}

@@ -133,12 +133,12 @@
 
 (use-package
   evil-lispy
-  :hook ((elisp-mode clojure-mode clojure-ts-mode) . evil-lispy-mode)
+  :hook ((elisp-mode clojure-ts-mode) . evil-lispy-mode)
   :delight)
 
 (use-package
   lispyville
-  :hook ((elisp-mode clojure-mode clojure-ts-mode) . lispyville-mode)
+  :hook ((elisp-mode clojure-ts-mode) . lispyville-mode)
   :delight)
 
 (use-package
@@ -431,17 +431,17 @@
         (setq dayspan (- 8 today)))
        ((= today 0) ; sunday to sunday
         (setq dayspan 8)))))
-  ;; ;; ox-extra
+  ;; ox-extra
   ;; (require 'ox-extra)
   ;; (ox-extras-activate '(latex-header-blocks ignore-headlines))
-  ;; ;; ox-latex
-  ;; (setq org-latex-pdf-process
-  ;;       '
-  ;;       ("pdflatex -interaction nonstopmode -output-directory %o %f"
-  ;;        "bibtex %b"
-  ;;        "pdflatex -interaction nonstopmode -output-directory %o %f"
-  ;;        "pdflatex -interaction nonstopmode -output-directory %o %f"))
-  ;; (setq org-latex-with-hyperref nil) ;; stop org adding hypersetup{author..} to latex export
+  ;; ox-latex
+  (setq org-latex-pdf-process
+        '
+        ("pdflatex -interaction nonstopmode -output-directory %o %f"
+         "bibtex %b"
+         "pdflatex -interaction nonstopmode -output-directory %o %f"
+         "pdflatex -interaction nonstopmode -output-directory %o %f"))
+  (setq org-latex-with-hyperref nil) ;; stop org adding hypersetup{author..} to latex export
   ;; (setq org-latex-prefer-user-labels t)
 
   ;; deleted unwanted file extensions after latexMK
@@ -754,7 +754,9 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 (use-package tide)
 
 ;;; TeX
-;; (use-package tex :defer t :ensure auctex)
+(use-package tex
+  :straight (:type built-in)
+  :defer t :ensure auctex)
 
 ;;; protobuf
 (use-package
@@ -813,7 +815,6 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 (use-package
   elisp-mode
   :straight (:type built-in)
-  :defer t
   :hook
   ((emacs-lisp-mode . flycheck-mode)    ; Enable Flycheck for linting
    (emacs-lisp-mode . lispy-mode)       ; Enable Lispy for structured editing
@@ -1248,6 +1249,12 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (setq graphql-indent-level 2))
 
 (use-package prettier :config (setenv "NODE_PATH" "/usr/local/lib/node_modules"))
+
+(use-package
+    elisp-autofmt
+  :custom (elisp-autofmt-style 'fixed)
+  :commands (elisp-autofmt-mode elisp-autofmt-buffer)
+  :hook (emacs-lisp-mode . elisp-autofmt-mode))
 
 (provide 'langs)
 ;;; langs.el ends here
