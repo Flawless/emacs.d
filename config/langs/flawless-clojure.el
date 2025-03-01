@@ -41,8 +41,6 @@ When enabled, runs reload function after saving Clojure files."
     "))
   :preface
   (defun lt/clts-lsp-start ()
-    (add-hook 'before-save-hook #'lsp-format-buffer t t)
-    (add-hook 'before-save-hook #'lsp-organize-imports t t)
     (lsp-deferred))
   :hook
   (clojure-ts-mode . cider-mode)
