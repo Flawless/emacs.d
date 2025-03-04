@@ -5,6 +5,20 @@
 ;;
 ;;; Code:
 (use-package
+  clojure-mode
+  :ensure nil ;; Don't install if not present
+  :defer t ;; Defer loading
+  :init
+  ;; Remove conflicting auto-mode-alist entries for clojure-mode
+  (setq auto-mode-alist
+    (seq-remove
+      (lambda (pair)
+        (and (stringp (car pair))
+          (string-match-p "\\.clj\\|\\.edn" (car pair))
+          (memq (cdr pair) '(clojure-mode clojurescript-mode clojurec-mode))))
+      auto-mode-alist)))
+
+(use-package
   clojure-ts-mode
   :delight
   (clojure-ts-mode "CLJ:TS ")
@@ -335,7 +349,7 @@ Returns a list of selected aliases or nil."
 
 (use-package clj-decompiler)
 
-(use-package zprint-mode :hook ((clojure-mode clojure-ts-mode) . zprint-mode))
+(use-package zprint-mode)
 
 (use-package lsp-java :after (lsp-mode))
 
