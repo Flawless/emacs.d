@@ -773,44 +773,48 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :init (evil-collection-init 'notmuch))
 
 ;;; Telega
-;; (use-package
-;;   telega
+(use-package
+  telega
 
-;;   :quelpa
-;;   (telega
-;;    :fetcher github
-;;    :repo "zevlg/telega.el"
-;;    :branch "master"
-;;    :files (:defaults "contrib" "etc" "server" "Makefile"))
-;;   :after evil
-;;   :init (telega-mode-line-mode t) (setq telega-use-images t) (evil-collection-init 'telega)
-;;   :custom (telega-chat-fill-column 80)
-;;   (telega-accounts
-;;    (list
-;;     (list "AlexanderUshanov" 'telega-database-dir telega-database-dir-base)
-;;     (list
-;;      "flaw1322"
-;;      'telega-database-dir
-;;      (expand-file-name "flaw1322" telega-database-dir-base))
-;;     (list
-;;      "C11H26NO2PS"
-;;      'telega-database-dir
-;;      (expand-file-name "c11h26no2ps" telega-database-dir-base))))
-;;   :config
-;;   (when (eq system-type 'gnu/linux)
-;;     (setq telega-server-libs-prefix "/usr"))
-;;   :general
-;;   (:states
-;;       '(normal visual)
-;;     :prefix "SPC"
-;;     :infix
-;;     "c"
-;;     "w"
-;;     'telega-chat-with
-;;     "g"
-;;     'telega
-;;     "A"
-;;     'telega-account-switch))
+  :straight
+  (telega :type git
+                    :repo "zevlg/telega.el"
+                    :branch "master")
+  ;; :quelpa
+  ;; (telega
+  ;;  :fetcher github
+  ;;  :repo "zevlg/telega.el"
+  ;;  :branch "master"
+  ;;  :files (:defaults "contrib" "etc" "server" "Makefile"))
+  :after evil
+  :init (telega-mode-line-mode t) (setq telega-use-images t) (evil-collection-init 'telega)
+  :custom (telega-chat-fill-column 80)
+  (telega-accounts
+   (list
+    (list "AlexanderUshanov" 'telega-database-dir telega-database-dir-base)
+    (list
+     "flaw1322"
+     'telega-database-dir
+     (expand-file-name "flaw1322" telega-database-dir-base))
+    (list
+     "C11H26NO2PS"
+     'telega-database-dir
+     (expand-file-name "c11h26no2ps" telega-database-dir-base))))
+  :config
+  (when (eq system-type 'gnu/linux)
+    (setq telega-server-libs-prefix "/usr"))
+  :general
+  (:states
+      '(normal visual)
+    :prefix "SPC"
+    :infix
+    "c"
+    "w"
+    'telega-chat-with
+    "g"
+    'telega
+    "A"
+    'telega-account-switch))
 
 (use-package
   elisp-mode
