@@ -33,7 +33,7 @@
     ("\\.edn\\'" . clojure-ts-mode))
   :custom (clojure-ts-indent-style 'fixed)
   :config
-  (define-minor-mode clj-auto-reload-mode
+  (define-minor-mode lt/clj-auto-reload-mode
     "Toggle automatic reload of Clojure code after save.
 When enabled, runs reload function after saving Clojure files."
     :init-value nil
@@ -41,10 +41,18 @@ When enabled, runs reload function after saving Clojure files."
     :global t
     :keymap
     nil
-    (if clj-auto-reload-mode
+    (if lt/clj-auto-reload-mode
       (add-hook 'after-save-hook #'lt/clj-reload nil t)
       (remove-hook 'after-save-hook #'lt/clj-reload t)))
 
+  (defun lt/clj-reload-loaded ()
+    (interactive)
+    (cider-interactive-eval "
+    (try
+      (require ' [clj-reload.core :refer [reload]])
+      (reload {:only :loaded}))
+      (catch Exception _ (println :clj-reload-is-not-available)))
+    "))
   (defun lt/clj-reload ()
     (interactive)
     (cider-interactive-eval "
@@ -64,8 +72,10 @@ When enabled, runs reload function after saving Clojure files."
     '(normal visual)
     :keymaps
     'clojure-ts-mode-map
+    "SPC mjtR"
+    'lt/clj-auto-reload-mode
     "SPC mjrR"
-    'clj-auto-reload-mode
+    'lt/clj-reload-loaded
     "SPC mjrr"
     'lt/clj-reload))
 
