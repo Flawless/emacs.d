@@ -87,7 +87,43 @@
   :demand t
   :after magit
   :bind (:map git-commit-mode-map ("C-c C-g" . magit-gptcommit-commit-accept))
-  :custom (magit-gptcommit-llm-provider (make-llm-openai :key (getenv "OPENAI_TOKEN")))
+  :custom
+  (magit-gptcommit-llm-provider (make-llm-openai :key (getenv "OPENAI_TOKEN")))
+  (magit-gptcommit-prompt
+   "You are an expert programmer writing a commit message.
+You went over every file diff that was changed in it.
+
+First Determine the best label for the diffs.
+Here are the labels you can choose from:
+- build: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+- chore: Updating libraries, copyrights or other repo setting, includes updating dependencies.
+- ci: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, GitHub Actions)
+- docs: Non-code changes, such as fixing typos or adding new documentation
+- feat: a commit of the type feat introduces a new feature to the codebase
+- fix: A commit of the type fix patches a bug in your codebase
+- perf: A code change that improves performance
+- refactor: A code change that neither fixes a bug nor adds a feature
+- style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- test: Adding missing tests or correcting existing tests
+
+Then summarize the commit into a single specific and cohesive theme.
+Remember to write header in only one line, no more than 80 characters.
+Any additional details may go after an empty line if needed (omit if not)
+Write your response using the imperative tense following the kernel git commit style guide.
+Write a high level title but keep it specific, avoid abstract phrases like \"code improved\",
+\"things restructured\" and so on, as an expert programmer you know how annoyed they could be,
+in other words don't write anything if it has no meaning.
+ If you feel you can't keep it in one line, add commit details as described below.
+
+THE FILE DIFFS:
+```
+%s
+```
+Now write Commit message in follow template:
+[label]:[one line of summary]
+
+[extra lines with details if needed no longer then 100 chars each line]:
+")
 
   :config
   ;; Enable magit-gptcommit-mode to watch staged changes and generate commit message automatically in magit status buffer
