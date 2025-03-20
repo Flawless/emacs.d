@@ -68,10 +68,10 @@
   (defcustom telega-database-dir-base (expand-file-name "~/.telega")
     "telega base dir")
 
-  ;; make fullscreen
+  ;; make maximized
   (modify-frame-parameters
     nil
-    `((fullscreen . fullboth) (fullscreen-restore . ,(frame-parameter nil 'fullscreen))))
+    `((fullscreen . maximized) (fullscreen-restore . ,(frame-parameter nil 'fullscreen))))
 
   (defun disable-all-themes ()
     "disable all active themes."
@@ -241,6 +241,11 @@ If the new path's directories does not exist, create them."
 
     "SPC qq"
     'save-buffers-kill-emacs))
+
+(use-package llm
+  :init
+  (require 'llm-openai)
+  (setq llm-refactoring-provider (make-llm-openai :key (getenv "OPENAI_TOKEN"))))
 
 (provide 'core)
 ;;; core.el ends here

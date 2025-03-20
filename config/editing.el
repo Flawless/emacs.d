@@ -216,10 +216,11 @@
   ;; Use lsp-clojure-create-test instead
   ;; (projectile-create-missing-test-files t)
   ;; (projectile-dynamic-mode-line nil) why?
+  (projectile-auto-discover t)
   (projectile-auto-update-cache t) ; i'm tired manually update its cache
   (projectile-project-search-path '("~/projects/"))
   (projectile-sort-order 'recently-active)
-  (projectile-enable-caching t)
+  (projectile-enable-caching 'persistent)
   :config
   (add-to-list 'projectile-globally-ignored-directories "^\\.shadow-cljs$")
   (use-package

@@ -39,15 +39,19 @@
   tree-sitter-langs
   :straight
   (tree-sitter-langs
-   :type git
-   :host github
-   :repo "ubolonton/emacs-tree-sitter"
-   :files ("langs/*.el" "langs/queries"))
+    :type git
+    :host github
+    :repo "ubolonton/emacs-tree-sitter"
+    :files ("langs/*.el" "langs/queries"))
   :after tree-sitter)
 
 (use-package smerge-mode :init (evil-collection-init 'smerge-mode))
 
 (use-package git-timemachine)
+
+;;(use-package why-this
+;;  :straight (why-this :type git :host codeberg
+;;            :repo "akib/emacs-why-this.git"))
 
 (use-package
   magit
@@ -55,15 +59,15 @@
   :init (evil-collection-init 'magit)
   :custom
   (cond
-   ((eq system-type 'darwin)
-    (magit-git-executable "/usr/local/bin/git")))
+    ((eq system-type 'darwin)
+      (magit-git-executable "/usr/local/bin/git")))
   (magit-diff-paint-whitespace-lines 'all)
   (magit-display-buffer-function
-   (lambda (buffer) (display-buffer buffer '(display-buffer-same-window))))
+    (lambda (buffer) (display-buffer buffer '(display-buffer-same-window))))
   :config (evil-set-initial-state 'magit-mode 'normal)
   :general (:states '(normal visual) :keymaps '(magit-mode-map) "SPC" nil)
   (:states
-      '(normal visual)
+    '(normal visual)
     :prefix "SPC"
     :infix
     "g"
@@ -77,6 +81,23 @@
     'magit-find-file
     "l"
     'magit-log-buffer-file))
+
+(use-package
+  magit-gptcommit
+  :demand t
+  :after magit
+  :bind (:map git-commit-mode-map ("C-c C-g" . magit-gptcommit-commit-accept))
+  :custom (magit-gptcommit-llm-provider (make-llm-openai :key (getenv "OPENAI_TOKEN")))
+
+  :config
+  ;; Enable magit-gptcommit-mode to watch staged changes and generate commit message automatically in magit status buffer
+  ;; This mode is optional, you can also use `magit-gptcommit-generate' to generate commit message manually
+  ;; `magit-gptcommit-generate' should only execute on magit status buffer currently
+  ;; (magit-gptcommit-mode 1)
+
+  ;; Add gptcommit transient commands to `magit-commit'
+  ;; Eval (transient-remove-suffix 'magit-commit '(1 -1)) to remove gptcommit transient commands
+  (magit-gptcommit-status-buffer-setup))
 
 (use-package
   prog-mode
@@ -95,15 +116,15 @@
     "Convert TASKS to annotated alist."
     (let (results)
       (maphash
-       (lambda (key value)
-         (let ((task-name (symbol-name key)))
-           (unless (string-prefix-p ":" task-name)
-             (push
-              (if (hash-table-p value)
+        (lambda (key value)
+          (let ((task-name (symbol-name key)))
+            (unless (string-prefix-p ":" task-name)
+              (push
+                (if (hash-table-p value)
                   (cons task-name (gethash :doc value))
-                task-name)
-              results))))
-       tasks)
+                  task-name)
+                results))))
+        tasks)
       results)))
 
 (use-package
@@ -112,7 +133,7 @@
   :straight (:type built-in)
   :general
   (:states
-      '(normal visual)
+    '(normal visual)
     :keymaps
     'emacs-lisp-mode-map
     "SPC mee"
@@ -131,20 +152,11 @@
   :delight
   :general (:states '(normal visual) :keymaps 'lispy-mode-map "SPC mjs" 'lispy-split))
 
-(use-package
-  evil-lispy
-  :hook ((elisp-mode clojure-ts-mode) . evil-lispy-mode)
-  :delight)
+(use-package evil-lispy :hook ((elisp-mode clojure-ts-mode) . evil-lispy-mode) :delight)
 
-(use-package
-  lispyville
-  :hook ((elisp-mode clojure-ts-mode) . lispyville-mode)
-  :delight)
+(use-package lispyville :hook ((elisp-mode clojure-ts-mode) . lispyville-mode) :delight)
 
-(use-package
-  flawless-clojure
-  :straight (:type built-in)
-  :load-path "config/langs")
+(use-package flawless-clojure :straight (:type built-in) :load-path "config/langs")
 
 (use-package
   java-mode
@@ -180,13 +192,13 @@
   :ensure org-contrib
   :general
   (:states
-      '(normal visual)
+    '(normal visual)
     :keymap 'outline-mode-map
     ;; "gh" 'org-next-visible-heading
     ;; "gl" 'org-previous-visible-heading
     "gj" 'outline-forward-same-level "gk" 'outline-backward-same-level)
   (:states
-      '(normal visual)
+    '(normal visual)
     :prefix "SPC"
     :keymaps
     'org-mode-map
@@ -199,7 +211,7 @@
     "msa"
     'org-attach)
   (:states
-      '(normal visual)
+    '(normal visual)
     :prefix "SPC"
     :infix
     "o"
@@ -210,7 +222,7 @@
     "g"
     'org-caputre-goto-last-stored)
   (:states
-      '(normal visual)
+    '(normal visual)
     :prefix "SPC m"
     :keymaps 'org-mode-map
     :infix
@@ -222,7 +234,7 @@
   (:states '(normal visual) :prefix "SPC m" :keymaps 'org-mode-map "t" 'org-todo)
   (:states '(normal visual) :prefix "SPC m" :keymaps 'org-mode-map "C" 'org-columns)
   (:states
-      '(normal visual)
+    '(normal visual)
     :prefix "SPC m"
     :keymaps 'org-mode-map
     :infix
@@ -238,7 +250,7 @@
     "e"
     'org-set-effort)
   (:states
-      '(normal visual)
+    '(normal visual)
     :prefix "SPC"
     :infix
     "n"
@@ -257,7 +269,7 @@
     "c"
     'org-clock-out)
   (:states
-      '(normal visual)
+    '(normal visual)
     :keymaps 'org-mode-map
     :prefix "SPC m"
     :infix
@@ -278,204 +290,204 @@
   (org-agenda-files (directory-files-recursively org-directory "\\.org$"))
   (org-superstar-headline-bullets-list '("⁖" "◉" "○" "✸" "✿"))
   (org-todo-keywords
-   '
-   (
-    (sequence
-     "TODO(t!)"
-     "WAIT(w@/!)"
-     "RVIW(r)"
-     "STRT(s!)"
-     "CTRL(c!)"
-     "HOLD(h!)"
-     "TEST(q!)"
-     "|"
-     "DONE(d!)"
-     "KILL(k@)")))
+    '
+    (
+      (sequence
+        "TODO(t!)"
+        "WAIT(w@/!)"
+        "RVIW(r)"
+        "STRT(s!)"
+        "CTRL(c!)"
+        "HOLD(h!)"
+        "TEST(q!)"
+        "|"
+        "DONE(d!)"
+        "KILL(k@)")))
   (org-tag-alist '(("important" . ?i) ("urgent" . ?u) ("buy" . ?b)))
   ;; (org-agenda-category-icon-alist
   ;;  '(("WORK" "~/.emacs.d/icons/person-digging-solid.svg" nil nil :ascent center :mask heuristic)))
   (org-agenda-custom-commands
-   '
-   (
-    ("u" "Undated tasks"
-     ((todo "TODO")
-      (org-agenda-skip-function
-       '(org-agenda-skip-entry-if 'deadline 'scheduled 'timestamp))))
-    ("s" "Sprint" ((todo "TODO") (org-agenda-span (lt/days-to-next-sunday))))
-    ("b" "Backlog" ((todo "TODO") (tags-todo "-expense")))
-    ("d" "Daily" ((org-agenda-ndays 60)))
-    ("e" "Planned Expenses" tags-todo "+expense")
-    ("i" "Inbox" (search ((org-agenda-files '("~/inbox.org")))))
-    ("d" "Upcoming deadlines" agenda ""
-     ((org-agenda-entry-types '(:deadline))
-      ;; a slower way to do the same thing
-      ;; (org-agenda-skip-function '(org-agenda-skip-entry-if 'notdeadline))
-      (org-agenda-span 1) (org-deadline-warning-days 60) (org-agenda-time-grid nil)))))
+    '
+    (
+      ("u" "Undated tasks"
+        ((todo "TODO")
+          (org-agenda-skip-function
+            '(org-agenda-skip-entry-if 'deadline 'scheduled 'timestamp))))
+      ("s" "Sprint" ((todo "TODO") (org-agenda-span (lt/days-to-next-sunday))))
+      ("b" "Backlog" ((todo "TODO") (tags-todo "-expense")))
+      ("d" "Daily" ((org-agenda-ndays 60)))
+      ("e" "Planned Expenses" tags-todo "+expense")
+      ("i" "Inbox" (search ((org-agenda-files '("~/inbox.org")))))
+      ("d" "Upcoming deadlines" agenda ""
+        ((org-agenda-entry-types '(:deadline))
+          ;; a slower way to do the same thing
+          ;; (org-agenda-skip-function '(org-agenda-skip-entry-if 'notdeadline))
+          (org-agenda-span 1) (org-deadline-warning-days 60) (org-agenda-time-grid nil)))))
 
   (org-capture-templates
-   `
-   (("a" "ARVL")
+    `
+    (("a" "ARVL")
 
-    ("am"
-     "Meeting"
-     entry
-     (id "7DE08A4E-86F5-4D6A-A378-5BF7237BD8C4")
-     "*** %^{TITLE}\n**** Participants\n**** Agenda %i%?\n**** Resolution")
+      ("am"
+        "Meeting"
+        entry
+        (id "7DE08A4E-86F5-4D6A-A378-5BF7237BD8C4")
+        "*** %^{TITLE}\n**** Participants\n**** Agenda %i%?\n**** Resolution")
 
-    ("aj"
-     "YT task"
-     plain
-     (file ,(lt:capture-issue "~/org/arvl/tyrell/tasks" :arvl-short))
-     "#+TITLE: %^{TITLE}\n#+CATEGORY: ARVL\n* TODO RIGEL-%^{ID1} %^1\n** TODO RIGEL-%^{ID2} %^{TYPE|DEVELOP} %^{DESCR2}"
-     :jump-to-captured t)
+      ("aj"
+        "YT task"
+        plain
+        (file ,(lt:capture-issue "~/org/arvl/tyrell/tasks" :arvl-short))
+        "#+TITLE: %^{TITLE}\n#+CATEGORY: ARVL\n* TODO RIGEL-%^{ID1} %^1\n** TODO RIGEL-%^{ID2} %^{TYPE|DEVELOP} %^{DESCR2}"
+        :jump-to-captured t)
 
-    ("ab" "Bug" entry (file "arvl/bugs.org") "* %^{TITLE}\n %x" :jump-to-captured t)
+      ("ab" "Bug" entry (file "arvl/bugs.org") "* %^{TITLE}\n %x" :jump-to-captured t)
 
-    ("ar" "Review" entry (id "606B1037-48A0-41F0-9348-249FAA0FEF59")
-     "*** TODO RIGEL-%^{ID} D%^{DIFF} %^{ANNOTATION}
+      ("ar" "Review" entry (id "606B1037-48A0-41F0-9348-249FAA0FEF59")
+        "*** TODO RIGEL-%^{ID} D%^{DIFF} %^{ANNOTATION}
 :PROPERTIES:
 :YT:         RIGEL-%^1
 :PHBR:       D%^2
 :AUTHOR:     %^{AUTHOR}
 :END:"
-     :clock-in t)
+        :clock-in t)
 
-    ("b"
-     "Book"
-     entry
-     (file "evolution/books.org")
-     "* %^{TITLE}\n:PROPERTIES:\n:ADDED: %<[%Y-%02m-%02d]>\n:END:%^{AUTHOR}p\n%?"
-     :empty-lines 1)
+      ("b"
+        "Book"
+        entry
+        (file "evolution/books.org")
+        "* %^{TITLE}\n:PROPERTIES:\n:ADDED: %<[%Y-%02m-%02d]>\n:END:%^{AUTHOR}p\n%?"
+        :empty-lines 1)
 
-    ("q" "Quick Inbox")
-    ("qe"
-     "Expence"
-     entry
-     (file+headline "~/org/inbox.org" "Expenses")
-     "* TODO %? :expense:\n")
-    ("qt" "Todo")
-    ("qtl"
-     "Todo with link"
-     entry
-     (file+headline "~/org/inbox.org" "Tasks")
-     "* TODO %?\n %i\n %a")
-    ("qtt" "Todo" entry (file+headline "~/org/inbox.org" "Tasks") "* TODO %?\n")
+      ("q" "Quick Inbox")
+      ("qe"
+        "Expence"
+        entry
+        (file+headline "~/org/inbox.org" "Expenses")
+        "* TODO %? :expense:\n")
+      ("qt" "Todo")
+      ("qtl"
+        "Todo with link"
+        entry
+        (file+headline "~/org/inbox.org" "Tasks")
+        "* TODO %?\n %i\n %a")
+      ("qtt" "Todo" entry (file+headline "~/org/inbox.org" "Tasks") "* TODO %?\n")
 
-    ("n" "Notes")
+      ("n" "Notes")
 
-    ("nc" "Current task note" item (clock))
-    ("nl" "Current task note + link to line" item (clock) "%a")
-    ("no"
-     "Current task link to comment"
-     item
-     (clock)
-     "%(lt:capture-comment-line \"%i\")\n  %a")))
+      ("nc" "Current task note" item (clock))
+      ("nl" "Current task note + link to line" item (clock) "%a")
+      ("no"
+        "Current task link to comment"
+        item
+        (clock)
+        "%(lt:capture-comment-line \"%i\")\n  %a")))
   (org-clock-persist 'history)
   (org-clock-idle-time 15)
   (org-columns-default-format
-   "%80ITEM(Task) %TODO %Effort(Estimated Effort){:} %CLOCKSUM(Clocked){:}")
+    "%80ITEM(Task) %TODO %Effort(Estimated Effort){:} %CLOCKSUM(Clocked){:}")
 
   :after (evil-org org-pomodoro)
   :hook
   ((org-mode . auto-fill-mode)
-   (org-mode . evil-org-mode)
-   ((org-clock-in org-clock-out org-clock-cancel) . save-buffer))
+    (org-mode . evil-org-mode)
+    ((org-clock-in org-clock-out org-clock-cancel) . save-buffer))
 
   :config
   (defun extract-ticket-number (s)
     "Extract number from string like 'PROJECT-123' or return nil if not found."
     (when (string-match "\\([A-Za-z]+\\)-\\([0-9]+\\)" s)
       (cons
-       (match-string 1 s) ; project prefix
-       (string-to-number (match-string 2 s))))) ; ticket number
+        (match-string 1 s) ; project prefix
+        (string-to-number (match-string 2 s))))) ; ticket number
 
   (defun compare-ticket-numbers (a b)
     "Compare two ticket numbers, first by project, then by number."
     (let
-        (
-         (ticket-a (extract-ticket-number a))
-         (ticket-b (extract-ticket-number b)))
+      (
+        (ticket-a (extract-ticket-number a))
+        (ticket-b (extract-ticket-number b)))
       (cond
-       ;; If both are ticket numbers
-       ((and ticket-a ticket-b)
-        (if (string= (car ticket-a) (car ticket-b))
+        ;; If both are ticket numbers
+        ((and ticket-a ticket-b)
+          (if (string= (car ticket-a) (car ticket-b))
             (< (cdr ticket-a) (cdr ticket-b)) ; same project, compare numbers
-          (string< (car ticket-a) (car ticket-b)))) ; different projects
-       ;; If only one is a ticket number, put it first
-       (ticket-a
-        t)
-       (ticket-b
-        nil)
-       ;; If neither is a ticket number, sort alphabetically
-       (t
-        (string< a b)))))
+            (string< (car ticket-a) (car ticket-b)))) ; different projects
+        ;; If only one is a ticket number, put it first
+        (ticket-a
+          t)
+        (ticket-b
+          nil)
+        ;; If neither is a ticket number, sort alphabetically
+        (t
+          (string< a b)))))
 
   (defun org-sort-by-ticket-number ()
     "Sort entries by ticket number (e.g., WISOFT-249, PROJ-123)."
     (interactive)
     (org-sort-entries
-     nil ?f
-     (lambda ()
-       (let ((title (or (match-string 4) ""))) ; Ensure string
-         (when (string-match "\\([A-Za-z]+\\)-\\([0-9]+\\)" title)
-           (string-to-number (match-string 2 title)))))))
-                                        ; Return heading for comparison
+      nil ?f
+      (lambda ()
+        (let ((title (or (match-string 4) ""))) ; Ensure string
+          (when (string-match "\\([A-Za-z]+\\)-\\([0-9]+\\)" title)
+            (string-to-number (match-string 2 title)))))))
+  ; Return heading for comparison
 
   (defun lt/days-to-next-sunday ()
     (let
-        (
-         (dayspan 0)
-         (today (string-to-number (format-time-string "%u"))))
+      (
+        (dayspan 0)
+        (today (string-to-number (format-time-string "%u"))))
       (cond
-       ((> today 0) ; from today till sunday, today included
-        (setq dayspan (- 8 today)))
-       ((= today 0) ; sunday to sunday
-        (setq dayspan 8)))))
+        ((> today 0) ; from today till sunday, today included
+          (setq dayspan (- 8 today)))
+        ((= today 0) ; sunday to sunday
+          (setq dayspan 8)))))
   ;; ox-extra
   ;; (require 'ox-extra)
   ;; (ox-extras-activate '(latex-header-blocks ignore-headlines))
   ;; ox-latex
   (setq org-latex-pdf-process
-        '
-        ("pdflatex -interaction nonstopmode -output-directory %o %f"
-         "bibtex %b"
-         "pdflatex -interaction nonstopmode -output-directory %o %f"
-         "pdflatex -interaction nonstopmode -output-directory %o %f"))
+    '
+    ("pdflatex -interaction nonstopmode -output-directory %o %f"
+      "bibtex %b"
+      "pdflatex -interaction nonstopmode -output-directory %o %f"
+      "pdflatex -interaction nonstopmode -output-directory %o %f"))
   (setq org-latex-with-hyperref nil) ;; stop org adding hypersetup{author..} to latex export
   ;; (setq org-latex-prefer-user-labels t)
 
   ;; deleted unwanted file extensions after latexMK
   (setq org-latex-logfiles-extensions
-        '
-        ("lof"
-         "lot"
-         "tex~"
-         "aux"
-         "idx"
-         "log"
-         "out"
-         "toc"
-         "nav"
-         "snm"
-         "vrb"
-         "dvi"
-         "fdb_latexmk"
-         "blg"
-         "brf"
-         "fls"
-         "entoc"
-         "ps"
-         "spl"
-         "bbl"
-         "xmpi"
-         "run.xml"
-         "bcf"
-         "acn"
-         "acr"
-         "alg"
-         "glg"
-         "gls"
-         "ist"))
+    '
+    ("lof"
+      "lot"
+      "tex~"
+      "aux"
+      "idx"
+      "log"
+      "out"
+      "toc"
+      "nav"
+      "snm"
+      "vrb"
+      "dvi"
+      "fdb_latexmk"
+      "blg"
+      "brf"
+      "fls"
+      "entoc"
+      "ps"
+      "spl"
+      "bbl"
+      "xmpi"
+      "run.xml"
+      "bcf"
+      "acn"
+      "acr"
+      "alg"
+      "glg"
+      "gls"
+      "ist"))
 
   (unless (boundp 'org-latex-classes)
     (setq org-latex-classes nil))
@@ -485,9 +497,9 @@
 clocked tasks in minutes."
     (interactive)
     (let
-        (
-         (files (org-agenda-files))
-         (total 0))
+      (
+        (files (org-agenda-files))
+        (total 0))
       (org-agenda-prepare-buffers files)
       (dolist (file files)
         (with-current-buffer (find-buffer-visiting file)
@@ -497,8 +509,8 @@ clocked tasks in minutes."
   (org-clock-persistence-insinuate)
   (defun lt:capture-comment-line (&optional line)
     (let
-        (
-         (c
+      (
+        (c
           (save-excursion
             (save-window-excursion
               (switch-to-buffer (plist-get org-capture-plist :original-buffer))
@@ -510,42 +522,42 @@ clocked tasks in minutes."
     #'
     (lambda ()
       (cl-case
-          issue-type
+        issue-type
         (:arvl-short
-         (let ((issue-id (read-string "ID: " "RIGEL-")))
-           (expand-file-name (format "%s.org" issue-id) path)))
+          (let ((issue-id (read-string "ID: " "RIGEL-")))
+            (expand-file-name (format "%s.org" issue-id) path)))
         (:arvl
-         (let
-             (
+          (let
+            (
               (issue-id (read-string "ID: " "RIGEL-"))
               (name (read-string "Name (camelCase prefix): ")))
-           (expand-file-name (format "%s_%s.org" issue-id name) path))))))
+            (expand-file-name (format "%s_%s.org" issue-id name) path))))))
   (defun lt:yank-org-link (text)
     (if (derived-mode-p 'org-mode)
-        (insert text)
+      (insert text)
       (string-match org-link-bracket-re text)
       (insert (substring text (match-beginning 1) (match-end 1)))))
 
   (defun lt:org-retrieve-url-from-point ()
     (let*
-        (
-         (link-info (assoc :link (org-context)))
-         (text
+      (
+        (link-info (assoc :link (org-context)))
+        (text
           (when link-info
             ;; org-context seems to return nil if the current element
             ;; starts at buffer-start or ends at buffer-end
             (buffer-substring-no-properties
-             (or (cadr link-info) (point-min))
-             (or (caddr link-info) (point-max))))))
+              (or (cadr link-info) (point-min))
+              (or (caddr link-info) (point-max))))))
       (if (not text)
-          (error "Not in org link")
+        (error "Not in org link")
         (add-text-properties 0 (length text) '(yank-handler (my-yank-org-link)) text)
         (kill-new text))))
 
   (defun lt:smarter-kill-ring-save ()
     (interactive)
     (if (region-active-p)
-        (call-interactively #'kill-ring-save)
+      (call-interactively #'kill-ring-save)
       (when (eq major-mode 'org-mode)
         (call-interactively #'lt:org-retrieve-url-from-point))))
 
@@ -554,16 +566,16 @@ clocked tasks in minutes."
 Used in `my-org-clocktable-formatter' to go from net times back to tatal times."
     (let ((subtrees (-partition-before-pred (lambda (it) (= level (car it))) children)))
       (-flatten-n
-       1
-       (--map
-        (let ((it-children (lt:sum-direct-children-org (1+ level) (cdr it))))
-          (cons
-           (--update-at
-            4
-            (+ it (-sum (--map (nth 4 it) (--filter (= (1+ level) (car it)) it-children))))
-            (car it))
-           it-children))
-        subtrees))))
+        1
+        (--map
+          (let ((it-children (lt:sum-direct-children-org (1+ level) (cdr it))))
+            (cons
+              (--update-at
+                4
+                (+ it (-sum (--map (nth 4 it) (--filter (= (1+ level) (car it)) it-children))))
+                (car it))
+              it-children))
+          subtrees))))
   (defun lt:org-clocktable-formatter (ipos tables params)
     "Custom formatter for org-mode clocktables which groups by category rather than file.
 It uses `org-clock-clocktable-formatter' for the insertion of the
@@ -573,60 +585,60 @@ category property. Thus all parameters supported by
 sort a clocktable add `:properties (\"CATEGORY\") :formatter
 my-org-clocktable-formatter' to that clocktable's arguments."
     (let*
-        (
-         (tt (-flatten-n 1 (-map #'-last-item tables)))
-         (formatter (or org-clock-clocktable-formatter 'org-clocktable-write-default))
-         (newprops (remove "CATEGORY" (plist-get params :properties)))
-         (newparams (plist-put (plist-put params :multifile t) :properties newprops))
-         newtables)
+      (
+        (tt (-flatten-n 1 (-map #'-last-item tables)))
+        (formatter (or org-clock-clocktable-formatter 'org-clocktable-write-default))
+        (newprops (remove "CATEGORY" (plist-get params :properties)))
+        (newparams (plist-put (plist-put params :multifile t) :properties newprops))
+        newtables)
 
       ;; Compute net clocked time for each item
       (setq tt
-            (--map-indexed
-             (let*
-                 (
-                  (it-level (car it))
-                  (it-time (nth 4 it))
-                  (it-subtree (--take-while (< it-level (car it)) (-drop (1+ it-index) tt)))
-                  (it-children (--filter (= (1+ it-level) (car it)) it-subtree)))
-               (-replace-at 4 (- it-time (-sum (--map (nth 4 it) it-children))) it))
-             tt))
+        (--map-indexed
+          (let*
+            (
+              (it-level (car it))
+              (it-time (nth 4 it))
+              (it-subtree (--take-while (< it-level (car it)) (-drop (1+ it-index) tt)))
+              (it-children (--filter (= (1+ it-level) (car it)) it-subtree)))
+            (-replace-at 4 (- it-time (-sum (--map (nth 4 it) it-children))) it))
+          tt))
 
       ;; Add index (ie id) and indexes of parents (these are needed in the
       ;; sorting step). This can probably be written more functionally using --reduce?
       ;; At least without having to modify hist.
       (setq tt
-            (let (hist)
-              (--map-indexed
-               (let*
-                   (
-                    (it-level (car it))
-                    (it-hist (-drop (- (length hist) it-level -1) hist)))
-                 (setq hist (cons it-index it-hist))
-                 (cons it-index (cons it-hist it)))
-               tt)))
+        (let (hist)
+          (--map-indexed
+            (let*
+              (
+                (it-level (car it))
+                (it-hist (-drop (- (length hist) it-level -1) hist)))
+              (setq hist (cons it-index it-hist))
+              (cons it-index (cons it-hist it)))
+            tt)))
 
       ;; Now comes the important phase: sorting, where we copy items with >0 net time
       ;; into newtables based on their category, and we copy their parents when
       ;; appropriate.
       (--each
-          tt
+        tt
         (let*
-            (
-             (it-hist (nth 1 it))
-             (it-time (nth 6 it))
-             (it-prop (-last-item it))
-             (it-cat (alist-get "CATEGORY" it-prop nil nil #'string=))
-             ;; Find the index of the table for category: it-cat or if
-             ;; it doesn't yet exist add it to the start of newtables.
-             (cat-pos
+          (
+            (it-hist (nth 1 it))
+            (it-time (nth 6 it))
+            (it-prop (-last-item it))
+            (it-cat (alist-get "CATEGORY" it-prop nil nil #'string=))
+            ;; Find the index of the table for category: it-cat or if
+            ;; it doesn't yet exist add it to the start of newtables.
+            (cat-pos
               (or (--find-index (string= (car it) it-cat) newtables)
-                  (progn
-                    (push (list it-cat nil) newtables)
-                    0)))
-             (cat-members (-map #'car (-last-item (nth cat-pos newtables))))
-             (it-parent (or (--find-index (member it cat-members) it-hist) (length it-hist)))
-             (hist-to-add
+                (progn
+                  (push (list it-cat nil) newtables)
+                  0)))
+            (cat-members (-map #'car (-last-item (nth cat-pos newtables))))
+            (it-parent (or (--find-index (member it cat-members) it-hist) (length it-hist)))
+            (hist-to-add
               ;; replace the time of copied parents with 0 since if a
               ;; parents is being copied and has time >0 then it has
               ;; already been placed in the table for a different
@@ -635,7 +647,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
           (when (not (= 0 it-time))
             (setf (-last-item (nth cat-pos newtables))
-                  (append (cons it hist-to-add) (-last-item (nth cat-pos newtables)))))))
+              (append (cons it hist-to-add) (-last-item (nth cat-pos newtables)))))))
 
       (--each newtables (setf (-last-item it) (reverse (-last-item it))))
       ;; Cleanup, remove ids and list of parents, as they are no longer needed.
@@ -644,13 +656,13 @@ my-org-clocktable-formatter' to that clocktable's arguments."
       ;; Recompute the total times for each node.
       ;; (replace this with --each and setf?)
       (setq newtables
-            (--map
-             (let*
-                 (
-                  (it-children (lt:sum-direct-children-org 1 (-last-item it)))
-                  (it-total-time (-sum (--map (nth 4 it) (--filter (= 1 (car it)) it-children)))))
-               (list (car it) it-total-time it-children))
-             newtables))
+        (--map
+          (let*
+            (
+              (it-children (lt:sum-direct-children-org 1 (-last-item it)))
+              (it-total-time (-sum (--map (nth 4 it) (--filter (= 1 (car it)) it-children)))))
+            (list (car it) it-total-time it-children))
+          newtables))
       ;; Actually insert the clocktable now.
       (funcall formatter ipos newtables newparams)
       ;; Replace "File" with "Category" in the "file" column and "*File time*" with "*
@@ -690,7 +702,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
     (outshine-narrow-to-subtree))
   :general
   (:states
-      '(normal visual :keymap 'outshine-mode-map)
+    '(normal visual :keymap 'outshine-mode-map)
     "SPC moj"
     'lt:outshine-next-slide
     "SPC mok"
@@ -722,16 +734,16 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
 (use-package
   org-duration
-    :straight (:type built-in)
+  :straight (:type built-in)
   :config
   (setq org-duration-units
-        `
-        (("min" . 1)
-         ("h" . 60)
-         ("d" . ,(* 60 8))
-         ("w" . ,(* 60 8 5))
-         ("m" . ,(* 60 8 5 4))
-         ("y" . ,(* 60 8 5 4 11))))
+    `
+    (("min" . 1)
+      ("h" . 60)
+      ("d" . ,(* 60 8))
+      ("w" . ,(* 60 8 5))
+      ("m" . ,(* 60 8 5 4))
+      ("y" . ,(* 60 8 5 4 11))))
   (org-duration-set-regexps))
 
 (use-package
@@ -754,9 +766,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 (use-package tide)
 
 ;;; TeX
-(use-package tex
-  :straight (:type built-in)
-  :defer t :ensure auctex)
+(use-package tex :straight (:type built-in) :defer t :ensure auctex)
 
 ;;; protobuf
 (use-package
@@ -776,10 +786,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 (use-package
   telega
 
-  :straight
-  (telega :type git
-                    :repo "zevlg/telega.el"
-                    :branch "master")
+  :straight (telega :type git :repo "zevlg/telega.el" :branch "master")
   ;; :quelpa
   ;; (telega
   ;;  :fetcher github
@@ -790,22 +797,22 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :init (telega-mode-line-mode t) (setq telega-use-images t) (evil-collection-init 'telega)
   :custom (telega-chat-fill-column 80)
   (telega-accounts
-   (list
-    (list "AlexanderUshanov" 'telega-database-dir telega-database-dir-base)
     (list
-     "flaw1322"
-     'telega-database-dir
-     (expand-file-name "flaw1322" telega-database-dir-base))
-    (list
-     "C11H26NO2PS"
-     'telega-database-dir
-     (expand-file-name "c11h26no2ps" telega-database-dir-base))))
+      (list "AlexanderUshanov" 'telega-database-dir telega-database-dir-base)
+      (list
+        "flaw1322"
+        'telega-database-dir
+        (expand-file-name "flaw1322" telega-database-dir-base))
+      (list
+        "C11H26NO2PS"
+        'telega-database-dir
+        (expand-file-name "c11h26no2ps" telega-database-dir-base))))
   :config
   (when (eq system-type 'gnu/linux)
     (setq telega-server-libs-prefix "/usr"))
   :general
   (:states
-      '(normal visual)
+    '(normal visual)
     :prefix "SPC"
     :infix
     "c"
@@ -820,16 +827,16 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   elisp-mode
   :straight (:type built-in)
   :hook
-  ((emacs-lisp-mode . flycheck-mode)    ; Enable Flycheck for linting
-   (emacs-lisp-mode . lispy-mode)       ; Enable Lispy for structured editing
-   (emacs-lisp-mode . lispyville-mode)  ; Enable Lispyville for Evil users
-   (emacs-lisp-mode . eldoc-mode)       ; Enable Eldoc for inline help
-   (emacs-lisp-mode . subword-mode)     ; Navigate through subwords
-   ;; (emacs-lisp-mode
-   ;;  .
-   ;;  (lambda ()                          ; Automatically indent the buffer before saving
-   ;;    (add-hook 'before-save-hook #'lt/elisp-indent-buffer nil t)))
-   )
+  ((emacs-lisp-mode . flycheck-mode) ; Enable Flycheck for linting
+    (emacs-lisp-mode . lispy-mode) ; Enable Lispy for structured editing
+    (emacs-lisp-mode . lispyville-mode) ; Enable Lispyville for Evil users
+    (emacs-lisp-mode . eldoc-mode) ; Enable Eldoc for inline help
+    (emacs-lisp-mode . subword-mode) ; Navigate through subwords
+    ;; (emacs-lisp-mode
+    ;;  .
+    ;;  (lambda ()                          ; Automatically indent the buffer before saving
+    ;;    (add-hook 'before-save-hook #'lt/elisp-indent-buffer nil t)))
+    )
   :config
   (defun lt/elisp-indent-buffer ()
     "Indent the entire buffer when saving Emacs Lisp code."
@@ -843,7 +850,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :hook (rustic-mode . tree-sitter-hl-mode)
   :general
   (:states
-      '(normal visual)
+    '(normal visual)
     :keymaps
     'rustic-mode-map
     "SPC mhd"
@@ -951,11 +958,11 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (lsp-completion-provider :capf)
   :init
   (add-to-list
-   'treesit-language-source-alist
-   '(go "https://github.com/tree-sitter/tree-sitter-go"))
+    'treesit-language-source-alist
+    '(go "https://github.com/tree-sitter/tree-sitter-go"))
   (add-to-list
-   'treesit-language-source-alist
-   '(gomod "https://github.com/camdencheek/tree-sitter-go-mod"))
+    'treesit-language-source-alist
+    '(gomod "https://github.com/camdencheek/tree-sitter-go-mod"))
   :config
   (defun lsp-go-install-save-hooks ()
     (when (bound-and-true-p lsp-mode)
@@ -986,9 +993,9 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
   :hook
   ((python-mode . lsp-deferred)
-   (python-mode . lt/disable-venv-checks-for-remote-files)
-   ;; (python-mode . lt/python-flycheck)
-   )
+    (python-mode . lt/disable-venv-checks-for-remote-files)
+    ;; (python-mode . lt/python-flycheck)
+    )
   :config
   (defun lt/disable-venv-checks-for-remote-files ()
     "Disable virtual environment checks for remote files."
@@ -1017,34 +1024,34 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   ;; explicitly. Afterwards, run M-x `conda-env-activate' to switch between
   ;; environments
   (or
-   (cl-loop
-    for dir in
-    (list
-     conda-anaconda-home
-     "~/.anaconda"
-     "~/.miniconda"
-     "~/.miniconda3"
-     "~/.miniforge3"
-     "~/anaconda3"
-     "~/miniconda3"
-     "~/miniforge3"
-     "~/opt/miniconda3"
-     "/usr/bin/anaconda3"
-     "/usr/local/anaconda3"
-     "/usr/local/miniconda3"
-     "/usr/local/Caskroom/miniconda/base"
-     "~/.conda")
-    if (file-directory-p dir) return
-    (setq
-     conda-anaconda-home (expand-file-name dir)
-     conda-env-home-directory (expand-file-name dir)))
-   (message "Cannot find Anaconda installation"))
+    (cl-loop
+      for dir in
+      (list
+        conda-anaconda-home
+        "~/.anaconda"
+        "~/.miniconda"
+        "~/.miniconda3"
+        "~/.miniforge3"
+        "~/anaconda3"
+        "~/miniconda3"
+        "~/miniforge3"
+        "~/opt/miniconda3"
+        "/usr/bin/anaconda3"
+        "/usr/local/anaconda3"
+        "/usr/local/miniconda3"
+        "/usr/local/Caskroom/miniconda/base"
+        "~/.conda")
+      if (file-directory-p dir) return
+      (setq
+        conda-anaconda-home (expand-file-name dir)
+        conda-env-home-directory (expand-file-name dir)))
+    (message "Cannot find Anaconda installation"))
   ;; integration with term/eshell
   (conda-env-initialize-interactive-shells)
   (add-to-list
-   'global-mode-string
-   '(conda-env-current-name (" conda:" conda-env-current-name " "))
-   'append))
+    'global-mode-string
+    '(conda-env-current-name (" conda:" conda-env-current-name " "))
+    'append))
 
 ;;; pyvenv
 ;; To hopefully work better with virtual environments over tramp
@@ -1056,9 +1063,9 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :config
   (add-hook 'python-mode-local-vars-hook #'pyvenv-track-virtualenv)
   (add-to-list
-   'global-mode-string
-   '(pyvenv-virtual-env-name (" venv:" pyvenv-virtual-env-name " "))
-   'append))
+    'global-mode-string
+    '(pyvenv-virtual-env-name (" venv:" pyvenv-virtual-env-name " "))
+    'append))
 
 ;;; numpydoc
 (use-package
@@ -1069,10 +1076,10 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :defer t
   :config
   (setq
-   numpydoc-insertion-style 'yas ;; use yasnippet style prompt
-   numpydoc-insert-examples-block nil ;; no examples block
-   numpydoc-insert-return-without-typehint nil ;; as it says
-   numpydoc-auto-fill-paragraphs t)) ;; autofill my docs
+    numpydoc-insertion-style 'yas ;; use yasnippet style prompt
+    numpydoc-insert-examples-block nil ;; no examples block
+    numpydoc-insert-return-without-typehint nil ;; as it says
+    numpydoc-auto-fill-paragraphs t)) ;; autofill my docs
 
 (use-package
   lsp-pyright
@@ -1080,10 +1087,10 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :custom (lsp-pyright-langserver-command "pyright")
   :hook
   (python-mode
-   .
-   (lambda ()
-     (require 'lsp-pyright)
-     (lsp-deferred))))
+    .
+    (lambda ()
+      (require 'lsp-pyright)
+      (lsp-deferred))))
 
 ;; (use-package lsp-pyright
 ;;   :straight t
@@ -1121,8 +1128,8 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :after python
   :hook
   ((python-mode . ruff-format-on-save-mode)
-   ;; (python-mode . lt/flycheck-python)
-   )
+    ;; (python-mode . lt/flycheck-python)
+    )
   ;; :config
   ;;   (flycheck-define-checker python-ruff
   ;;     "A Python syntax and style checker using the ruff utility.
@@ -1164,11 +1171,11 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :config
   (flycheck-add-next-checker 'lsp '(t . python-ruff))
   (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-tramp-connection "pyls")
-    :major-modes '(python-mode)
-    :remote? t
-    :server-id 'pyls-remote))
+    (make-lsp-client
+      :new-connection (lsp-tramp-connection "pyls")
+      :major-modes '(python-mode)
+      :remote? t
+      :server-id 'pyls-remote))
   :init
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
   (elpy-enable))
@@ -1206,19 +1213,19 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (gptel-default-mode 'org-mode)
   (gptel-fill-column 80) ;; Set the desired fill column
   (gptel-directives
-   '
-   (
-    (default
-     .
-     "You are a large language model living in Emacs and a helpful assistant. Respond concisely.")
-    (programming
-     .
-     "You are a large language model and a careful programmer. Provide code and only code as output without any additional text, prompt or note.")
-    (programming-apply
-     .
-     "You are a large language model and a careful programmer. Apply changes from context related to given code in git merge conflicts format so user can review it easyly with standard tools and apply. Do not add anything not directly related to code like notes, text, markup languages quotation or other syntax and keep code that you were given since your reply will replace original content. Use code pieces from chat as basis if provided.")
-    (writing . "You are a large language model and a writing assistant. Respond concisely.")
-    (chat . "You are a large language model and a conversation partner. Respond concisely.")))
+    '
+    (
+      (default
+        .
+        "You are a large language model living in Emacs and a helpful assistant. Respond concisely.")
+      (programming
+        .
+        "You are a large language model and a careful programmer. Provide code and only code as output without any additional text, prompt or note.")
+      (programming-apply
+        .
+        "You are a large language model and a careful programmer. Apply changes from context related to given code in git merge conflicts format so user can review it easyly with standard tools and apply. Do not add anything not directly related to code like notes, text, markup languages quotation or other syntax and keep code that you were given since your reply will replace original content. Use code pieces from chat as basis if provided.")
+      (writing . "You are a large language model and a writing assistant. Respond concisely.")
+      (chat . "You are a large language model and a conversation partner. Respond concisely.")))
   :config
   (defun enable-visual-line-mode-in-chatgpt ()
     "Enable visual-line-mode in *ChatGPT* buffer."
@@ -1245,16 +1252,16 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (graphql-mode . (lambda () (add-hook 'before-save-hook #'prettier-prettify nil t)))
   :config
   (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-stdio-connection '("graphql-lsp" "server" "--method" "stream"))
-    :major-modes '(graphql-mode)
-    :server-id 'graphql-lsp))
+    (make-lsp-client
+      :new-connection (lsp-stdio-connection '("graphql-lsp" "server" "--method" "stream"))
+      :major-modes '(graphql-mode)
+      :server-id 'graphql-lsp))
   (setq graphql-indent-level 2))
 
 (use-package prettier :config (setenv "NODE_PATH" "/usr/local/lib/node_modules"))
 
 (use-package
-    elisp-autofmt
+  elisp-autofmt
   :custom (elisp-autofmt-style 'fixed)
   :commands (elisp-autofmt-mode elisp-autofmt-buffer)
   :hook (emacs-lisp-mode . elisp-autofmt-mode))
