@@ -90,7 +90,7 @@
   :custom
   (magit-gptcommit-llm-provider (make-llm-openai :key (getenv "OPENAI_TOKEN")))
   (magit-gptcommit-prompt
-   "You are an expert programmer writing a commit message.
+    "You are an expert programmer writing a commit message.
 You went over every file diff that was changed in it.
 
 First Determine the best label for the diffs.
@@ -119,7 +119,7 @@ THE FILE DIFFS:
 ```
 %s
 ```
-Now write Commit message in follow template:
+Now write Commit message in follow template, avoid any special character or syntax like ```:
 [label]:[one line of summary]
 
 [extra lines with details if needed no longer then 100 chars each line]:
@@ -204,7 +204,7 @@ Now write Commit message in follow template:
 (use-package
   yaml-mode
   :mode "\\.ya?ml\\'"
-  :hook ((yaml-mode . lsp) (yaml-mode . tree-sitter-hl-mode)))
+  :hook ((yaml-mode . lsp) (yaml-mode . font-lock-mode) (yaml-mode . tree-sitter-hl-mode)))
 
 ;; (use-package
 ;;   beancount
@@ -1301,6 +1301,10 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   :custom (elisp-autofmt-style 'fixed)
   :commands (elisp-autofmt-mode elisp-autofmt-buffer)
   :hook (emacs-lisp-mode . elisp-autofmt-mode))
+
+(use-package
+  gdscript-mode
+  :straight (gdscript-mode :type git :host github :repo "godotengine/emacs-gdscript-mode"))
 
 (provide 'langs)
 ;;; langs.el ends here
