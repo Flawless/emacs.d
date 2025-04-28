@@ -88,9 +88,11 @@
   :after magit
   :bind (:map git-commit-mode-map ("C-c C-g" . magit-gptcommit-commit-accept))
   :custom
-  (magit-gptcommit-llm-provider (make-llm-openai :key (getenv "OPENAI_TOKEN")))
+  (magit-gptcommit-llm-provider
+    (make-llm-openai :key (getenv "OPENAI_TOKEN"))
+    :chat-model "gpt-4.1-mini")
   (magit-gptcommit-prompt
-    "You are an expert programmer writing a commit message.
+   "You are an expert programmer writing a commit message.
 You went over every file diff that was changed in it.
 
 First Determine the best label for the diffs.
@@ -119,7 +121,7 @@ THE FILE DIFFS:
 ```
 %s
 ```
-Now write Commit message in follow template, avoid any special character or syntax like ```:
+Now write Commit message in follow template, avoid any special character or special syntax like quotes and so on:
 [label]:[one line of summary]
 
 [extra lines with details if needed no longer then 100 chars each line]:
@@ -961,7 +963,7 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 
   :defer 1
   :hook (terraform-mode . lsp-deferred)
-  :custom (terraform-format-on-save t))
+  :custom (terraform-command "tofu") (terraform-format-on-save t))
 
 (use-package
   esxml
@@ -1305,6 +1307,8 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 (use-package
   gdscript-mode
   :straight (gdscript-mode :type git :host github :repo "godotengine/emacs-gdscript-mode"))
+
+(use-package jq-mode)
 
 (provide 'langs)
 ;;; langs.el ends here

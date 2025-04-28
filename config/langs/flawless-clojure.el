@@ -4,19 +4,19 @@
 ;;  Description
 ;;
 ;;; Code:
-(use-package
-  clojure-mode
-  :ensure nil ;; Don't install if not present
-  :defer t ;; Defer loading
+(use-package clojure-mode
+  :ensure nil  ;; Don't install if not present
+  :defer t     ;; Defer loading
   :init
-  ;; Remove conflicting auto-mode-alist entries for clojure-mode
+  ;; Remove only clojure-mode entries but preserve clojure-ts-mode entries
   (setq auto-mode-alist
-    (seq-remove
-      (lambda (pair)
-        (and (stringp (car pair))
-          (string-match-p "\\.clj\\|\\.edn" (car pair))
-          (memq (cdr pair) '(clojure-mode clojurescript-mode clojurec-mode))))
-      auto-mode-alist)))
+        (seq-remove
+         (lambda (pair)
+           (when (symbolp (cdr pair))
+             (let ((mode-name (symbol-name (cdr pair))))
+               (and (string-match-p "clojure" mode-name)
+                    (not (string-match-p "clojure-ts" mode-name))))))
+         auto-mode-alist)))
 
 (use-package
   clojure-ts-mode
