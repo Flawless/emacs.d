@@ -121,7 +121,8 @@ THE FILE DIFFS:
 ```
 %s
 ```
-Now write Commit message in follow template, avoid any special character or special syntax like quotes and so on:
+Now write Commit message in follow template, avoid any special character or special syntax like
+quotes and so on since your reply would be used as is:
 [label]:[one line of summary]
 
 [extra lines with details if needed no longer then 100 chars each line]:
