@@ -17,6 +17,19 @@
 (use-package undo-fu :after evil :delight :custom (evil-undo-system 'undo-fu))
 
 (use-package
+  aider
+  :straight (:host github :repo "tninja/aider.el")
+  :custom (aider-args '("--model" "o4-mini"))
+  :config (setenv "OPENAI_API_KEY" openai-token)
+  :general (:states '(normal visual) "SPC z" 'aider-transient-menu))
+
+(use-package
+  aidermacs
+  :config (setenv "OPENAI_API_KEY" openai-token)
+  :custom (aidermacs-default-model "gpt-4o-mini")
+  :general (:states '(normal visual) "SPC a" 'aider-transient-menu))
+
+(use-package
   langtool
   :custom (langtool-language-tool-jar "~/LanguageTool-6.3/languagetool-commandline.jar"))
 
@@ -92,7 +105,7 @@
     (make-llm-openai :key (getenv "OPENAI_TOKEN"))
     :chat-model "gpt-4.1-mini")
   (magit-gptcommit-prompt
-   "You are an expert programmer writing a commit message.
+    "You are an expert programmer writing a commit message.
 You went over every file diff that was changed in it.
 
 First Determine the best label for the diffs.

@@ -51,6 +51,7 @@
   (fill-column 96)
 
   :init
+  (defvar openai-token (getenv "OPENAI_TOKEN"))
   (set-face-attribute 'mode-line nil :height 96)
   (set-face-attribute 'mode-line-inactive nil :height 96)
 
@@ -245,7 +246,7 @@ If the new path's directories does not exist, create them."
 (use-package llm
   :init
   (require 'llm-openai)
-  (setq llm-refactoring-provider (make-llm-openai :key (getenv "OPENAI_TOKEN"))))
+  (setq llm-refactoring-provider (make-llm-openai :key openai-token)))
 
 (provide 'core)
 ;;; core.el ends here

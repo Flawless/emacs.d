@@ -82,3 +82,4 @@ custom.el
 /straight/repos/
 /test.diskqueue.*.dat
 /tree-sitter/
+.aider*
