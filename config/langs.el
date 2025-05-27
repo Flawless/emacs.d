@@ -1005,6 +1005,8 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   (go-ts-mode . lsp-deferred)
   (go-ts-mode . lsp-go-install-save-hooks)
   :custom
+  (require 'dap-dlv-go)
+  (tab-width 2)
   (treesit-font-lock-level 4)
   (lsp-gopls-use-placeholders nil)
   (lsp-completion-provider :capf)
@@ -1029,13 +1031,20 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   ;; Experimental gopls settings
   (lsp-register-custom-settings '(("gopls.completeUnimported" t t) ("gopls.staticcheck" t t))))
 
+(use-package gotest)
 
 (use-package go-tag)
 
 (use-package godoctor)
 
+(use-package realgud)
+
+(use-package dape)
+
+;; (use-package realgud-dlv)
+
 (use-package
-  nginx-mode
+    nginx-mode
 
   :commands nginx-mode)
 

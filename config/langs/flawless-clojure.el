@@ -235,7 +235,7 @@ Returns a list of selected aliases or nil."
 
   (:states
     '(normal visual)
-    :keymap
+    :keymaps
     'cider-mode-map
     "SPC mil"
     'cider-inspect-last-result
