@@ -83,3 +83,6 @@ custom.el
 /test.diskqueue.*.dat
 /tree-sitter/
 .aider*
+
+# Environment variables (contains sensitive tokens)
+.envrc
