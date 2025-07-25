@@ -36,7 +36,7 @@
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
       (url-retrieve-synchronously
-        "https://raw.githubusercontent.com/flawless/straight.el/develop/install.el"
+        "https://raw.githubusercontent.com/flawless/straight.el/master/install.el"
         'silent
         'inhibit-cookies)
       (goto-char (point-max))
