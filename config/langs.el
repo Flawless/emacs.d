@@ -814,8 +814,29 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 ;;; Web
 (use-package css-mode :custom (css-indent-offset 4))
 
-;; TS
-(use-package tide)
+;; TypeScript/JavaScript LSP configuration
+(use-package lsp-javascript
+  :straight nil
+  :after lsp-mode
+  :config
+  ;; Use typescript-language-server for both JS and TS
+  (setq lsp-clients-typescript-server-args '("--stdio"))
+  (setq lsp-typescript-format-enable t)
+  (setq lsp-typescript-format-insert-space-after-opening-and-before-closing-nonempty-braces t)
+  (setq lsp-javascript-format-enable t)
+  (setq lsp-javascript-suggest-complete-js-docs t)
+  (setq lsp-javascript-validate-enable t))
+
+;; TS - Tide for additional TypeScript features
+(use-package tide
+  :after (typescript-mode company flycheck)
+  :hook ((typescript-mode . tide-setup)
+         (typescript-tsx-mode . tide-setup)
+         (before-save . tide-format-before-save))
+  :config
+  (setq tide-format-options
+        '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t
+          :placeOpenBraceOnNewLineForFunctions nil)))
 
 ;;; TeX
 (use-package tex :straight (:type built-in) :defer t :ensure auctex)
@@ -920,7 +941,11 @@ my-org-clocktable-formatter' to that clocktable's arguments."
   web-mode
 
   :mode ("\\.jsx?$" "\\.mdx$" "\\.j2$" "\\.html$")
-  :hook (web-mode . tree-sitter-hl-mode)
+  :hook ((web-mode . tree-sitter-hl-mode)
+         (web-mode . (lambda ()
+                       ;; Enable LSP for JavaScript/JSX files
+                       (when (member (file-name-extension buffer-file-name) '("js" "jsx" "mjs"))
+                         (lsp-deferred)))))
   :custom
   (web-mode-enable-engine-detection t)
   (web-mode-engines-alist '(("jinja2" . "\\.j2$\\'")))
@@ -930,7 +955,17 @@ my-org-clocktable-formatter' to that clocktable's arguments."
 (use-package
   typescript-mode
 
-  :hook (typescript-mode . tree-sitter-hl-mode))
+  :mode (("\\.ts\\'" . typescript-mode)
+         ("\\.tsx\\'" . typescript-tsx-mode))
+  :hook ((typescript-mode . lsp-deferred)
+         (typescript-tsx-mode . lsp-deferred)
+         (typescript-mode . tree-sitter-hl-mode)
+         (typescript-tsx-mode . tree-sitter-hl-mode))
+  :config
+  ;; Ensure TypeScript language server is properly configured
+  (setq lsp-clients-typescript-prefer-use-project-ts-server t)
+  (setq lsp-typescript-suggest-complete-function-calls t)
+  (setq lsp-typescript-preferences-import-module-specifier "relative"))
 
 (use-package
   lua-mode
