@@ -473,7 +473,7 @@
       ('dark (load-theme 'almost-mono-black t))))
 
   (add-hook 'ns-system-appearance-change-functions #'lt:apply-theme)
-  (lt:apply-theme ns-system-appearance))
+  (lt:apply-theme (if (boundp 'ns-system-appearance) ns-system-appearance 'dark)))
 
 (use-package idle-highlight-mode :hook prog-mode)
 

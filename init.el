@@ -53,6 +53,9 @@
 ;; specified using the `:straight' keyword.
 (setq straight-use-package-by-default t)
 
+;; Load org early to prevent version mismatch with built-in
+(straight-use-package 'org)
+
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file t)
 
