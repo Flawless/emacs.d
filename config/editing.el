@@ -220,8 +220,9 @@
   (projectile-auto-update-cache t) ; i'm tired manually update its cache
   (projectile-project-search-path '("~/projects/"))
   (projectile-sort-order 'recently-active)
-  (projectile-enable-caching 'persistent)
+  (projectile-enable-caching t)
   :config
+  (projectile-load-known-projects)
   (add-to-list 'projectile-globally-ignored-directories "^\\.shadow-cljs$")
   (use-package
     counsel-projectile
