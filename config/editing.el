@@ -435,24 +435,24 @@
   (lsp-ui-sideline-show-hover nil)
   (lsp-ui-doc-enable nil))
 
-(use-package
-  dap-mode
-  :defer
-  :custom (dap-ui-controls-mode -1)
-  :general (:states '(normal visual) :keymaps 'override
-    'dap-mode-map
-    ;; "<f5>"
-    ;; 'dap-next
-    ;; "<f6>"
-    ;; 'dap-continue
-    ;; "<f7>"
-    ;; 'dap-step-in
-    ;; "<f8>"
-    ;; 'dap-step-out
-    "SPC mdb"
-    'dap-breakpoint-toggle
-    "SPC mdq"
-    'dap-disconnect))
+;; (use-package
+;;   dap-mode
+;;   :defer
+;;   :custom (dap-ui-controls-mode -1)
+;;   :general (:states '(normal visual) :keymaps 'override
+;;     'dap-mode-map
+;;     ;; "<f5>"
+;;     ;; 'dap-next
+;;     ;; "<f6>"
+;;     ;; 'dap-continue
+;;     ;; "<f7>"
+;;     ;; 'dap-step-in
+;;     ;; "<f8>"
+;;     ;; 'dap-step-out
+;;     "SPC mdb"
+;;     'dap-breakpoint-toggle
+;;     "SPC mdq"
+;;     'dap-disconnect))
 
 (use-package delight)
 

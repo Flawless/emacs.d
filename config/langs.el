@@ -239,9 +239,13 @@ quotes and so on since your reply would be used as is:
 ;;     'beancount-check))
 
 (use-package
+  org-contrib
+  :straight (org-contrib :type git :repo "https://git.sr.ht/~bzg/org-contrib" :local-repo "org-contrib")
+  :after org)
+
+(use-package
   org
   :straight (:type built-in)
-  :ensure org-contrib
   :general
   (:states
     '(normal visual)
@@ -495,9 +499,9 @@ quotes and so on since your reply would be used as is:
           (setq dayspan (- 8 today)))
         ((= today 0) ; sunday to sunday
           (setq dayspan 8)))))
-  ;; ox-extra
-  ;; (require 'ox-extra)
-  ;; (ox-extras-activate '(latex-header-blocks ignore-headlines))
+  ;; ox-extra - Enable ignore tag functionality
+  (require 'ox-extra)
+  (ox-extras-activate '(latex-header-blocks ignore-headlines))
   ;; ox-latex
   (setq org-latex-pdf-process
     '
