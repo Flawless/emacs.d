@@ -43,6 +43,7 @@
 (use-package
   vterm
   :init (evil-collection-init 'vterm)
+  :custom (vterm-environment '("COLORTERM=truecolor"))
   :config (use-package multi-vterm :ensure t)
   :general
   (:states '(normal visual) :prefix "SPC" "V" 'multi-vterm)
